@@ -1,0 +1,12 @@
+[Unit]
+Description=micrel-netdev-led-daemon for handling network link status and the network LED
+After=micrel-switch-setup.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/micrel-netdev-led-daemon
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=network.target

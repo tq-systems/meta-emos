@@ -1,0 +1,33 @@
+#!/bin/sh
+
+#
+# Copyright (C) 2018, TQ Systems
+#
+
+set -e
+
+
+usage() {
+	echo >&2 "Usage: emos-upgrade install BUNDLE"
+	exit 1
+}
+
+cmd_install() {
+	[ $# -eq 1 -a -e "$1" ] || usage
+
+	rauc install "$1"
+	mv "$1" /data/last-upgrade.raucb
+	reboot
+}
+
+
+CMD="$1"; shift
+
+case "$CMD" in
+install)
+	cmd_$CMD "$@"
+	;;
+
+*)
+	usage
+esac

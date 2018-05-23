@@ -1,0 +1,38 @@
+# Copyright (C) 2018, TQ Systems
+# Author: Matthias Schiffer <matthias.schiffer@tq-group.com>
+
+DESCRIPTION = "EMOS RAUC wrapper"
+SECTION = "core"
+
+LICENSE = "TQSSLA_V1.0.1"
+LIC_FILES_CHKSUM = "file://emos-upgrade;beginline=3;endline=5;md5=335df450943c58fe4681add64a230f73"
+
+PR = "r1"
+
+RDEPENDS_${PN} = "rauc"
+
+SRC_URI = " \
+        file://emos-upgrade \
+        file://emos-upgrade-finalize \
+        file://emos-upgrade-finalize.service \
+"
+
+S = "${WORKDIR}"
+
+
+FILES_${PN} += "${libdir}/emos/upgrade/emos-upgrade-finalize"
+SYSTEMD_SERVICE_${PN} = "emos-upgrade-finalize.service"
+
+inherit systemd
+
+
+do_install() {
+        install -d ${D}${sbindir}/
+        install -m 0755 emos-upgrade ${D}${sbindir}/
+
+        install -d ${D}${libdir}/emos/upgrade/
+        install -m 0755 emos-upgrade-finalize ${D}${libdir}/emos/upgrade/
+
+        install -d ${D}${systemd_unitdir}/system/
+        install -m 0644 emos-upgrade-finalize.service ${D}${systemd_unitdir}/system/
+}

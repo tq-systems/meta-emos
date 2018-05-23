@@ -1,0 +1,14 @@
+[Unit]
+Description=EMOS post-reboot upgrade
+
+Wants=rauc-mark-good.service
+After=rauc-mark-good.service
+
+ConditionPathExists=/data/last-upgrade.raucb
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/emos/upgrade/emos-upgrade-finalize
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,54 @@
+#!/bin/sh
+#
+# (c) Gateware Communications GmbH, Nuremberg 2017
+#
+# This script waits for link status changes on port 1 or port 2 of a Micrel
+# KSZ8863 switch and updates the netdev LED trigger configuration.
+#
+
+set -e
+
+GPIO_INTR=6
+LED=/sys/class/leds/energymanager:green:network
+
+# Configure GPIO_INTR
+if [ ! -d /sys/class/gpio/gpio$GPIO_INTR ]; then
+	echo $GPIO_INTR >/sys/class/gpio/export
+fi
+echo in >/sys/class/gpio/gpio$GPIO_INTR/direction
+echo falling >/sys/class/gpio/gpio$GPIO_INTR/edge
+
+# Setup LED
+echo netdev > $LED/trigger
+echo eth0 > $LED/device_name
+
+cleanup() {
+	echo none >$LED/mode
+	kill $(jobs -p) >/dev/null 2>&1
+}
+trap "cleanup" INT TERM EXIT
+
+# Enable "P1 or P2 link change" interrupt
+micrel smi 0xBB 0x80
+
+while true; do
+	# Clear all interrupts (w1c)
+	micrel smi 0xBC 0xFF
+
+	# Read MII Basic Status register of port 1 and port 2
+	reg1=$(micrel --raw mdio 1 1)
+	reg2=$(micrel --raw mdio 2 1)
+	status=$(( ($reg1 | $reg2) & 0x4 ))
+	if [ $status -eq 4 ]; then
+		# Link is up
+		echo link tx rx >$LED/mode
+	else
+		# Link is down
+		echo none >$LED/mode
+	fi
+
+	# Wait for GPIO interrupt
+	# Run gpio-wait in background to catch signals ourself.
+	gpio-wait $GPIO_INTR &
+	wait $!
+done

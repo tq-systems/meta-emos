@@ -1,0 +1,31 @@
+#!/bin/sh
+
+
+msg() {
+	echo "$1" >/dev/console
+}
+
+fatal() {
+	msg "$1"
+	exit 1
+}
+
+
+[ $$ -eq 1 ] || fatal 'emos-init must run as PID1.'
+
+
+[ -e /dev/console ] || mount -t devtmpfs devtmpfs /dev || fatal '/dev mount failed.'
+mount -t proc proc /proc || fatal '/proc mount failed.'
+mount -t sysfs sysfs /sys || fatal '/sys mount failed.'
+
+(
+        mount -o ro /dev/mmcblk0p9 /auth && \
+        mount /dev/mmcblk0p7 /config && \
+        mount -t overlay \
+                -o lowerdir=/auth/etc:/etc,upperdir=/config/etc,workdir=/config/work \
+                overlay /etc \
+) || fatal '/etc overlay mount failed.'
+
+mount /dev/mmcblk0p8 /data || fatal '/data mount failed.'
+
+exec /lib/systemd/systemd
