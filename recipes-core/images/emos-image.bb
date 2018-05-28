@@ -34,6 +34,7 @@ IMAGE_INSTALL += " \
 BAD_RECOMMENDATIONS += " \
                       busybox-syslog \
                       busybox-udhcpc \
+                      udev-hwdb \
                       "
 
 # for em310 only
