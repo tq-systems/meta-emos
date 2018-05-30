@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# Copyright (C) 2018, TQ Systems
+#
+
+set -e
+
+LED=/sys/class/leds/energymanager:green:status
+
+echo gpio > $LED/trigger
+echo 1 > $LED/brightness
