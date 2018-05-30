@@ -1,0 +1,10 @@
+[Unit]
+Description=status-led is setting the status LED after boot
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/status-led
+
+[Install]
+WantedBy=multi-user.target
