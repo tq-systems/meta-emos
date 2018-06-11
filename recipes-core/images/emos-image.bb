@@ -20,6 +20,7 @@ IMAGE_INSTALL += " \
 		mosquitto \
 		nginx \
 		nvram-wrapper \
+		status-led \
 		"
 
 # go applications, probably moving to appfs later
