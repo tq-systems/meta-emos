@@ -17,6 +17,7 @@ IMAGE_INSTALL += " \
 		e2fsprogs \
 		less \
 		teridiand \
+		haveged \
 		mosquitto \
 		nginx \
 		nvram-wrapper \
