@@ -1,6 +1,7 @@
 inherit core-image
 
 # rootfs with 264 MiB
+IMAGE_ROOTFS_SIZE_em300 = "270336"
 IMAGE_ROOTFS_SIZE_em310 = "270336"
 
 IMAGE_INSTALL += " packagegroup-core-boot ${CORE_IMAGE_EXTRA_INSTALL}"
