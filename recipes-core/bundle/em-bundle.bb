@@ -9,15 +9,15 @@ SRC_URI += "file://hook.sh"
 
 RDEPENDS_${PN} += "imx28-blupdate"
 
-RAUC_BUNDLE_COMPATIBLE ?= "em310"
-RAUC_BUNDLE_SLOTS ?= "rootfs u-boot"
-RAUC_BUNDLE_HOOKS[file] ?= "hook.sh"
+RAUC_BUNDLE_COMPATIBLE = "${MACHINE}"
+RAUC_BUNDLE_SLOTS = "rootfs u-boot"
+RAUC_BUNDLE_HOOKS[file] = "hook.sh"
 
-RAUC_SLOT_rootfs ?= "emos-image"
+RAUC_SLOT_rootfs = "emos-image"
 
-RAUC_SLOT_u-boot ?= "u-boot"
-RAUC_SLOT_u-boot[fstype] ?= "sb"
-RAUC_SLOT_u-boot[hooks] ?= "install"
+RAUC_SLOT_u-boot = "u-boot"
+RAUC_SLOT_u-boot[fstype] = "sb"
+RAUC_SLOT_u-boot[hooks] = "install"
 
 RAUC_KEY_FILE ?= "${@bb.utils.which(d.getVar('BBPATH'), 'files/emos/rauc/key.pem')}"
 RAUC_CERT_FILE ?= "${@bb.utils.which(d.getVar('BBPATH'), 'files/emos/rauc/ca.cert.pem')}"
