@@ -44,6 +44,9 @@ BAD_RECOMMENDATIONS += " \
 IMAGE_INSTALL_append_em310 += " micrel-switch-tool"
 IMAGE_INSTALL_append_em310 += " micrel-netdev-led-daemon"
 
+# for em300 only
+IMAGE_INSTALL_append_em300 += " netdev-led"
+
 IMAGE_LINGUAS = ""
 
 EXTRA_IMAGEDEPENDS += "u-boot"

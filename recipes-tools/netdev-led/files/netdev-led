@@ -1,0 +1,12 @@
+#!/bin/sh
+#
+# Copyright (C) 2018, TQ Systems
+#
+
+set -e
+
+LED=/sys/class/leds/energymanager:green:network
+
+echo netdev >$LED/trigger
+echo eth0 >$LED/device_name
+echo "link tx rx" >$LED/mode

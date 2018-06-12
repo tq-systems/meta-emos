@@ -1,0 +1,10 @@
+[Unit]
+Description=netdev-led is setting the mode of the network LED.
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/netdev-led
+
+[Install]
+WantedBy=network.target
