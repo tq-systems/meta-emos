@@ -16,7 +16,6 @@ IMAGE_INSTALL += " \
 		mmc-utils \
 		e2fsprogs \
 		less \
-		teridiand \
 		haveged \
 		mosquitto \
 		nginx \
@@ -28,10 +27,12 @@ IMAGE_INSTALL += " \
 IMAGE_INSTALL += " \
 		data-transfer \
 		device-config \
-		sensor-measurement \
 		submeter \
 		web-frontend \
 		web-login \
+		op-api \
+		efm \
+		smockulator-fast \
 		"
 
 BAD_RECOMMENDATIONS += " \
