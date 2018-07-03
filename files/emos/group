@@ -9,3 +9,5 @@ systemd-bus-proxy::507
 polkitd::508
 www::509
 mosquitto::510
+avahi::511
+avahi-autoipd::512
