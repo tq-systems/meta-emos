@@ -3,7 +3,7 @@
 # (c) Gateware Communications GmbH, Nuremberg 2018
 #
 
-set -eio pipefail
+set -eo pipefail
 
 echo "i.MX28 bootloader install script"
 
