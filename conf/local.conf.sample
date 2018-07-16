@@ -38,7 +38,7 @@
 MACHINE ??= "em310"
 
 # set extern git server as default
-GIT_SERVER ??= "git://git@git.tq-group.com/tq-em"
+GIT_SERVER ??= "git@git.tq-group.com/tq-em"
 
 #
 # Where to place downloads
