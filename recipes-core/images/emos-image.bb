@@ -14,6 +14,7 @@ IMAGE_INSTALL += " \
 		kernel-modules \
 		imx28-blupdate \
 		emos-upgrade \
+		empkg \
 		u-boot-fslc-fw-utils \
 		mmc-utils \
 		e2fsprogs \

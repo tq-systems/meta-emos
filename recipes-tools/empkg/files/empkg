@@ -1,0 +1,414 @@
+#!/bin/sh
+
+set -eo pipefail
+
+
+PREINSTALLED_DIR="/opt/apps"
+APPDIR="/apps"
+APPTMP="$APPDIR/tmp"
+WWWDIR="$APPDIR/www"
+WWWAPPS="$WWWDIR/apps.json"
+
+
+OPT_ENABLE=true
+OPT_LOCK=true
+OPT_SYSTEMD=true
+OPT_PLAIN=false
+
+
+usage() {
+	cat >&2 <<'EOF'
+Usage: empkg help
+       empkg list-installed
+       empkg list-enabled
+       empkg status <app>
+       empkg info <pkg>
+       empkg install <pkg>
+       empkg uninstall <app>
+       empkg enable|disable <app>
+EOF
+}
+
+
+is_preinstalled() {
+	[ -d "$PREINSTALLED_DIR/$1" ]
+}
+
+is_installed() {
+	[ -d "$APPDIR/installed/$1" ]
+}
+
+is_enabled() {
+	[ -L "$APPDIR/enabled/$1" ]
+}
+
+has_systemd() {
+	[ -e "$APPDIR/installed/$1/em-app-$1.service" ]
+}
+
+# Prints an error message and exits
+error() {
+	echo >&2 "empkg: $1"
+	exit 1
+}
+
+# Checks that an app is installed and exits with an error message otherwise
+ensure_installed() {
+	is_installed "$1" || error "app '$1' not found"
+}
+
+# Checks that an app is either installed or there is a leftover enabled symlink
+ensure_installed_or_enabled() {
+	[ -L "$APPDIR/enabled/$app" ] || ensure_installed "$app"
+}
+
+# Is called with the expected number of args and $#, exits with an error
+# message if the number of args is incorrect
+ensure_args() {
+	[ $1 -eq $2 ] || {
+		usage
+		exit 1
+	}
+}
+
+
+# Transforms a list of newline-separated strings to a JSON array
+# (unless the --plain option is set)
+output_array() {
+	if $OPT_PLAIN; then
+		cat
+	else
+		jq -nR '[inputs]'
+	fi
+}
+
+
+# Prints the names of all installed apps, separated by newlines
+list_installed() {
+	local appdir
+	for appdir in "$APPDIR"/installed/*; do
+		# busybox does not have nullglob -
+		# the case that no apps are installed is handled here
+		[ -d "$appdir" ] || continue
+
+		echo "$(basename "$appdir")"
+	done
+}
+
+# Prints the names of all enabled apps, separated by newlines
+list_enabled() {
+	local app
+	for app in $(list_installed); do
+		is_enabled "$app" || continue
+		echo "$app"
+	done
+}
+
+# Registers an preinstalled app as installed
+app_register() {
+	local app="$1"
+	is_preinstalled "$app" || error "tried to register app '$app', but it is not preinstalled"
+
+	[ -e "$APPDIR/installed/$app" ] || ln -snf "$PREINSTALLED_DIR/$app" "$APPDIR/installed/$app"
+}
+
+# Enables an app
+app_enable() {
+	local app="$1"
+	ensure_installed "$app"
+
+	mkdir -p "$APPDIR/enabled"
+	ln -snf "../installed/$app" "$APPDIR/enabled/$app"
+
+	if $OPT_SYSTEMD && has_systemd "$app"; then
+		systemctl daemon-reload
+		systemctl restart "em-app-${app}.service"
+	fi
+}
+
+# Disables an app
+app_disable() {
+	local app="$1"
+	ensure_installed_or_enabled "$app"
+
+	rm -f "$APPDIR/enabled/$app"
+
+	if $OPT_SYSTEMD && systemctl --quiet is-active "em-app-${app}.service"; then
+		systemctl stop "em-app-${app}.service" || true
+		systemctl daemon-reload
+	fi
+}
+
+# Prints the manifest of an installed app
+app_info() {
+	local app="$1"
+	ensure_installed "$app"
+	cat "$APPDIR/installed/$app/manifest.json"
+}
+
+# Prints the current status and manifest information of an installed app
+app_status() {
+	local app="$1"
+	ensure_installed "$app"
+
+	local enabled=false
+	if is_enabled "$app"; then enabled=true; fi
+
+	app_info "$app" | jq \
+		--argjson enabled "$enabled" \
+		'{
+			status: {
+				enabled: $enabled,
+			},
+			info: .,
+		}'
+}
+
+# Prints the manifest of an app package
+pkg_info() {
+	local pkg="$1"
+	tar -xOf "$pkg" manifest.json
+}
+
+# Installs or upgrades an app from a package file
+pkg_install() {
+	local pkg="$1"
+	local info="$(pkg_info "$pkg")"
+
+	local app="$(echo "$info" | jq -r '.id')"
+	local version_old
+	local version_new="$(echo "$info" | jq -r '.version')"
+
+	local is_new=true
+	if is_installed "$app"; then
+		is_new=false
+		version_old="$(app_info "$app" | jq -r '.version')"
+	fi
+
+	rm -rf "$APPTMP"
+
+	if $is_new; then
+		echo >&2 "Installing $app $version_new..."
+	else
+		echo >&2 "Updating $app $version_old to $version_new..."
+	fi
+
+	local appdir="$APPDIR/installed/$app"
+	local installdir="$APPTMP/install"
+
+	mkdir -p "$installdir"
+	tar -xOf "$pkg" data.tar.xz | tar -xJC "$installdir"
+	tar -xf "$pkg" -C "$installdir" manifest.json
+
+	# Sync around app replacement to get it as atomic as possible
+	sync
+	if [ -e "$appdir" ]; then
+		mv "$appdir" "$APPTMP/uninstall"
+	fi
+	mv "$APPTMP/install" "$appdir"
+	sync
+
+	rm -rf "$APPTMP"
+
+	if $OPT_ENABLE; then
+		app_enable "$app"
+	fi
+}
+
+# Uninstalls an app
+app_uninstall() {
+	local app="$1"
+
+	ensure_installed_or_enabled "$app"
+	echo >&2 "Uninstalling $app..."
+
+	app_disable "$app"
+
+	rm -rf "$APPTMP"
+	mkdir -p "$APPTMP"
+	# Move inside the same filesystem to have an atomic operation
+	mv "$APPDIR/installed/$app" "$APPTMP/uninstall"
+
+	if is_preinstalled "$app"; then
+		echo >&2 "Note: '$app' is preinstalled, only uninstalling updates."
+		app_register "$app"
+	fi
+
+	# Sync before removing directory tree, so the removal at
+	# APPDIR/installed is always atomic
+	sync
+
+	rm -rf "$APPTMP"
+}
+
+# Registers all preinstalled apps into the main app dir, removes
+# symlinks for apps that have disappered. New apps are automatically
+# enabled.
+#
+# This is an internal command (called from emos-init), so it does not
+# appear in usage
+app_sync() {
+	local appdir app new_apps
+
+	# Disable apps that are not installed anymore
+	for appdir in "$APPDIR"/enabled/*; do
+		[ -L "$appdir" ] || continue
+		app="$(basename "$appdir")"
+
+		is_installed "$app" || disable_app "$app"
+	done
+
+	# Remove installed symlinks for apps that are not
+	# preinstalled anymore
+	for appdir in "$APPDIR"/installed/*; do
+		[ -L "$appdir" ] || continue
+		app="$(basename "$appdir")"
+
+		[ -d "$PREINSTALLED_DIR/$app" ] || rm -f "$appdir"
+	done
+
+	mkdir -p "$APPDIR/installed/"
+
+	# Link preinstalled apps into $APPDIR/installed
+	for appdir in "$PREINSTALLED_DIR"/*; do
+		# busybox does not have nullglob -
+		# the case that no apps are installed is handled here
+		# (as well as other unexpected files in PREINSTALLED_DIR)
+		[ -d "$appdir" ] || continue
+
+		app="$(basename "$appdir")"
+		[ ! -e "$APPDIR/installed/$app" ] || continue
+
+		app_register "$app"
+
+		new_apps="$app
+$new_apps"
+	done
+
+	# Delay enabling apps until all new apps have been registered,
+	# so potential dependencies between new apps are satisfied
+	echo -n "$new_apps" | while read -r app; do
+		app_enable "$app" || true
+	done
+}
+
+# Updates the web-container app directory (app symlinks, list JSON)
+update_www() {
+	rm -rf "$WWWDIR"
+	mkdir -p "$WWWDIR"
+
+	local app
+
+	for app in $(list_enabled); do
+		local index="$APPDIR/installed/$app/www/index.js"
+		[ -e "$index" ] || continue
+
+		local wwwdir="$(dirname "$index")"
+		ln -snf "$wwwdir" "$WWWDIR/$app"
+
+		echo "$app"
+	done | jq -nRc '[inputs]' > "$WWWAPPS".tmp
+	mv -f "$WWWAPPS.tmp" "$WWWAPPS"
+
+	sync
+}
+
+
+while [ "${1:0:1}" = '-' ]; do
+	arg="$1"; shift
+	case "$arg" in
+	--no-enable)
+		OPT_ENABLE=false
+		;;
+
+	--no-lock)
+		OPT_LOCK=false
+		;;
+
+	--no-systemd)
+		OPT_SYSTEMD=false
+		;;
+
+	--plain)
+		OPT_PLAIN=true
+		;;
+
+	*)
+		usage
+		exit 1
+	esac
+done
+
+
+get_lock() {
+	$OPT_LOCK || return 0
+
+	# Arbitrary lock fd that should be unused by the shell
+	exec 1000>/var/lock/empkg.lock
+	flock -n 1000 || error 'another instance of empkg is active'
+}
+
+
+cmd="$1"; shift
+
+case "$cmd" in
+help)
+	usage
+	;;
+
+list-installed)
+	list_installed | output_array
+	;;
+
+list-enabled)
+	list_enabled | output_array
+	;;
+
+status)
+	ensure_args 1 $#
+	app_status "$1"
+	;;
+
+info)
+	ensure_args 1 $#
+	pkg_info "$1" | jq .
+	;;
+
+install)
+	ensure_args 1 $#
+	get_lock
+	pkg_install "$1"
+	update_www
+	;;
+
+uninstall)
+	ensure_args 1 $#
+	get_lock
+	app_uninstall "$1"
+	update_www
+	;;
+
+enable)
+	ensure_args 1 $#
+	get_lock
+	app_enable "$1"
+	update_www
+	;;
+
+disable)
+	ensure_args 1 $#
+	get_lock
+	app_disable "$1"
+	update_www
+	;;
+
+sync)
+	get_lock
+	app_sync
+	update_www
+	;;
+
+*)
+	usage
+	exit 1
+esac
