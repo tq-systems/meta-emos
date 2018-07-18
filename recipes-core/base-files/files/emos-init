@@ -27,5 +27,6 @@ mount -t sysfs sysfs /sys || fatal '/sys mount failed.'
 ) || fatal '/etc overlay mount failed.'
 
 mount /dev/mmcblk0p8 /data || fatal '/data mount failed.'
+mount /dev/mmcblk0p5 /apps || fatal '/apps mount failed.'
 
 exec /lib/systemd/systemd

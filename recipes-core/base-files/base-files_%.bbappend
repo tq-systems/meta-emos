@@ -10,6 +10,7 @@ SRC_URI += " \
 do_install_append () {
 	# Install mountpoints
 	install -d ${D}/auth
+	install -d ${D}/apps
 	install -d ${D}/config
 	install -d ${D}/data
 
@@ -23,7 +24,7 @@ do_install_append () {
 	install -m 0644 ${WORKDIR}/tmpfiles.conf ${D}${sysconfdir}/tmpfiles.d/00-emos-log.conf
 }
 
-FILES_${PN} += "/auth /config /data ${base_sbindir}/emos-init ${sysconfdir}/tmpfiles.d/00-emos-log.conf"
+FILES_${PN} += "/auth /apps /config /data ${base_sbindir}/emos-init ${sysconfdir}/tmpfiles.d/00-emos-log.conf"
 
 ALTERNATIVE_${PN} += "init"
 ALTERNATIVE_TARGET[init] = "${base_sbindir}/emos-init"
