@@ -11,3 +11,11 @@ do_install_append() {
 }
 
 FILES_${PN} += "${sysconfdir}/systemd/network ${sysconfdir}/systemd/network/50-wired.network"
+
+# Ensure these files end up in systemd-container rather than systemd - otherwise
+# systemd will have an unwanted dependency on systemd-container!
+FILES_${PN}-container += "\
+	${sysconfdir}/systemd/system/multi-user.target.wants/machines.target \
+	${systemd_system_unitdir}/machines.target.wants/var-lib-machines.mount \
+	${systemd_system_unitdir}/remote-fs.target.wants/var-lib-machines.mount \
+"
