@@ -4,6 +4,8 @@ inherit core-image
 IMAGE_ROOTFS_SIZE_em300 = "270336"
 IMAGE_ROOTFS_SIZE_em310 = "270336"
 
+
+
 IMAGE_INSTALL += " packagegroup-core-boot ${CORE_IMAGE_EXTRA_INSTALL}"
 
 IMAGE_INSTALL += " \
@@ -12,6 +14,7 @@ IMAGE_INSTALL += " \
 		kernel-modules \
 		imx28-blupdate \
 		emos-upgrade \
+		empkg \
 		u-boot-fslc-fw-utils \
 		mmc-utils \
 		e2fsprogs \
@@ -32,6 +35,7 @@ IMAGE_INSTALL += " \
 		submeter \
 		web-frontend \
 		web-login \
+		em-app-overload-protection \
 		"
 
 BAD_RECOMMENDATIONS += " \
@@ -48,5 +52,16 @@ IMAGE_INSTALL_append_em310 += " micrel-netdev-led-daemon"
 IMAGE_INSTALL_append_em300 += " netdev-led"
 
 IMAGE_LINGUAS = ""
+
+
+dropbear_rsakey_dir_hook () {
+	if [ -d ${IMAGE_ROOTFS}/etc/dropbear ]; then
+		sed -i '/^DROPBEAR_RSAKEY_DIR=/d' ${IMAGE_ROOTFS}/etc/default/dropbear
+		echo "DROPBEAR_RSAKEY_DIR=/data/var/lib/dropbear" >> ${IMAGE_ROOTFS}/etc/default/dropbear
+	fi
+}
+ROOTFS_POSTPROCESS_COMMAND += "dropbear_rsakey_dir_hook; "
+IMAGE_FEATURES += "read-only-rootfs"
+
 
 EXTRA_IMAGEDEPENDS += "u-boot"
