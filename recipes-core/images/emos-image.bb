@@ -35,7 +35,6 @@ IMAGE_INSTALL += " \
 		submeter \
 		web-frontend \
 		web-login \
-		em-app-overload-protection \
 		"
 
 BAD_RECOMMENDATIONS += " \
