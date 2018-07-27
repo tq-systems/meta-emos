@@ -30,11 +30,11 @@ IMAGE_INSTALL += " \
 # go applications, probably moving to appfs later
 IMAGE_INSTALL += " \
 		data-transfer \
-		device-config \
 		sensor-measurement \
 		submeter \
 		web-frontend \
 		web-login \
+		em-app-device-settings \
 		"
 
 BAD_RECOMMENDATIONS += " \
