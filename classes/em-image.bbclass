@@ -1,3 +1,14 @@
+# em-image.bbclass: rootfs defaults for Energy Manager
+#
+# This includes core system components, a number of basic
+# services that should always be available, and apps that
+# are preinstalled by default
+#
+# Recipes inheriting this class can extend IMAGE_INSTALL
+# to add additional packages, or remove packages by adding
+# them to IMAGE_INSTALL_remove
+
+
 inherit core-image
 
 # rootfs with 264 MiB
@@ -5,35 +16,45 @@ IMAGE_ROOTFS_SIZE_em300 = "270336"
 IMAGE_ROOTFS_SIZE_em310 = "270336"
 
 
-
-IMAGE_INSTALL += " packagegroup-core-boot ${CORE_IMAGE_EXTRA_INSTALL}"
-
+# Basic system components
 IMAGE_INSTALL += " \
+		packagegroup-core-boot \
+		${CORE_IMAGE_EXTRA_INSTALL} \
 		kernel \
 		kernel-devicetree \
 		kernel-modules \
 		imx28-blupdate \
-		emos-upgrade \
-		empkg \
 		u-boot-fslc-fw-utils \
+		nvram-wrapper \
 		mmc-utils \
 		e2fsprogs \
 		less \
-		teridiand \
 		haveged \
-		mosquitto \
-		nginx \
-		nvram-wrapper \
 		status-led \
+		emos-upgrade \
+		empkg \
 		"
 
-# go applications, probably moving to appfs later
+IMAGE_INSTALL_append_em300 += " netdev-led"
+
+IMAGE_INSTALL_append_em310 += " micrel-switch-tool"
+IMAGE_INSTALL_append_em310 += " micrel-netdev-led-daemon"
+
+
+# System services and app container; some will become apps eventually
 IMAGE_INSTALL += " \
+		mosquitto \
+		nginx \
+		teridiand \
+		web-login \
 		data-transfer \
 		sensor-measurement \
 		submeter \
 		web-frontend \
-		web-login \
+		"
+
+# Preinstalled apps
+IMAGE_INSTALL += " \
 		em-app-device-settings \
 		"
 
@@ -42,13 +63,6 @@ BAD_RECOMMENDATIONS += " \
                       busybox-udhcpc \
                       udev-hwdb \
                       "
-
-# for em310 only
-IMAGE_INSTALL_append_em310 += " micrel-switch-tool"
-IMAGE_INSTALL_append_em310 += " micrel-netdev-led-daemon"
-
-# for em300 only
-IMAGE_INSTALL_append_em300 += " netdev-led"
 
 IMAGE_LINGUAS = ""
 
