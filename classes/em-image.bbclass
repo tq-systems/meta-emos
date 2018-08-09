@@ -49,13 +49,14 @@ IMAGE_INSTALL += " \
 		web-login \
 		data-transfer \
 		sensor-measurement \
-		submeter \
 		web-frontend \
 		"
 
 # Preinstalled apps
 IMAGE_INSTALL += " \
 		em-app-device-settings \
+		em-app-smart-meter \
+		em-app-sensors \
 		"
 
 BAD_RECOMMENDATIONS += " \
