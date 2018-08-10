@@ -256,7 +256,7 @@ app_sync() {
 		[ -L "$appdir" ] || continue
 		app="$(basename "$appdir")"
 
-		is_installed "$app" || disable_app "$app"
+		is_installed "$app" || app_disable "$app"
 	done
 
 	# Remove installed symlinks for apps that are not
