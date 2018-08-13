@@ -79,3 +79,6 @@ IMAGE_FEATURES += "read-only-rootfs"
 
 
 EXTRA_IMAGEDEPENDS += "u-boot"
+
+COPY_LIC_MANIFEST = "1"
+COPY_LIC_DIRS = "1"

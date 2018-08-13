@@ -14,6 +14,7 @@ APP_INSTALL_ROOT = "/opt/apps/${APP_ID}"
 APP_ROOT = "/apps/installed/${APP_ID}"
 APP_DATA = "/data/apps/${APP_ID}"
 FILES_${PN} = "${APP_INSTALL_ROOT}"
+APP_LIC_DIR = "${APP_ROOT}/license"
 
 DEPENDS_append = " jq-native"
 

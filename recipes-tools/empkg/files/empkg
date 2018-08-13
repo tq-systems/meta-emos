@@ -8,6 +8,7 @@ APPDIR="/apps"
 APPTMP="$APPDIR/tmp"
 WWWDIR="$APPDIR/www"
 WWWAPPS="$WWWDIR/apps.json"
+LICDIR="$APPDIR/licenses"
 
 
 OPT_ENABLE=true
@@ -255,7 +256,7 @@ app_sync() {
 		[ -L "$appdir" ] || continue
 		app="$(basename "$appdir")"
 
-		is_installed "$app" || disable_app "$app"
+		is_installed "$app" || app_disable "$app"
 	done
 
 	# Remove installed symlinks for apps that are not
@@ -309,6 +310,23 @@ update_www() {
 		echo "$app"
 	done | jq -nRc '[inputs]' > "$WWWAPPS".tmp
 	mv -f "$WWWAPPS.tmp" "$WWWAPPS"
+
+	sync
+}
+
+update_licenses() {
+	rm -rf "$LICDIR"
+	mkdir -p "$LICDIR"
+
+	local app
+
+	for app in $(list_installed); do
+		local app_license_dir="$APPDIR/installed/$app/license"
+		[ -d "$app_license_dir" ] || continue
+
+		local lic_info_dir="$LICDIR/$app"
+		ln -snf "$app_license_dir" "$lic_info_dir"
+	done
 
 	sync
 }
@@ -379,6 +397,7 @@ install)
 	get_lock
 	pkg_install "$1"
 	update_www
+	update_licenses
 	;;
 
 uninstall)
@@ -386,6 +405,7 @@ uninstall)
 	get_lock
 	app_uninstall "$1"
 	update_www
+	update_licenses
 	;;
 
 enable)
@@ -406,6 +426,7 @@ sync)
 	get_lock
 	app_sync
 	update_www
+	update_licenses
 	;;
 
 *)
