@@ -15,6 +15,7 @@ APP_ROOT = "/apps/installed/${APP_ID}"
 APP_DATA = "/data/apps/${APP_ID}"
 FILES_${PN} = "${APP_INSTALL_ROOT}"
 APP_LIC_DIR = "${APP_ROOT}/license"
+APP_LIC_FILE = ""
 
 DEPENDS_append = " jq-native"
 
@@ -42,6 +43,12 @@ em_app_install_backend() {
 }
 em_app_install_frontend() {
     :
+}
+em_app_install_license() {
+    if [ '${APP_LIC_FILE}' ]; then
+	install -d ${D}${APP_LIC_DIR}
+        install -m644 ${APP_LIC_FILE} ${D}${APP_LIC_DIR}/
+    fi
 }
 em_app_install() {
     :
@@ -75,6 +82,7 @@ em_app_install_mv() {
 python do_install() {
     bb.build.exec_func('em_app_install_backend', d)
     bb.build.exec_func('em_app_install_frontend', d)
+    bb.build.exec_func('em_app_install_license', d)
     bb.build.exec_func('em_app_install', d)
     bb.build.exec_func('em_app_install_manifest', d)
     bb.build.exec_func('em_app_install_mv', d)
