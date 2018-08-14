@@ -2,7 +2,7 @@ inherit package
 
 PKGWRITEDIR_EMPKG = "${WORKDIR}/deploy-empkg"
 
-fakeroot python do_package_empkg () {
+python do_package_empkg () {
     import shutil
     import subprocess
 
@@ -72,6 +72,7 @@ python do_package_write_empkg () {
 do_package_write_empkg[dirs] = "${PKGWRITEDIR_EMPKG}"
 do_package_write_empkg[cleandirs] = "${PKGWRITEDIR_EMPKG}"
 do_package_write_empkg[umask] = "022"
+do_package_write_empkg[fakeroot] = "1"
 do_package_write_empkg[depends] += "tar-native:do_populate_sysroot xz-native:do_populate_sysroot virtual/fakeroot-native:do_populate_sysroot"
 do_package_write_empkg[depends] += "${@oe.utils.build_depends_string(d.getVar('PACKAGE_WRITE_DEPS'), 'do_populate_sysroot')}"
 
