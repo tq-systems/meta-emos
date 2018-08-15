@@ -16,7 +16,7 @@ cmd_install() {
 	[ $# -eq 1 -a -e "$1" ] || usage
 
 	rauc install "$1"
-	mv "$1" /data/last-upgrade.raucb
+	mv "$1" /update/last-upgrade.raucb
 	reboot
 }
 
