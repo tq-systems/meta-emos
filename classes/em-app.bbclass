@@ -5,6 +5,7 @@ def em_app_get_id(pn):
 
 
 APP_ID ?= "${@em_app_get_id('${PN}')}"
+APP_VER ?= "${PKGV}${@ '' if '${PKGR}' == 'r0' else '-${PKGR}'}"
 
 # This is the root directory for preinstalled apps
 # They will be symlinked into /apps/installed automatically
@@ -57,7 +58,7 @@ em_app_install() {
 em_app_install_manifest() {
     jq -nc \
         --arg id '${APP_ID}' \
-        --arg version '${PKGV}-${PKGR}' \
+        --arg version '${APP_VER}' \
         --arg arch '${PACKAGE_ARCH}' \
         --arg name '${APP_NAME}' \
         --arg description '${DESCRIPTION}' \

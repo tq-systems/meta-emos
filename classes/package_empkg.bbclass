@@ -19,6 +19,11 @@ python do_package_empkg () {
         bb.error("APP_ID not defined, unable to package")
         return
 
+    app_ver = d.getVar('APP_VER')
+    if not app_ver:
+        bb.error("APP_VER not defined, unable to package")
+        return
+
     app_install_root = d.getVar('APP_INSTALL_ROOT')
     if not app_install_root:
         bb.error("APP_INSTALL_ROOT not defined, unable to package")
@@ -54,7 +59,7 @@ python do_package_empkg () {
 
     os.chdir(outdir)
 
-    packagetar = '%s/%s' % (pkgoutdir, localdata.expand("${APP_ID}_${PKGV}-${PKGR}_${PACKAGE_ARCH}.empkg"))
+    packagetar = '%s/%s' % (pkgoutdir, localdata.expand("${APP_ID}_${APP_VER}_${PACKAGE_ARCH}.empkg"))
     ret = subprocess.call(['tar', '-cf', packagetar, 'manifest.json', 'data.tar.xz'])
     if ret != 0:
         bb.error("Creation of empkg %s failed." % packagetar)
