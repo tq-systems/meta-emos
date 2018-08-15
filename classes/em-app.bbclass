@@ -57,7 +57,7 @@ em_app_install() {
 em_app_install_manifest() {
     jq -nc \
         --arg id '${APP_ID}' \
-        --arg version '${PV}-${PR}' \
+        --arg version '${PKGV}-${PKGR}' \
         --arg arch '${PACKAGE_ARCH}' \
         --arg name '${APP_NAME}' \
         --arg description '${DESCRIPTION}' \
