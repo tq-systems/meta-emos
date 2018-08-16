@@ -89,6 +89,8 @@ copy_defaults() {
 	local defaultdir="$APPDIR/installed/$app/default"
 	local configdir="$CONFIGDIR/$app"
 
+	mkdir -p "$CONFIGDIR"
+
 	(
 		umask 0077
 		mkdir -p "$configdir"
