@@ -11,9 +11,9 @@
 
 inherit core-image
 
-# rootfs with 264 MiB
-IMAGE_ROOTFS_SIZE_em300 = "270336"
-IMAGE_ROOTFS_SIZE_em310 = "270336"
+# rootfs with 384 MiB (raw disk space)
+IMAGE_ROOTFS_SIZE_em300 = "393216"
+IMAGE_ROOTFS_SIZE_em310 = "393216"
 
 
 # Basic system components
@@ -71,7 +71,7 @@ IMAGE_LINGUAS = ""
 dropbear_rsakey_dir_hook () {
 	if [ -d ${IMAGE_ROOTFS}/etc/dropbear ]; then
 		sed -i '/^DROPBEAR_RSAKEY_DIR=/d' ${IMAGE_ROOTFS}/etc/default/dropbear
-		echo "DROPBEAR_RSAKEY_DIR=/data/var/lib/dropbear" >> ${IMAGE_ROOTFS}/etc/default/dropbear
+		echo "DROPBEAR_RSAKEY_DIR=/cfglog/var/lib/dropbear" >> ${IMAGE_ROOTFS}/etc/default/dropbear
 	fi
 }
 ROOTFS_POSTPROCESS_COMMAND += "dropbear_rsakey_dir_hook; "

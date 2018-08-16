@@ -4,7 +4,7 @@ Description=EMOS post-reboot upgrade
 Wants=rauc-mark-good.service
 After=rauc-mark-good.service
 
-ConditionPathExists=/data/last-upgrade.raucb
+ConditionPathExists=/update/last-upgrade.raucb
 
 [Service]
 Type=oneshot
