@@ -56,7 +56,6 @@ IMAGE_INSTALL += " \
 IMAGE_INSTALL += " \
 		em-app-device-settings \
 		em-app-smart-meter \
-		em-app-sensors \
 		"
 
 BAD_RECOMMENDATIONS += " \
