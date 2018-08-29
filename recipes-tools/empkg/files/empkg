@@ -23,7 +23,7 @@ usage() {
 Usage: empkg help
        empkg list-installed
        empkg list-enabled
-       empkg status <app>
+       empkg status [<app>]
        empkg info <pkg>
        empkg install <pkg>
        empkg uninstall <app>
@@ -191,6 +191,14 @@ app_status() {
 			},
 			info: .,
 		}'
+}
+
+# Prints a dictionaly containing the current status and manifest information of all installed apps
+app_status_all() {
+	local app
+	for app in $(list_installed); do
+		app_status "$app"
+	done | jq -n '[inputs] | map({key: .info.id, value: .}) | from_entries'
 }
 
 # Prints the manifest of an app package
@@ -411,8 +419,12 @@ list-enabled)
 	;;
 
 status)
-	ensure_args 1 $#
-	app_status "$1"
+	if [ $# -eq 0 ]; then
+		app_status_all
+	else
+		ensure_args 1 $#
+		app_status "$1"
+	fi
 	;;
 
 info)
