@@ -3,7 +3,7 @@
 set -eo pipefail
 
 
-PREINSTALLED_DIR="/opt/apps"
+BUILTIN_DIR="/opt/apps"
 APPDIR="/apps"
 CONFIGDIR="/cfglog/apps"
 APPTMP="$APPDIR/tmp"
@@ -32,8 +32,8 @@ EOF
 }
 
 
-is_preinstalled() {
-	[ -d "$PREINSTALLED_DIR/$1" ]
+is_builtin() {
+	[ -d "$BUILTIN_DIR/$1" ]
 }
 
 is_installed() {
@@ -131,12 +131,12 @@ list_enabled() {
 	done
 }
 
-# Registers an preinstalled app as installed
+# Registers an builtin app as installed
 app_register() {
 	local app="$1"
-	is_preinstalled "$app" || error "tried to register app '$app', but it is not preinstalled"
+	is_builtin "$app" || error "tried to register app '$app', but it is not builtin"
 
-	[ -e "$APPDIR/installed/$app" ] || ln -snf "$PREINSTALLED_DIR/$app" "$APPDIR/installed/$app"
+	[ -e "$APPDIR/installed/$app" ] || ln -snf "$BUILTIN_DIR/$app" "$APPDIR/installed/$app"
 }
 
 # Enables an app
@@ -266,8 +266,8 @@ app_uninstall() {
 	# Move inside the same filesystem to have an atomic operation
 	mv "$APPDIR/installed/$app" "$APPTMP/uninstall"
 
-	if is_preinstalled "$app"; then
-		echo >&2 "Note: '$app' is preinstalled, only uninstalling updates."
+	if is_builtin "$app"; then
+		echo >&2 "Note: '$app' is builtin, only uninstalling updates."
 		app_register "$app"
 	fi
 
@@ -278,7 +278,7 @@ app_uninstall() {
 	rm -rf "$APPTMP"
 }
 
-# Registers all preinstalled apps into the main app dir, removes
+# Registers all builtin apps into the main app dir, removes
 # symlinks for apps that have disappered. New apps are automatically
 # enabled.
 #
@@ -296,21 +296,21 @@ app_sync() {
 	done
 
 	# Remove installed symlinks for apps that are not
-	# preinstalled anymore
+	# builtin anymore
 	for appdir in "$APPDIR"/installed/*; do
 		[ -L "$appdir" ] || continue
 		app="$(basename "$appdir")"
 
-		[ -d "$PREINSTALLED_DIR/$app" ] || rm -f "$appdir"
+		[ -d "$BUILTIN_DIR/$app" ] || rm -f "$appdir"
 	done
 
 	mkdir -p "$APPDIR/installed/"
 
-	# Link preinstalled apps into $APPDIR/installed
-	for appdir in "$PREINSTALLED_DIR"/*; do
+	# Link builtin apps into $APPDIR/installed
+	for appdir in "$BUILTIN_DIR"/*; do
 		# busybox does not have nullglob -
 		# the case that no apps are installed is handled here
-		# (as well as other unexpected files in PREINSTALLED_DIR)
+		# (as well as other unexpected files in BUILTIN_DIR)
 		[ -d "$appdir" ] || continue
 
 		app="$(basename "$appdir")"
