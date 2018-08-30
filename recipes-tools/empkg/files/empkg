@@ -180,15 +180,20 @@ app_status() {
 	local app="$1"
 	ensure_installed "$app"
 
+	local builtin=null
+	if is_builtin "$app"; then builtin=true; fi
+
 	local enabled=false
 	if is_enabled "$app"; then enabled=true; fi
 
 	app_info "$app" | jq \
+		--argjson builtin "$builtin" \
 		--argjson enabled "$enabled" \
 		'{
 			status: {
+				builtin: $builtin,
 				enabled: $enabled,
-			},
+			} | with_entries(select(.value != null)),
 			info: .,
 		}'
 }
