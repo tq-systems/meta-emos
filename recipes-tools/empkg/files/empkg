@@ -32,20 +32,24 @@ EOF
 }
 
 
+is_valid_name() {
+	echo "$1" | grep -qE '^[a-z0-9-]+$'
+}
+
 is_builtin() {
-	[ -d "$BUILTIN_DIR/$1" ]
+	is_valid_name "$1" && [ -d "$BUILTIN_DIR/$1" ]
 }
 
 is_installed() {
-	[ -d "$APPDIR/installed/$1" ]
+	is_valid_name "$1" && [ -d "$APPDIR/installed/$1" ]
 }
 
 is_enabled() {
-	[ -L "$APPDIR/enabled/$1" ]
+	is_valid_name "$1" && [ -L "$APPDIR/enabled/$1" ]
 }
 
 has_systemd() {
-	[ -e "$APPDIR/installed/$1/em-app-$1.service" ]
+	is_installed "$1" && [ -e "$APPDIR/installed/$1/em-app-$1.service" ]
 }
 
 # Prints an error message and exits
@@ -61,7 +65,8 @@ ensure_installed() {
 
 # Checks that an app is either installed or there is a leftover enabled symlink
 ensure_installed_or_enabled() {
-	[ -L "$APPDIR/enabled/$app" ] || ensure_installed "$app"
+	local app="$1"
+	( is_valid_name "$app" && [ -L "$APPDIR/enabled/$app" ] ) || ensure_installed "$app"
 }
 
 # Is called with the expected number of args and $#, exits with an error
