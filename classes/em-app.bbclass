@@ -1,11 +1,15 @@
 # Name convention: app recipe names must start with em-app-
 def em_app_get_id(pn):
     import re
-    return re.match(r'^em-app-(.*)$', pn).group(1)
+    m = re.match(r'^em-app-([a-z0-9-]+)$', pn)
+    if not m:
+        bb.error("Invalid app recipe name '%s'. App recipes must be prefixed with em-app-, and only the characters a-z, 0-9 and - are allowed." % pn)
+    return m.group(1)
 
 
 APP_ID ?= "${@em_app_get_id('${PN}')}"
 APP_VER ?= "${PKGV}${@ '' if '${PKGR}' == 'r0' else '-${PKGR}'}"
+APP_ESSENTIAL ?= "0"
 
 # This is the root directory for preinstalled apps
 # They will be symlinked into /apps/installed automatically
@@ -60,15 +64,17 @@ em_app_install_manifest() {
         --arg id '${APP_ID}' \
         --arg version '${APP_VER}' \
         --arg arch '${PACKAGE_ARCH}' \
+        --argjson essential '${APP_ESSENTIAL}' \
         --arg name '${APP_NAME}' \
         --arg description '${DESCRIPTION}' \
         '{
             id: $id,
             version: $version,
             arch: $arch,
+            essential: ($essential == 1 // null),
             name: $name,
             description: $description,
-        }' \
+        } | with_entries(select(.value != null))' \
         > ${D}${APP_ROOT}/manifest.json
 }
 

@@ -3,7 +3,7 @@
 set -eo pipefail
 
 
-PREINSTALLED_DIR="/opt/apps"
+BUILTIN_DIR="/opt/apps"
 APPDIR="/apps"
 CONFIGDIR="/cfglog/apps"
 APPTMP="$APPDIR/tmp"
@@ -23,7 +23,7 @@ usage() {
 Usage: empkg help
        empkg list-installed
        empkg list-enabled
-       empkg status <app>
+       empkg status [<app>]
        empkg info <pkg>
        empkg install <pkg>
        empkg uninstall <app>
@@ -32,20 +32,24 @@ EOF
 }
 
 
-is_preinstalled() {
-	[ -d "$PREINSTALLED_DIR/$1" ]
+is_valid_name() {
+	echo "$1" | grep -qE '^[a-z0-9-]+$'
+}
+
+is_builtin() {
+	is_valid_name "$1" && [ -d "$BUILTIN_DIR/$1" ]
 }
 
 is_installed() {
-	[ -d "$APPDIR/installed/$1" ]
+	is_valid_name "$1" && [ -d "$APPDIR/installed/$1" ]
 }
 
 is_enabled() {
-	[ -L "$APPDIR/enabled/$1" ]
+	is_valid_name "$1" && [ -L "$APPDIR/enabled/$1" ]
 }
 
 has_systemd() {
-	[ -e "$APPDIR/installed/$1/em-app-$1.service" ]
+	is_installed "$1" && [ -e "$APPDIR/installed/$1/em-app-$1.service" ]
 }
 
 # Prints an error message and exits
@@ -56,12 +60,13 @@ error() {
 
 # Checks that an app is installed and exits with an error message otherwise
 ensure_installed() {
-	is_installed "$1" || error "app '$1' not found"
+	is_installed "$1" || error "app '$1' not found."
 }
 
 # Checks that an app is either installed or there is a leftover enabled symlink
 ensure_installed_or_enabled() {
-	[ -L "$APPDIR/enabled/$app" ] || ensure_installed "$app"
+	local app="$1"
+	( is_valid_name "$app" && [ -L "$APPDIR/enabled/$app" ] ) || ensure_installed "$app"
 }
 
 # Is called with the expected number of args and $#, exits with an error
@@ -71,6 +76,20 @@ ensure_args() {
 		usage
 		exit 1
 	}
+}
+
+
+# Prints the manifest of an installed app
+app_info() {
+	local app="$1"
+	ensure_installed "$app"
+	cat "$APPDIR/installed/$app/manifest.json"
+}
+
+is_essential() {
+	local app="$1"
+	# The essential flag is ignored for non-builtin apps
+	is_builtin "$app" && app_info "$app" | jq -e '.essential' >/dev/null
 }
 
 
@@ -131,12 +150,12 @@ list_enabled() {
 	done
 }
 
-# Registers an preinstalled app as installed
+# Registers an builtin app as installed
 app_register() {
 	local app="$1"
-	is_preinstalled "$app" || error "tried to register app '$app', but it is not preinstalled"
+	is_builtin "$app" || error "tried to register app '$app', but it is not builtin."
 
-	[ -e "$APPDIR/installed/$app" ] || ln -snf "$PREINSTALLED_DIR/$app" "$APPDIR/installed/$app"
+	[ -e "$APPDIR/installed/$app" ] || ln -snf "$BUILTIN_DIR/$app" "$APPDIR/installed/$app"
 }
 
 # Enables an app
@@ -160,6 +179,8 @@ app_disable() {
 	local app="$1"
 	ensure_installed_or_enabled "$app"
 
+	! is_essential "$app" || error "unable to disable essential app '$app'."
+
 	rm -f "$APPDIR/enabled/$app"
 
 	if $OPT_SYSTEMD && systemctl --quiet is-active "em-app-${app}.service"; then
@@ -168,29 +189,35 @@ app_disable() {
 	fi
 }
 
-# Prints the manifest of an installed app
-app_info() {
-	local app="$1"
-	ensure_installed "$app"
-	cat "$APPDIR/installed/$app/manifest.json"
-}
-
 # Prints the current status and manifest information of an installed app
 app_status() {
 	local app="$1"
 	ensure_installed "$app"
 
+	local builtin=null
+	if is_builtin "$app"; then builtin=true; fi
+
 	local enabled=false
 	if is_enabled "$app"; then enabled=true; fi
 
 	app_info "$app" | jq \
+		--argjson builtin "$builtin" \
 		--argjson enabled "$enabled" \
 		'{
 			status: {
+				builtin: $builtin,
 				enabled: $enabled,
-			},
+			} | with_entries(select(.value != null)),
 			info: .,
 		}'
+}
+
+# Prints a dictionaly containing the current status and manifest information of all installed apps
+app_status_all() {
+	local app
+	for app in $(list_installed); do
+		app_status "$app"
+	done | jq -n '[inputs] | map({key: .info.id, value: .}) | from_entries'
 }
 
 # Prints the manifest of an app package
@@ -251,15 +278,19 @@ app_uninstall() {
 	ensure_installed_or_enabled "$app"
 	echo >&2 "Uninstalling $app..."
 
-	app_disable "$app"
+	if is_essential "$app"; then
+		echo >&2 "Note: '$app' is essential, it will not be disabled."
+	else
+		app_disable "$app"
+	fi
 
 	rm -rf "$APPTMP"
 	mkdir -p "$APPTMP"
 	# Move inside the same filesystem to have an atomic operation
 	mv "$APPDIR/installed/$app" "$APPTMP/uninstall"
 
-	if is_preinstalled "$app"; then
-		echo >&2 "Note: '$app' is preinstalled, only uninstalling updates."
+	if is_builtin "$app"; then
+		echo >&2 "Note: '$app' is builtin, only uninstalling updates."
 		app_register "$app"
 	fi
 
@@ -270,7 +301,7 @@ app_uninstall() {
 	rm -rf "$APPTMP"
 }
 
-# Registers all preinstalled apps into the main app dir, removes
+# Registers all builtin apps into the main app dir, removes
 # symlinks for apps that have disappered. New apps are automatically
 # enabled.
 #
@@ -288,25 +319,27 @@ app_sync() {
 	done
 
 	# Remove installed symlinks for apps that are not
-	# preinstalled anymore
+	# builtin anymore
 	for appdir in "$APPDIR"/installed/*; do
 		[ -L "$appdir" ] || continue
 		app="$(basename "$appdir")"
 
-		[ -d "$PREINSTALLED_DIR/$app" ] || rm -f "$appdir"
+		[ -d "$BUILTIN_DIR/$app" ] || rm -f "$appdir"
 	done
 
 	mkdir -p "$APPDIR/installed/"
 
-	# Link preinstalled apps into $APPDIR/installed
-	for appdir in "$PREINSTALLED_DIR"/*; do
+	# Link builtin apps into $APPDIR/installed
+	for appdir in "$BUILTIN_DIR"/*; do
 		# busybox does not have nullglob -
 		# the case that no apps are installed is handled here
-		# (as well as other unexpected files in PREINSTALLED_DIR)
+		# (as well as other unexpected files in BUILTIN_DIR)
 		[ -d "$appdir" ] || continue
 
 		app="$(basename "$appdir")"
-		[ ! -e "$APPDIR/installed/$app" ] || continue
+		if [ -e "$APPDIR/installed/$app" ] && ! is_essential "$app"; then
+			continue
+		fi
 
 		app_register "$app"
 
@@ -391,7 +424,7 @@ get_lock() {
 
 	# Arbitrary lock fd that should be unused by the shell
 	exec 1000>/var/lock/empkg.lock
-	flock -n 1000 || error 'another instance of empkg is active'
+	flock -n 1000 || error 'another instance of empkg is active.'
 }
 
 
@@ -411,8 +444,12 @@ list-enabled)
 	;;
 
 status)
-	ensure_args 1 $#
-	app_status "$1"
+	if [ $# -eq 0 ]; then
+		app_status_all
+	else
+		ensure_args 1 $#
+		app_status "$1"
+	fi
 	;;
 
 info)
