@@ -60,7 +60,7 @@ error() {
 
 # Checks that an app is installed and exits with an error message otherwise
 ensure_installed() {
-	is_installed "$1" || error "app '$1' not found"
+	is_installed "$1" || error "app '$1' not found."
 }
 
 # Checks that an app is either installed or there is a leftover enabled symlink
@@ -139,7 +139,7 @@ list_enabled() {
 # Registers an builtin app as installed
 app_register() {
 	local app="$1"
-	is_builtin "$app" || error "tried to register app '$app', but it is not builtin"
+	is_builtin "$app" || error "tried to register app '$app', but it is not builtin."
 
 	[ -e "$APPDIR/installed/$app" ] || ln -snf "$BUILTIN_DIR/$app" "$APPDIR/installed/$app"
 }
@@ -409,7 +409,7 @@ get_lock() {
 
 	# Arbitrary lock fd that should be unused by the shell
 	exec 1000>/var/lock/empkg.lock
-	flock -n 1000 || error 'another instance of empkg is active'
+	flock -n 1000 || error 'another instance of empkg is active.'
 }
 
 
