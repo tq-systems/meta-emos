@@ -1,7 +1,10 @@
 # Name convention: app recipe names must start with em-app-
 def em_app_get_id(pn):
     import re
-    return re.match(r'^em-app-(.*)$', pn).group(1)
+    m = re.match(r'^em-app-([a-z0-9-]+)$', pn)
+    if not m:
+        bb.error("Invalid app recipe name '%s'. App recipes must be prefixed with em-app-, and only the characters a-z, 0-9 and - are allowed." % pn)
+    return m.group(1)
 
 
 APP_ID ?= "${@em_app_get_id('${PN}')}"
