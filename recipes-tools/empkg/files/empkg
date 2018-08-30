@@ -79,6 +79,20 @@ ensure_args() {
 }
 
 
+# Prints the manifest of an installed app
+app_info() {
+	local app="$1"
+	ensure_installed "$app"
+	cat "$APPDIR/installed/$app/manifest.json"
+}
+
+is_essential() {
+	local app="$1"
+	# The essential flag is ignored for non-builtin apps
+	is_builtin "$app" && app_info "$app" | jq -e '.essential' >/dev/null
+}
+
+
 # Transforms a list of newline-separated strings to a JSON array
 # (unless the --plain option is set)
 output_array() {
@@ -165,19 +179,14 @@ app_disable() {
 	local app="$1"
 	ensure_installed_or_enabled "$app"
 
+	! is_essential "$app" || error "unable to disable essential app '$app'."
+
 	rm -f "$APPDIR/enabled/$app"
 
 	if $OPT_SYSTEMD && systemctl --quiet is-active "em-app-${app}.service"; then
 		systemctl stop "em-app-${app}.service" || true
 		systemctl daemon-reload
 	fi
-}
-
-# Prints the manifest of an installed app
-app_info() {
-	local app="$1"
-	ensure_installed "$app"
-	cat "$APPDIR/installed/$app/manifest.json"
 }
 
 # Prints the current status and manifest information of an installed app
@@ -269,7 +278,11 @@ app_uninstall() {
 	ensure_installed_or_enabled "$app"
 	echo >&2 "Uninstalling $app..."
 
-	app_disable "$app"
+	if is_essential "$app"; then
+		echo >&2 "Note: '$app' is essential, it will not be disabled."
+	else
+		app_disable "$app"
+	fi
 
 	rm -rf "$APPTMP"
 	mkdir -p "$APPTMP"
@@ -324,7 +337,9 @@ app_sync() {
 		[ -d "$appdir" ] || continue
 
 		app="$(basename "$appdir")"
-		[ ! -e "$APPDIR/installed/$app" ] || continue
+		if [ -e "$APPDIR/installed/$app" ] && ! is_essential "$app"; then
+			continue
+		fi
 
 		app_register "$app"
 
