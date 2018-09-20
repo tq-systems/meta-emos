@@ -67,8 +67,7 @@ python do_unpack() {
 
 inherit bundle
 
-LICENSE = "gateware"
-LIC_FILES_CHKSUM = "file://hook.sh;beginline=3;endline=3;md5=5592c71186793d990aedc5988d4e19c2"
+LICENSE = "TQSSLA_V1.0.1"
 
 RDEPENDS_${PN} += "imx28-blupdate"
 
