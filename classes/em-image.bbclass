@@ -11,6 +11,8 @@
 
 inherit core-image
 
+PRODUCT_INFO_PACKAGE ?= "${@'${PN}'.replace('-image-', '-product-info-', 1)}"
+
 # rootfs with 384 MiB (raw disk space)
 IMAGE_ROOTFS_SIZE_em300 = "393216"
 IMAGE_ROOTFS_SIZE_em310 = "393216"
@@ -33,6 +35,7 @@ IMAGE_INSTALL += " \
 		status-led \
 		emos-upgrade \
 		empkg \
+		${PRODUCT_INFO_PACKAGE} \
 		"
 
 IMAGE_INSTALL_append_em300 += " netdev-led"

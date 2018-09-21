@@ -1,12 +1,12 @@
 # em-image-bundle.bbclass: convenience class for image+bundle pairs
 #
-# Inheriting em-image-bundle from a recipe PN will create two recipes:
-# an image em-image-PN and a RAUC bundle em-bundle-PN which includes
-# the image.
+# Inheriting em-image-bundle from a recipe PN will create three recipes:
+# a product-info package em-product-info-PN, an image em-image-PN and a RAUC
+# bundle em-bundle-PN which includes the image.
 
 
 
-BBCLASSEXTEND = "em-image:image em-bundle:bundle"
+BBCLASSEXTEND = "em-product-info:product-info em-image:image em-bundle:bundle"
 
 python em_image_bundle_virtclass_handler () {
     variant = e.data.getVar("BBEXTENDVARIANT")
