@@ -1,0 +1,13 @@
+[Unit]
+Description=Password database (/etc/shadow)
+DefaultDependencies=no
+Conflicts=umount.target
+Requires=emcfg.service
+After=emcfg.service
+Before=local-fs.target umount.target
+
+[Mount]
+What=/run/em/etc/shadow
+Where=/etc/shadow
+Type=none
+Options=bind,ro

@@ -9,7 +9,14 @@ fatal() {
 }
 
 
-[ $$ -eq 1 ] || fatal 'emos-init must run as PID1.'
+add_config() {
+	local file="$1"
+	local src="/cfglog/system/${file}" dest="/etc/${file}"
+	mount --bind "$src" "$dest" || fatal "Failed to bind ${src}."
+}
+
+
+[ $$ -eq 1 ] || fatal 'em-init must run as PID1.'
 
 
 [ -e /dev/console ] || mount -t devtmpfs devtmpfs /dev || fatal '/dev mount failed.'
@@ -20,17 +27,21 @@ exec >/dev/console 2>/dev/console
 mount -t proc proc /proc || fatal '/proc mount failed.'
 mount -t sysfs sysfs /sys || fatal '/sys mount failed.'
 
+# Mount eMMC partitions
 mount -o ro /dev/mmcblk0p9 /auth || fatal '/auth mount failed.'
 mount /dev/mmcblk0p6 /update || fatal '/update mount failed.'
 mount /dev/mmcblk0p7 /cfglog || fatal '/cfglog mount failed.'
 
-mkdir -p /cfglog/etc /cfglog/work || fatal 'Unable to create required overlayfs directories.'
-mount -t overlay \
-	-o lowerdir=/auth/etc:/etc,upperdir=/cfglog/etc,workdir=/cfglog/work \
-	overlay /etc || fatal '/etc overlay mount failed.'
-
 mount /dev/mmcblk0p8 /data || fatal '/data mount failed.'
 mount /dev/mmcblk0p5 /apps || fatal '/apps mount failed.'
+
+
+# Initialize default config
+emcfg init
+
+# Writable (simple) configuration files
+add_config machine-id
+add_config hostname
 
 
 if command -v empkg >/dev/null; then

@@ -32,6 +32,7 @@ IMAGE_INSTALL += " \
 		haveged \
 		status-led \
 		emos-upgrade \
+		emcfg \
 		empkg \
 		"
 

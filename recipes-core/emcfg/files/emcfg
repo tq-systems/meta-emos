@@ -1,0 +1,63 @@
+#!/bin/sh
+
+CFG=/cfglog/system
+RUNETC=/run/em/etc
+
+CMD="$1"; shift
+
+
+cmd_init() {
+	mkdir -p $CFG
+	[ -e $CFG/hostname	] || cp /etc/hostname		$CFG/hostname
+	[ -e $CFG/machine-id	] || touch 			$CFG/machine-id
+	[ -e $CFG/ntp		] || echo 1 >			$CFG/ntp
+	[ -e $CFG/network.json	] || echo '{"mode":"dhcp"}' >	$CFG/network.json
+}
+
+cmd_update_network() {
+	mkdir -p $RUNETC/systemd/network/
+
+	jq -r '
+"[Match]
+Name=eth0
+
+[DHCP]
+ClientIdentifier=mac
+
+[Network]",
+
+if .mode == "static" then
+
+	"DHCP=no",
+	"Address=\(.address)/\(.prefixlen)",
+
+	if .gateway then
+		"Gateway=\(.gateway)"
+	else
+		empty
+	end,
+	(.dns // [] | map("DNS=\(.)") | .[])
+
+else
+
+	"DHCP=ipv4"
+
+end
+	' < $CFG/network.json > $RUNETC/systemd/network/50-wired.network
+}
+
+cmd_update() {
+	em-update-password
+	cmd_update_network
+}
+
+
+case "$CMD" in
+init|update|update_network)
+	"cmd_$CMD"
+	;;
+
+*)
+	echo >&2 'emcfg: unknown command.'
+	exit 1
+esac
