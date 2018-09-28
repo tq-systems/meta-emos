@@ -1,0 +1,8 @@
+[Unit]
+Description=Transient system configuration
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/sbin/emcfg update
