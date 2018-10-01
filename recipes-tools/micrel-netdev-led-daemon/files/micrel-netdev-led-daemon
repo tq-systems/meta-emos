@@ -41,10 +41,14 @@ while true; do
 	status=$(( ($reg1 | $reg2) & 0x4 ))
 	if [ $status -eq 4 ]; then
 		# Link is up
-		echo link tx rx >$LED/mode
+		echo 1 >$LED/link
+		echo 1 >$LED/rx
+		echo 1 >$LED/tx
 	else
 		# Link is down
-		echo none >$LED/mode
+		echo 0 >$LED/link
+		echo 0 >$LED/rx
+		echo 0 >$LED/tx
 	fi
 
 	# Wait for GPIO interrupt
