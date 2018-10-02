@@ -37,7 +37,7 @@ do_install() {
 	install -m 0755 emcfg-generator ${D}${systemd_unitdir}/system-generators/
 }
 
-RDEPENDS_${PN} += "jq"
+RDEPENDS_${PN} += "jq u-boot-fslc-fw-utils"
 
 FILES_${PN} += " \
 	${sysconfdir}/tmpfiles.d/00-emos-log.conf \

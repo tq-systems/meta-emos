@@ -1,14 +1,24 @@
 #!/bin/sh
 
+PRODUCT_INFO=/etc/product-info.json
 CFG=/cfglog/system
 RUNETC=/run/em/etc
 
 CMD="$1"; shift
 
 
+get_serial() {
+	fw_printenv -n serial
+}
+
+get_default_hostname() {
+	local product_code="$(jq -r '.code' <"$PRODUCT_INFO")"
+	echo "${product_code}-$(get_serial)" | tr 'A-Z' 'a-z'
+}
+
 cmd_init() {
 	mkdir -p $CFG
-	[ -e $CFG/hostname	] || cp /etc/hostname		$CFG/hostname
+	[ -e $CFG/hostname	] || get_default_hostname >	$CFG/hostname
 	[ -e $CFG/machine-id	] || touch 			$CFG/machine-id
 	[ -e $CFG/ntp		] || echo 1 >			$CFG/ntp
 	[ -e $CFG/network.json	] || echo '{"mode":"dhcp"}' >	$CFG/network.json
