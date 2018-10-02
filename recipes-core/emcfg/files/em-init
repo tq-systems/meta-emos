@@ -50,7 +50,7 @@ add_config hostname
 
 if command -v empkg >/dev/null; then
         # Sync new preinstalled apps in rootfs to appfs
-        empkg --no-lock --no-systemd sync
+        empkg --no-systemd sync
 fi
 
 
