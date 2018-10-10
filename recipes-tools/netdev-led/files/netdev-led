@@ -9,4 +9,6 @@ LED=/sys/class/leds/energymanager:green:network
 
 echo netdev >$LED/trigger
 echo eth0 >$LED/device_name
-echo "link tx rx" >$LED/mode
+echo 1 >$LED/link
+echo 1 >$LED/rx
+echo 1 >$LED/tx
