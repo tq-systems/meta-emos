@@ -362,12 +362,12 @@ update_www() {
 
 	for app in $(list_enabled); do
 		local index="$APPDIR/installed/$app/www/index.js"
-		[ -e "$index" ] || continue
+		[ -r "$index" ] || continue
 
 		local wwwdir="$(dirname "$index")"
 		ln -snf "$wwwdir" "$WWWDIR/$app"
 
-		echo "$app"
+		echo "$app/index.js?$(md5sum "$index" | awk '{print $1}')"
 	done | jq -nRc '[inputs]' > "$WWWAPPS".tmp
 	mv -f "$WWWAPPS.tmp" "$WWWAPPS"
 
