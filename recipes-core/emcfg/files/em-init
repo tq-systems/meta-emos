@@ -29,12 +29,12 @@ mount -t sysfs sysfs /sys || fatal '/sys mount failed.'
 mount -t tmpfs -o nosuid,nodev,mode=755 run /run || fatal '/run mount failed.'
 
 # Mount eMMC partitions
-mount -o ro /dev/mmcblk0p9 /auth || fatal '/auth mount failed.'
-mount /dev/mmcblk0p6 /update || fatal '/update mount failed.'
-mount /dev/mmcblk0p7 /cfglog || fatal '/cfglog mount failed.'
+mount -o nosuid,nodev,ro /dev/mmcblk0p9 /auth || fatal '/auth mount failed.'
+mount -o nosuid,nodev /dev/mmcblk0p6 /update || fatal '/update mount failed.'
+mount -o nosuid,nodev /dev/mmcblk0p7 /cfglog || fatal '/cfglog mount failed.'
 
-mount /dev/mmcblk0p8 /data || fatal '/data mount failed.'
-mount /dev/mmcblk0p5 /apps || fatal '/apps mount failed.'
+mount -o nosuid,nodev /dev/mmcblk0p8 /data || fatal '/data mount failed.'
+mount -o nosuid,nodev /dev/mmcblk0p5 /apps || fatal '/apps mount failed.'
 
 
 mkdir -p /run/lock
