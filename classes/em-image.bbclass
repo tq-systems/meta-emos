@@ -62,6 +62,10 @@ IMAGE_INSTALL += " \
 		em-app-smart-meter \
 		"
 
+# Install u-boot to rootfs only for shipping license information
+IMAGE_INSTALL_append_em310 += " u-boot-fslc"
+IMAGE_INSTALL_append_em300 += " u-boot-fslc"
+
 BAD_RECOMMENDATIONS += " \
                       busybox-syslog \
                       busybox-udhcpc \
@@ -79,9 +83,6 @@ dropbear_rsakey_dir_hook () {
 }
 ROOTFS_POSTPROCESS_COMMAND += "dropbear_rsakey_dir_hook; "
 IMAGE_FEATURES += "read-only-rootfs"
-
-
-EXTRA_IMAGEDEPENDS += "u-boot"
 
 COPY_LIC_MANIFEST = "1"
 COPY_LIC_DIRS = "1"
