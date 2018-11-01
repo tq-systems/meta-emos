@@ -2,6 +2,7 @@
 
 PRODUCT_INFO=/etc/product-info.json
 CFG=/cfglog/system
+APPCFG=/cfglog/apps
 RUNETC=/run/em/etc
 
 CMD="$1"; shift
@@ -61,9 +62,35 @@ cmd_update() {
 	cmd_update_network
 }
 
+cmd_reset_password() {
+	logger 'Resetting password configuration.'
+
+	systemctl stop web-login
+	# This resets all users - if we ever allow adding multiple users, we should not just delete the whole file
+	rm $APPCFG/web-login/users.json
+	systemctl start web-login
+
+	rm -f $CFG/password
+	em-update-password
+}
+
+cmd_reset_network() {
+	logger 'Resetting network configuration.'
+
+	rm -f $CFG/network.json
+	cmd_init
+	cmd_update_network
+	systemctl restart systemd-networkd.service
+}
+
+cmd_debug_access() {
+	logger 'Enabling SSH debug access.'
+
+	systemctl start dropbear.socket
+}
 
 case "$CMD" in
-init|update|update_network)
+init|update|update_network|reset_password|reset_network|debug_access)
 	"cmd_$CMD"
 	;;
 
