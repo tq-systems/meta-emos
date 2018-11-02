@@ -9,6 +9,10 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
 DEPENDS = "libgcrypt"
 
+PR = "r1"
+
+CFLAGS_append = "-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+
 do_install() {
 	install -d ${D}${bindir}
 	install -m 0755 imx28-blupdate ${D}${bindir}/imx28-blupdate
