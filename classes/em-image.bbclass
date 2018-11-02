@@ -36,6 +36,7 @@ IMAGE_INSTALL += " \
 		emos-upgrade \
 		emcfg \
 		empkg \
+		button-handler \
 		${PRODUCT_INFO_PACKAGE} \
 		"
 
