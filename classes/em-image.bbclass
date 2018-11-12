@@ -45,6 +45,8 @@ IMAGE_INSTALL_append_em300 += " netdev-led"
 IMAGE_INSTALL_append_em310 += " micrel-switch-tool"
 IMAGE_INSTALL_append_em310 += " micrel-netdev-led-daemon"
 
+IMAGE_INSTALL_append_em300 += " flash-scan"
+IMAGE_INSTALL_append_em310 += " flash-scan"
 
 # System services and app container; some will become apps eventually
 IMAGE_INSTALL += " \
