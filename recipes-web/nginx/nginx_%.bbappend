@@ -5,6 +5,7 @@ SRC_URI_append_emos = " \
     file://nginx-keygen.conf \
     file://no_cache.conf \
     file://static_cache.conf \
+    file://ssl.conf \
 "
 
 RDEPENDS_${PN}_append_emos = " faketime"
@@ -18,6 +19,7 @@ do_install_append_emos() {
 
     install -m 0644 ${WORKDIR}/no_cache.conf ${D}${sysconfdir}/nginx/
     install -m 0644 ${WORKDIR}/static_cache.conf ${D}${sysconfdir}/nginx/
+    install -m 0644 ${WORKDIR}/ssl.conf ${D}${sysconfdir}/nginx/
 }
 
 FILES_${PN}_append_emos = " ${systemd_unitdir}/system/nginx.service.d/"
