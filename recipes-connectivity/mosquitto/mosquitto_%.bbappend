@@ -1,7 +1,8 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
-SRC_URI += " \
+SRC_URI_append_emos = " \
 	file://mosquitto.conf \
+	file://mosquitto.service \
 "
 
 LICENSE = "EDL-1.0"
@@ -11,7 +12,9 @@ LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=62ddc846179e908dc0c8efec4a42ef20 \
 "
 
 
-do_install_append() {
-	install -d			${D}${sysconfdir}
-	install -m 0644 mosquitto.conf	${D}${sysconfdir}/mosquitto/mosquitto.conf
+do_install_append_emos() {
+	install -d					${D}${sysconfdir}
+	install -m 0644 ${WORKDIR}/mosquitto.conf	${D}${sysconfdir}/mosquitto/
+
+	install -m 0644 ${WORKDIR}/mosquitto.service	${D}${systemd_unitdir}/system/
 }
