@@ -25,6 +25,24 @@ APP_LIC_FILE = ""
 DEPENDS_append = " jq-native"
 
 
+em_app_configure_backend() {
+    :
+}
+em_app_configure_frontend() {
+    :
+}
+em_app_configure() {
+    :
+}
+
+python do_configure() {
+    bb.build.exec_func('em_app_configure_backend', d)
+    bb.build.exec_func('em_app_configure_frontend', d)
+    bb.build.exec_func('em_app_configure', d)
+}
+unset do_configure[export_func]
+
+
 em_app_compile_backend() {
     :
 }
