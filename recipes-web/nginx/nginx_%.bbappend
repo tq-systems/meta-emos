@@ -15,7 +15,7 @@ do_install_append_emos() {
     install -m 0755 ${WORKDIR}/nginx-keygen ${D}${sbindir}/nginx-keygen
 
     install -d ${D}${systemd_unitdir}/system/nginx.service.d/
-    install -m 0755 ${WORKDIR}/nginx-keygen.conf ${D}${systemd_unitdir}/system/nginx.service.d/
+    install -m 0644 ${WORKDIR}/nginx-keygen.conf ${D}${systemd_unitdir}/system/nginx.service.d/
 
     install -m 0644 ${WORKDIR}/no_cache.conf ${D}${sysconfdir}/nginx/
     install -m 0644 ${WORKDIR}/static_cache.conf ${D}${sysconfdir}/nginx/
