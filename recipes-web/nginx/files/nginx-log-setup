@@ -1,0 +1,8 @@
+#!/bin/sh
+
+RUN_LOG=/run/log/nginx
+NGINX_LOG=/var/log/nginx
+
+rm -rf "$NGINX_LOG"
+mkdir -p "$RUN_LOG"
+ln -s "$RUN_LOG" "$NGINX_LOG"
