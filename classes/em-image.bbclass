@@ -33,6 +33,7 @@ IMAGE_INSTALL += " \
 		less \
 		haveged \
 		status-led \
+		netdev-led \
 		emos-upgrade \
 		emcfg \
 		empkg \
@@ -40,10 +41,7 @@ IMAGE_INSTALL += " \
 		${PRODUCT_INFO_PACKAGE} \
 		"
 
-IMAGE_INSTALL_append_em300 += " netdev-led"
-
-IMAGE_INSTALL_append_em310 += " micrel-switch-tool"
-IMAGE_INSTALL_append_em310 += " micrel-netdev-led-daemon"
+IMAGE_INSTALL_append_em310 += " micrel-netdev-daemon"
 
 IMAGE_INSTALL_append_em300 += " flash-scan"
 IMAGE_INSTALL_append_em310 += " flash-scan"
