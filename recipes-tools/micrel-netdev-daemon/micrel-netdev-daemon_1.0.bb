@@ -10,14 +10,14 @@ RDEPENDS_${PN} = "micrel-switch-tool gpio-wait"
 PR = "r3"
 
 SRC_URI = " \
-	file://micrel-netdev-led-daemon \
-	file://micrel-netdev-led-daemon.service \
+	file://micrel-netdev-daemon \
+	file://micrel-netdev-daemon.service \
 	file://LICENSE \
 "
 
 inherit systemd
 
-SYSTEMD_SERVICE_${PN} = "micrel-netdev-led-daemon.service"
+SYSTEMD_SERVICE_${PN} = "micrel-netdev-daemon.service"
 
 S = "${WORKDIR}"
 
@@ -25,8 +25,8 @@ do_install() {
 	install -d ${D}${bindir}
 	install -d ${D}${systemd_unitdir}/system
 
-	install -m 0755 micrel-netdev-led-daemon			${D}${bindir}
-	install -m 0644 ${WORKDIR}/micrel-netdev-led-daemon.service	${D}${systemd_unitdir}/system
+	install -m 0755 micrel-netdev-daemon			${D}${bindir}
+	install -m 0644 ${WORKDIR}/micrel-netdev-daemon.service	${D}${systemd_unitdir}/system
 }
 
-COMPATIBLE_MACHINE = "(em300|em310)"
+COMPATIBLE_MACHINE = "em310"

@@ -9,7 +9,6 @@
 set -e
 
 GPIO_INTR=6
-LED=/sys/class/leds/energymanager:green:network
 
 # Configure GPIO_INTR
 if [ ! -d /sys/class/gpio/gpio$GPIO_INTR ]; then
@@ -18,18 +17,16 @@ fi
 echo in >/sys/class/gpio/gpio$GPIO_INTR/direction
 echo falling >/sys/class/gpio/gpio$GPIO_INTR/edge
 
-# Setup LED
-echo netdev > $LED/trigger
-echo eth0 > $LED/device_name
-
 cleanup() {
-	echo none >$LED/mode
 	kill $(jobs -p) >/dev/null 2>&1
 }
 trap "cleanup" INT TERM EXIT
 
 # Enable "P1 or P2 link change" interrupt
 micrel smi 0xBB 0x80
+
+# Do not restart networkd on the initial run
+restart=false
 
 while true; do
 	# Clear all interrupts (w1c)
@@ -40,16 +37,14 @@ while true; do
 	reg2=$(micrel --raw mdio 2 1)
 	status=$(( ($reg1 | $reg2) & 0x4 ))
 	if [ $status -eq 4 ]; then
-		# Link is up
-		echo 1 >$LED/link
-		echo 1 >$LED/rx
-		echo 1 >$LED/tx
+		if $restart; then
+			systemctl restart systemd-networkd.service
+		fi
 	else
-		# Link is down
-		echo 0 >$LED/link
-		echo 0 >$LED/rx
-		echo 0 >$LED/tx
+		ip link set eth0 down
 	fi
+
+	restart=true
 
 	# Wait for GPIO interrupt
 	# Run gpio-wait in background to catch signals ourself.
