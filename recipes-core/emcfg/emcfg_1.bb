@@ -12,6 +12,7 @@ SRC_URI = " \
 	file://em-init \
 	file://em-update-password \
 	file://00-emos-log.conf \
+	file://sysctl.conf \
 	file://emcfg.service \
 	file://etc-shadow.mount \
 	file://emcfg-generator \
@@ -25,6 +26,9 @@ do_install() {
 
 	install -d ${D}${sysconfdir}/tmpfiles.d
 	install -m 0644 00-emos-log.conf ${D}${sysconfdir}/tmpfiles.d/
+
+	install -d ${D}${sysconfdir}/sysctl.d
+	install -m 0644 sysctl.conf ${D}${sysconfdir}/sysctl.d/80-emos.conf
 
 	install -d ${D}${sysconfdir}/systemd/network
 	ln -s /run/em/etc/systemd/network/50-wired.network ${D}${sysconfdir}/systemd/network/
