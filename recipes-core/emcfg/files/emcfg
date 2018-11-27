@@ -14,7 +14,7 @@ get_serial() {
 
 get_default_hostname() {
 	local product_code="$(jq -r '.code' <"$PRODUCT_INFO")"
-	echo "${product_code}-$(get_serial)" | tr 'A-Z' 'a-z'
+	echo "${product_code}-$(get_serial)"
 }
 
 cmd_init() {
