@@ -35,7 +35,8 @@ Name=eth0
 [DHCP]
 ClientIdentifier=mac
 
-[Network]",
+[Network]
+LinkLocalAddressing=yes",
 
 if .mode == "static" then
 
