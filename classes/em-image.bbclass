@@ -61,6 +61,7 @@ IMAGE_INSTALL += " \
 IMAGE_INSTALL += " \
 		em-app-device-settings \
 		em-app-smart-meter \
+		em-app-upnp \
 		"
 
 # Install u-boot to rootfs only for shipping license information
