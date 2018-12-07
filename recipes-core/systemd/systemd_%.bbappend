@@ -7,6 +7,7 @@ SRC_URI_append = " \
 
 do_install_append() {
 	# We manage timesyncd enable status in emcfg
+	rm ${D}${sysconfdir}/systemd/timesyncd.conf
 	rm ${D}${sysconfdir}/systemd/system/sysinit.target.wants/systemd-timesyncd.service
 }
 

@@ -31,6 +31,7 @@ do_install() {
 	install -m 0644 sysctl.conf ${D}${sysconfdir}/sysctl.d/80-emos.conf
 
 	install -d ${D}${sysconfdir}/systemd/network
+	ln -s /run/em/etc/systemd/timesyncd.conf ${D}${sysconfdir}/systemd/
 	ln -s /run/em/etc/systemd/network/50-wired.network ${D}${sysconfdir}/systemd/network/
 
 	install -d ${D}${systemd_unitdir}/system/sysinit.target.wants/

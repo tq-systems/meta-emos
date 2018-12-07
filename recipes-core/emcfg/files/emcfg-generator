@@ -1,15 +1,12 @@
 #!/bin/sh
 
-CONFIG='/cfglog/system/ntp'
+CONFIG='/cfglog/system/ntp.json'
 WANTDIR="$1/sysinit.target.wants"
 SERVICE='systemd-timesyncd.service'
 
-enable=1
 if [ -r "$CONFIG" ]; then
-	enable="$(cat "$CONFIG")"
+	jq -e '.enable' <"$CONFIG" >/dev/null || exit 0
 fi
-
-[ "$enable" -ne 0 ] || exit 0
 
 mkdir -p "$WANTDIR" || exit 1
 ln -s "/lib/systemd/system/$SERVICE" "$WANTDIR/"
