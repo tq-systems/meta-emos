@@ -8,8 +8,14 @@ for app in $(empkg --plain list-enabled); do
 	local service="/apps/installed/$app/em-app-$app.service"
 	[ -e "$service" ] || continue
 
-	ln -s "$service" "$1/em-app-$app.service" && \
-		ln -s "$1/em-app-$app.service" "$WANTDIR/em-app-$app.service"
+	ln -s "$service" "$1/em-app-$app.service"
+done
+
+for app in $(empkg --plain list-autostart); do
+	local service="/apps/installed/$app/em-app-$app.service"
+	[ -e "$1/em-app-$app.service" ] || continue
+
+	ln -s "$1/em-app-$app.service" "$WANTDIR/em-app-$app.service"
 done
 
 exit 0
