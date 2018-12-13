@@ -22,6 +22,7 @@ usage() {
 Usage: empkg help
        empkg list-installed
        empkg list-enabled
+       empkg list-autostart
        empkg status [<app>]
        empkg info <pkg>
        empkg install <pkg>
@@ -91,6 +92,12 @@ is_essential() {
 	is_builtin "$app" && app_info "$app" | jq -e '.essential' >/dev/null
 }
 
+is_autostart() {
+	local app="$1"
+	# The autostart flag defaults to true
+	is_enabled "$app" && app_info "$app" | jq -e '.autostart != false' >/dev/null
+}
+
 
 # Transforms a list of newline-separated strings to a JSON array
 # (unless the --plain option is set)
@@ -145,6 +152,15 @@ list_enabled() {
 	local app
 	for app in $(list_installed); do
 		is_enabled "$app" || continue
+		echo "$app"
+	done
+}
+
+# Prints the names of all apps that autostart their backend services, separated by newlines
+list_autostart() {
+	local app
+	for app in $(list_installed); do
+		is_autostart "$app" || continue
 		echo "$app"
 	done
 }
@@ -434,6 +450,10 @@ list-installed)
 
 list-enabled)
 	list_enabled | output_array
+	;;
+
+list-autostart)
+	list_autostart | output_array
 	;;
 
 status)

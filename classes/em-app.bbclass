@@ -10,6 +10,7 @@ def em_app_get_id(pn):
 APP_ID ?= "${@em_app_get_id('${PN}')}"
 APP_VER ?= "${PKGV}${@ '' if '${PKGR}' == 'r0' else '-${PKGR}'}"
 APP_ESSENTIAL ?= "0"
+APP_AUTOSTART ?= "1"
 
 # This is the root directory for preinstalled apps
 # They will be symlinked into /apps/installed automatically
@@ -83,13 +84,15 @@ em_app_install_manifest() {
         --arg version '${APP_VER}' \
         --arg arch '${PACKAGE_ARCH}' \
         --argjson essential '${APP_ESSENTIAL}' \
+        --argjson autostart '${APP_AUTOSTART}' \
         --arg name '${APP_NAME}' \
         --arg description '${DESCRIPTION}' \
         '{
             id: $id,
             version: $version,
             arch: $arch,
-            essential: ($essential == 1 // null),
+            essential: (if $essential == 1 then true else null end),
+            autostart: (if $autostart == 0 then false else null end),
             name: $name,
             description: $description,
         } | with_entries(select(.value != null))' \
