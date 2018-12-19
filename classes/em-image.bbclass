@@ -52,13 +52,13 @@ IMAGE_INSTALL += " \
 		nginx \
 		teridiand \
 		web-login \
-		data-transfer \
 		sensor-measurement \
 		web-frontend \
 		"
 
 # Preinstalled apps
 IMAGE_INSTALL += " \
+		em-app-data-transfer \
 		em-app-device-settings \
 		em-app-smart-meter \
 		em-app-upnp \
