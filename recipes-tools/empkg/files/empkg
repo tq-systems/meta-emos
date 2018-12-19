@@ -10,6 +10,7 @@ APPTMP="$APPDIR/tmp"
 WWWDIR="$APPDIR/www"
 WWWAPPS="$WWWDIR/apps.json"
 LICDIR="$APPDIR/licenses"
+DBUSDIR="$APPDIR/dbus"
 
 
 OPT_ENABLE=true
@@ -407,6 +408,24 @@ update_licenses() {
 	sync
 }
 
+update_dbus() {
+	mkdir -p "$DBUSDIR"
+
+	local conf app
+
+	for conf in "$DBUSDIR"/*; do
+		app="$(basename "$conf" .conf)"
+		is_enabled "$app" || rm -f "$conf"
+	done
+
+	for app in $(list_enabled); do
+		conf="$APPDIR/installed/$app/dbus.conf"
+		[ -r "$conf" ] || continue
+
+		cp -f "$conf" "$DBUSDIR/$app.conf.new"
+		mv -f "$DBUSDIR/$app.conf.new" "$DBUSDIR/$app.conf"
+	done
+}
 
 while [ "${1:0:1}" = '-' ]; do
 	arg="$1"; shift
@@ -476,6 +495,7 @@ install)
 	pkg_install "$1"
 	update_www
 	update_licenses
+	update_dbus
 	;;
 
 uninstall)
@@ -484,6 +504,7 @@ uninstall)
 	app_uninstall "$1"
 	update_www
 	update_licenses
+	update_dbus
 	;;
 
 enable)
@@ -491,6 +512,7 @@ enable)
 	get_lock
 	app_enable "$1"
 	update_www
+	update_dbus
 	;;
 
 disable)
@@ -498,6 +520,7 @@ disable)
 	get_lock
 	app_disable "$1"
 	update_www
+	update_dbus
 	;;
 
 sync)
@@ -505,6 +528,7 @@ sync)
 	app_sync
 	update_www
 	update_licenses
+	update_dbus
 	;;
 
 *)
