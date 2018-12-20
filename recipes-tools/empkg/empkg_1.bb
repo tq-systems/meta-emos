@@ -9,6 +9,7 @@ SRC_URI = " \
 	file://LICENSE \
 	file://empkg \
 	file://em-app-generator \
+	file://empkg.conf \
 "
 
 S = "${WORKDIR}"
@@ -21,6 +22,9 @@ do_install() {
 
 	install -d ${D}${systemd_unitdir}/system-generators
 	install -m 0755 em-app-generator ${D}${systemd_unitdir}/system-generators/
+
+	install -d ${D}${datadir}/dbus-1/system.d
+	install -m 0644 empkg.conf ${D}${datadir}/dbus-1/system.d/
 }
 
-FILES_${PN} += "${systemd_unitdir}/system-generators/em-app-generator"
+FILES_${PN} += "${systemd_unitdir}/system-generators/em-app-generator ${datadir}/dbus-1/system.d/empkg.conf"
