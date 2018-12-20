@@ -76,10 +76,10 @@ cmd_update() {
 cmd_reset_password() {
 	logger 'Resetting password configuration.'
 
-	systemctl stop web-login
+	systemctl stop em-app-web-login
 	# This resets all users - if we ever allow adding multiple users, we should not just delete the whole file
 	rm $APPCFG/web-login/users.json
-	systemctl start web-login
+	systemctl start em-app-web-login
 
 	rm -f $CFG/password
 	em-update-password

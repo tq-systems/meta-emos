@@ -51,7 +51,6 @@ IMAGE_INSTALL += " \
 		mosquitto \
 		nginx \
 		teridiand \
-		web-login \
 		sensor-measurement \
 		web-frontend \
 		"
@@ -62,6 +61,7 @@ IMAGE_INSTALL += " \
 		em-app-device-settings \
 		em-app-smart-meter \
 		em-app-upnp \
+		em-app-web-login \
 		"
 
 # Install u-boot to rootfs only for shipping license information
