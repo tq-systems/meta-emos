@@ -3,6 +3,13 @@
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
 
+DEV_APPS=/dev/mmcblk0p5
+DEV_UPDATE=/dev/mmcblk0p6
+DEV_CFGLOG=/dev/mmcblk0p7
+DEV_DATA=/dev/mmcblk0p8
+DEV_AUTH=/dev/mmcblk0p9
+
+
 fatal() {
 	echo >&2 "$1"
 	exit 1
@@ -13,6 +20,18 @@ add_config() {
 	local file="$1"
 	local src="/cfglog/system/${file}" dest="/etc/${file}"
 	mount --bind "$src" "$dest" || fatal "Failed to bind ${src}."
+}
+
+factory_reset() {
+	echo >&2 'Performing factory reset.'
+
+	# Gather entropy for mkfs.ext4
+	haveged
+
+	mkfs.ext4 -Fvj $DEV_APPS
+	mkfs.ext4 -Fvj $DEV_UPDATE
+	mkfs.ext4 -Fvj $DEV_CFGLOG
+	mkfs.ext4 -Fvj $DEV_DATA
 }
 
 
@@ -29,12 +48,19 @@ mount -t sysfs sysfs /sys || fatal '/sys mount failed.'
 mount -t tmpfs -o nosuid,nodev,mode=755 run /run || fatal '/run mount failed.'
 
 # Mount eMMC partitions
-mount -o nosuid,nodev,ro /dev/mmcblk0p9 /auth || fatal '/auth mount failed.'
-mount -o nosuid,nodev /dev/mmcblk0p6 /update || fatal '/update mount failed.'
-mount -o nosuid,nodev /dev/mmcblk0p7 /cfglog || fatal '/cfglog mount failed.'
+mount -o nosuid,nodev $DEV_UPDATE /update || fatal '/update mount failed.'
 
-mount -o nosuid,nodev /dev/mmcblk0p8 /data || fatal '/data mount failed.'
-mount -o nosuid,nodev /dev/mmcblk0p5 /apps || fatal '/apps mount failed.'
+if [ -e /update/factory-reset ]; then
+	umount /update
+	factory_reset
+	reboot -f
+fi
+
+mount -o nosuid,nodev,ro $DEV_AUTH /auth || fatal '/auth mount failed.'
+mount -o nosuid,nodev $DEV_CFGLOG /cfglog || fatal '/cfglog mount failed.'
+
+mount -o nosuid,nodev $DEV_DATA /data || fatal '/data mount failed.'
+mount -o nosuid,nodev $DEV_APPS /apps || fatal '/apps mount failed.'
 
 
 mkdir -p /run/lock

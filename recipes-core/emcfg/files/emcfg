@@ -100,8 +100,22 @@ cmd_debug_access() {
 	systemctl start dropbear.socket
 }
 
+cmd_factory_reset() {
+	logger 'Performing factory reset.'
+
+	touch /update/factory-reset
+	reboot
+}
+
 case "$CMD" in
-init|update|update_network|update_ntp|reset_password|reset_network|debug_access)
+init|\
+update|\
+update_network|\
+update_ntp|\
+reset_password|\
+reset_network|\
+debug_access|\
+factory_reset)
 	"cmd_$CMD"
 	;;
 
