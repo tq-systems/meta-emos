@@ -1,9 +1,9 @@
 DESCRIPTION="Updates LED netdev trigger mode according to link status of Micrel KSZ8863 switch."
 SECTION="tools"
 
-LICENSE = "TQSSLA_V1.0.1"
-LIC_FILES_CHKSUM = "file://${WORKDIR}/LICENSE;md5=52c97447b5d8ae219abdddeb738b3140"
-SRC_DISTRIBUTE_LICENSES += "TQSSLA_V1.0.1"
+LICENSE = "TQSSLA_V1.0.2"
+LIC_FILES_CHKSUM = "file://${WORKDIR}/LICENSE;md5=5a77156d011829e57ffe26e62f07ff2d"
+SRC_DISTRIBUTE_LICENSES += "TQSSLA_V1.0.2"
 
 RDEPENDS_${PN} = "micrel-switch-tool gpio-wait"
 

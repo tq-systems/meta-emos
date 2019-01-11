@@ -67,7 +67,7 @@ python do_unpack() {
 
 inherit bundle
 
-LICENSE = "TQSSLA_V1.0.1"
+LICENSE = "TQSSLA_V1.0.2"
 
 RDEPENDS_${PN} += "imx28-blupdate"
 

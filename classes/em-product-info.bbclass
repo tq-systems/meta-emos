@@ -1,5 +1,5 @@
 DECSCRIPTION = "Product information"
-LICENSE = "TQSSLA_V1.0.1"
+LICENSE = "TQSSLA_V1.0.2"
 
 PRODUCT_MANUFACTURER ?= "TQ-Systems GmbH"
 
