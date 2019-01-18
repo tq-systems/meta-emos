@@ -21,3 +21,6 @@ python em_image_bundle_virtclass_handler () {
 
 addhandler em_image_bundle_virtclass_handler
 em_image_bundle_virtclass_handler[eventmask] = "bb.event.RecipePreFinalise"
+
+IMAGE_VARIANT_COMPATIBLE ?= "${IMAGE_VARIANT}"
+IMAGE_COMPATIBLE = "${MACHINE}/${IMAGE_VARIANT_COMPATIBLE}"
