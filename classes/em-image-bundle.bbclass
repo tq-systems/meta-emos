@@ -9,11 +9,14 @@
 BBCLASSEXTEND = "em-product-info:product-info em-image:image em-bundle:bundle"
 
 python em_image_bundle_virtclass_handler () {
-    variant = e.data.getVar("BBEXTENDVARIANT")
-    if variant is None:
+    recipe_type = e.data.getVar("BBEXTENDVARIANT")
+    if recipe_type is None:
         raise bb.parse.SkipPackage("Unextended em-image-bundle")
 
-    e.data.setVar('PN', 'em-%s-%s' % (variant, e.data.getVar('PN', False)))
+    image_variant = e.data.getVar('PN', False)
+
+    e.data.setVar('IMAGE_VARIANT', image_variant)
+    e.data.setVar('PN', 'em-%s-%s' % (recipe_type, image_variant))
 }
 
 addhandler em_image_bundle_virtclass_handler

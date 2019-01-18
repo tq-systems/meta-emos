@@ -75,7 +75,7 @@ RAUC_BUNDLE_COMPATIBLE = "${MACHINE}"
 RAUC_BUNDLE_SLOTS = "rootfs u-boot"
 RAUC_BUNDLE_HOOKS[file] = "hook.sh"
 
-RAUC_SLOT_rootfs ?= "${@'${PN}'.replace('-bundle-', '-image-', 1)}"
+RAUC_SLOT_rootfs ?= "em-image-${IMAGE_VARIANT}"
 
 RAUC_SLOT_u-boot = "u-boot"
 RAUC_SLOT_u-boot[fstype] = "sb"

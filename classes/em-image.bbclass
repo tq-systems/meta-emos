@@ -11,7 +11,7 @@
 
 inherit core-image
 
-PRODUCT_INFO_PACKAGE ?= "${@'${PN}'.replace('-image-', '-product-info-', 1)}"
+PRODUCT_INFO_PACKAGE ?= "em-product-info-${IMAGE_VARIANT}"
 
 # rootfs with 384 MiB (raw disk space)
 IMAGE_ROOTFS_SIZE_em300 = "393216"
