@@ -1,7 +1,11 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
-RAUC_KEYRING_FILE ?= "${@bb.utils.which(d.getVar('BBPATH'), 'files/emos/rauc/ca.cert.pem')}"
+# Explicitly set RAUC_KEYRING_FILE here - Overrides of RAUC_KEYRING_FILE from
+# local.conf/cmdline should affect the product-info package only
+RAUC_KEYRING_FILE = "ca.cert.pem"
 
 do_install_append() {
-	sed -i "s^@MACHINE@^${MACHINE}^g" ${D}${sysconfdir}/rauc/system.conf
+	# Remove configuration and keyring: we add this in our product-info package
+	rm ${D}${sysconfdir}/rauc/system.conf
+	rm ${D}${sysconfdir}/rauc/${RAUC_KEYRING_FILE}
 }

@@ -71,15 +71,12 @@ LICENSE = "TQSSLA_V1.0.2"
 
 RDEPENDS_${PN} += "imx28-blupdate"
 
-RAUC_BUNDLE_COMPATIBLE = "${MACHINE}"
+RAUC_BUNDLE_COMPATIBLE = "${IMAGE_COMPATIBLE}"
 RAUC_BUNDLE_SLOTS = "rootfs u-boot"
 RAUC_BUNDLE_HOOKS[file] = "hook.sh"
 
-RAUC_SLOT_rootfs ?= "${@'${PN}'.replace('-bundle-', '-image-', 1)}"
+RAUC_SLOT_rootfs ?= "em-image-${IMAGE_VARIANT}"
 
 RAUC_SLOT_u-boot = "u-boot"
 RAUC_SLOT_u-boot[fstype] = "sb"
 RAUC_SLOT_u-boot[hooks] = "install"
-
-RAUC_KEY_FILE ?= "${@bb.utils.which(d.getVar('BBPATH'), 'files/emos/rauc/key.pem')}"
-RAUC_CERT_FILE ?= "${@bb.utils.which(d.getVar('BBPATH'), 'files/emos/rauc/ca.cert.pem')}"
