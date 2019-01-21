@@ -24,6 +24,7 @@ bootloader=uboot
 
 [keyring]
 path=/etc/rauc/ca.cert.pem
+use-bundle-signing-time=true
 
 [slot.u-boot.0]
 device=/dev/mmcblk0

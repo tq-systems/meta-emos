@@ -78,5 +78,6 @@ RAUC_BUNDLE_HOOKS[file] = "hook.sh"
 RAUC_SLOT_rootfs ?= "em-image-${IMAGE_VARIANT}"
 
 RAUC_SLOT_u-boot = "u-boot"
-RAUC_SLOT_u-boot[fstype] = "sb"
+RAUC_SLOT_u-boot[type] = "boot"
+RAUC_SLOT_u-boot[file] = "u-boot-${MACHINE}.sb"
 RAUC_SLOT_u-boot[hooks] = "install"
