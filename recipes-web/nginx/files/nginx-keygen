@@ -5,6 +5,8 @@ CERTDIR=/cfglog/system/ssl
 KEYFILE="$CERTDIR/default.key"
 CERTFILE="$CERTDIR/default.crt"
 
+CONFFILE="/etc/ssl/openssl-em.cnf"
+
 SUBJ="/CN=$(hostname).local"
 
 if [ -s "$KEYFILE" -a -s "$CERTFILE" ]; then
@@ -12,4 +14,4 @@ if [ -s "$KEYFILE" -a -s "$CERTFILE" ]; then
 fi
 
 mkdir -p "$CERTDIR"
-faketime @0 openssl req -x509 -batch -subj "$SUBJ" -newkey rsa:2048 -keyout "$KEYFILE" -out "$CERTFILE" -days 36525 -nodes
+faketime @0 openssl req -x509 -config "$CONFFILE" -batch -subj "$SUBJ" -newkey rsa:2048 -keyout "$KEYFILE" -out "$CERTFILE" -days 36525 -nodes
