@@ -38,6 +38,10 @@ IMAGE_INSTALL += " \
 		emcfg \
 		empkg \
 		button-handler \
+		tzdata tzdata-americas tzdata-asia \
+		tzdata-europe tzdata-africa tzdata-antarctica \
+		tzdata-arctic tzdata-atlantic tzdata-australia \
+		tzdata-pacific tzdata-posix \
 		${PRODUCT_INFO_PACKAGE} \
 		"
 
