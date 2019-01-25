@@ -7,9 +7,7 @@
 set -e
 
 LAST_UPDATE="/update/last-upgrade.raucb"
-LAST_UPDATE_TMP="/tmp/last-upgrade.raucb"
 
-mv -f "$LAST_UPDATE" "$LAST_UPDATE_TMP"
-rauc install "$LAST_UPDATE_TMP"
+rauc install "$LAST_UPDATE"
 rauc status mark-active booted
-rm -f "$LAST_UPDATE_TMP"
+rm -f "$LAST_UPDATE"
