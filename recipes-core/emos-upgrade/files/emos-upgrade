@@ -15,8 +15,10 @@ usage() {
 cmd_install() {
 	[ $# -eq 1 -a -e "$1" ] || usage
 
+	emos-upgrade-status set_status update_1_started
 	rauc install "$1"
 	mv "$1" /update/last-upgrade.raucb
+	emos-upgrade-status set_status update_1_finished
 	reboot
 }
 
