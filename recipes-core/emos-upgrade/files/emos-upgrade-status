@@ -1,0 +1,76 @@
+#!/bin/sh
+
+#
+# Copyright (C) 2018, TQ Systems
+#
+
+set -e
+
+FILE_UPDATE_STATUS="/update/status"
+FILE_RAUC_SLOT_SAVED="/update/slot"
+
+RAUC_SLOT_ACTIVE="$(rauc status --output-format=json | jq -r '.booted')"
+
+get_slot_saved() {
+	if [ -r "$FILE_RAUC_SLOT_SAVED" ]; then
+		RAUC_SLOT_SAVED="$(cat "$FILE_RAUC_SLOT_SAVED")"
+	else
+		RAUC_SLOT_SAVED=""
+	fi
+	echo "$RAUC_SLOT_SAVED"
+}
+
+get_slot_active() {
+	echo "$RAUC_SLOT_ACTIVE"
+}
+
+set_status() {
+	[ $# -eq 1 -a ! -z "$1" ] || exit 1
+
+	case "$1" in
+	"update_1_started")
+		logger -t emos-upgrade-status "Updating first rootfs. (currently running $RAUC_SLOT_ACTIVE)"
+		echo "$RAUC_SLOT_ACTIVE" > "$FILE_RAUC_SLOT_SAVED"
+		;;
+	"update_1_finished")
+		logger -t emos-upgrade-status "Updated first rootfs successfully. (currently running $RAUC_SLOT_ACTIVE)"
+		;;
+	"update_2_started")
+		logger -t emos-upgrade-status "Updating second rootfs. (currently running $RAUC_SLOT_ACTIVE)"
+		;;
+	"update_2_finished")
+		logger -t emos-upgrade-status "Updated second rootfs successfully. (currently running $RAUC_SLOT_ACTIVE)"
+		;;
+	*)
+		echo >&2 'emos-upgrade-status: Cannot set unknown status.'
+		exit 1
+	esac
+
+	echo "$1" > "$FILE_UPDATE_STATUS"
+}
+
+get_status() {
+	if [ -r "$FILE_UPDATE_STATUS" ]; then
+		echo "$(cat "$FILE_UPDATE_STATUS")"
+	fi
+}
+
+CMD="$1"; shift
+
+case "$CMD" in
+set_status)
+	set_status "$@"
+	;;
+get_status)
+	get_status
+	;;
+get_slot_active)
+	get_slot_active
+	;;
+get_slot_saved)
+	get_slot_saved
+	;;
+*)
+	echo >&2 'emos-upgrade-status: Unknown command.'
+	exit 1
+esac
