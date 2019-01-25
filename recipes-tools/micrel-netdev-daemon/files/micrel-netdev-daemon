@@ -48,6 +48,6 @@ while true; do
 
 	# Wait for GPIO interrupt
 	# Run gpio-wait in background to catch signals ourself.
-	gpio-wait $GPIO_INTR &
+	gpio-wait $GPIO_INTR 0 &
 	wait $!
 done
