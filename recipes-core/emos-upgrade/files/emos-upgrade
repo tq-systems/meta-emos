@@ -19,6 +19,7 @@ cmd_install() {
 	rauc install "$1"
 	mv "$1" /update/last-upgrade.raucb
 	emos-upgrade-status set_status update_1_finished
+	sleep 3
 	reboot
 }
 
