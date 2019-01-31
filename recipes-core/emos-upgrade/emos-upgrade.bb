@@ -15,6 +15,7 @@ SRC_URI = " \
         file://emos-upgrade \
         file://emos-upgrade-finalize \
         file://emos-upgrade-finalize.service \
+        file://emos-upgrade-status \
 "
 
 S = "${WORKDIR}"
@@ -29,6 +30,7 @@ inherit systemd
 do_install() {
         install -d ${D}${sbindir}/
         install -m 0755 emos-upgrade ${D}${sbindir}/
+        install -m 0755 emos-upgrade-status ${D}${sbindir}/
 
         install -d ${D}${libdir}/emos/upgrade/
         install -m 0755 emos-upgrade-finalize ${D}${libdir}/emos/upgrade/

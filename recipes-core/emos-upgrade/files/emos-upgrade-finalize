@@ -6,10 +6,22 @@
 
 set -e
 
-LAST_UPDATE="/update/last-upgrade.raucb"
-LAST_UPDATE_TMP="/tmp/last-upgrade.raucb"
+UPDATE_STATUS="$(emos-upgrade-status get_status)"
+RAUC_SLOT_ACTICE="$(emos-upgrade-status get_slot_active)"
+RAUC_SLOT_SAVED="$(emos-upgrade-status get_slot_saved)"
 
-mv -f "$LAST_UPDATE" "$LAST_UPDATE_TMP"
-rauc install "$LAST_UPDATE_TMP"
-rauc status mark-active booted
-rm -f "$LAST_UPDATE_TMP"
+if [ "$UPDATE_STATUS" = "update_1_finished" -o "$UPDATE_STATUS" = "update_2_started" ]; then
+	if [ "$RAUC_SLOT_ACTIVE" = "$RAUC_SLOT_SAVED" ]; then
+		rauc status mark-bad other
+	else
+		emos-upgrade-status set_status update_2_started
+		rauc install /update/last-upgrade.raucb
+		rauc status mark-active booted
+		emos-upgrade-status set_status update_2_finished
+	fi
+fi
+
+logger 'Cleaning up update directory.'
+rm -f /update/*.raucb
+rm -f /update/status
+rm -f /update/slot
