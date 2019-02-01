@@ -1,3 +1,5 @@
+SYSTEMD_AUTO_ENABLE_${PN} = "disable"
+
 do_install_append() {
 	sed -r -i \
 		-e '/^ConditionPathExists=!\/etc/d' \
