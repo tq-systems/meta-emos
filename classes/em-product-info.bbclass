@@ -72,3 +72,20 @@ do_install() {
 	install -m644 ${WORKDIR}/system.conf ${D}${sysconfdir}/rauc/
 	install -m644 ${WORKDIR}/${RAUC_KEYRING_FILE} ${D}${sysconfdir}/rauc/ca.cert.pem
 }
+
+FILES_${PN} += " ${datadir}/common-licenses/README"
+
+do_install_append() {
+    install -d ${D}${datadir}/common-licenses
+
+    cat > ${D}${datadir}/common-licenses/README << 'EOF'
+Meaning of files in the package directories:
+* 'recipeinfo' shows the license information of the software package, which is
+  maintained in the build instruction.
+* 'generic_<name of license>' shows a generic version of the license for
+  comparison, as provided by the Yocto project.
+* All other files in the package directories contain relevant license
+  information. This includes, but is not limited to, license files,
+  header files and other text files.
+EOF
+}
