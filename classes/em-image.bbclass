@@ -27,7 +27,6 @@ IMAGE_INSTALL += " \
 		kernel-modules \
 		imx28-blupdate \
 		u-boot-fslc-fw-utils \
-		nvram-wrapper \
 		mmc-utils \
 		e2fsprogs \
 		less \
