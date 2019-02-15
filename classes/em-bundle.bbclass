@@ -72,7 +72,7 @@ LIC_FILES_CHKSUM = "file://hook.sh;beginline=3;endline=3;md5=5592c71186793d990ae
 
 RDEPENDS_${PN} += "imx28-blupdate"
 
-RAUC_BUNDLE_COMPATIBLE = "${MACHINE}"
+RAUC_BUNDLE_COMPATIBLE = "${MACHINE}/sdk"
 RAUC_BUNDLE_SLOTS = "rootfs u-boot"
 RAUC_BUNDLE_HOOKS[file] = "hook.sh"
 
