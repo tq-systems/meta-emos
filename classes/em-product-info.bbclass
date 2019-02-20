@@ -3,6 +3,7 @@ LICENSE = "TQSSLA_V1.0.2"
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
 PRODUCT_MANUFACTURER ?= "TQ-Systems GmbH"
+PRODUCT_MANUFACTURER_URL ?= "https://www.tq-group.com/"
 
 # This is used for the default hostname
 PRODUCT_CODE ?= "EM400"
@@ -58,11 +59,13 @@ do_install() {
 
 	jq -nc \
 		--arg manufacturer '${PRODUCT_MANUFACTURER}' \
+		--arg manufacturer_url '${PRODUCT_MANUFACTURER_URL}' \
 		--arg code '${PRODUCT_CODE}' \
 		--arg name '${PRODUCT_NAME}' \
 		--arg software_version '${PRODUCT_SWVERSION}' \
 		'{
 			manufacturer: $manufacturer,
+			manufacturer_url: $manufacturer_url,
 			code: $code,
 			name: $name,
 			software_version: $software_version,
