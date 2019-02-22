@@ -49,17 +49,17 @@ IMAGE_INSTALL_append_em310 += " micrel-netdev-daemon"
 IMAGE_INSTALL_append_em300 += " flash-scan"
 IMAGE_INSTALL_append_em310 += " flash-scan"
 
-# System services and app container; some will become apps eventually
+# System services; some will become apps eventually
 IMAGE_INSTALL += " \
 		mosquitto \
 		nginx \
 		teridiand \
 		sensor-measurement \
-		web-frontend \
 		"
 
 # Preinstalled apps
 IMAGE_INSTALL += " \
+		em-app-web-application \
 		em-app-data-transfer \
 		em-app-device-settings \
 		em-app-smart-meter \
