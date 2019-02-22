@@ -13,6 +13,7 @@ RDEPENDS_${PN} = "libfaketime"
 S = "${WORKDIR}/git"
 
 EXTRA_OEMAKE = "PREFIX=${prefix}"
+CFLAGS += "-Wno-error=format-truncation -Wno-error=cast-function-type -Wno-error=stringop-truncation"
 
 do_install() {
 	oe_runmake install DESTDIR=${D}
