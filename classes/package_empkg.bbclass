@@ -31,13 +31,13 @@ python do_package_empkg () {
 
     pkgdest = d.getVar('PKGDEST')
 
-    app_pkg = 'em-app-' + app_name
+    pn = d.getVar('PN')
 
     localdata = bb.data.createCopy(d)
-    root = '%s/%s%s' % (pkgdest, app_pkg, app_install_root)
+    root = '%s/%s%s' % (pkgdest, pn, app_install_root)
 
     overrides = localdata.getVar('OVERRIDES', False)
-    localdata.setVar('OVERRIDES', '%s:%s' % (overrides, app_pkg))
+    localdata.setVar('OVERRIDES', '%s:%s' % (overrides, pn))
 
     arch = localdata.getVar('PACKAGE_ARCH')
     pkgoutdir = '%s/%s' % (outdir, arch)
