@@ -1,9 +1,5 @@
 FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
 
-SRC_URI_append = " \
-	file://0001-timesync-on-network-event-do-not-establish-connectio.patch \
-"
-
 
 do_install_append() {
 	# We manage timesyncd enable status in emcfg
