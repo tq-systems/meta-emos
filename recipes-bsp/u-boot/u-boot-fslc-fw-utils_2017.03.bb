@@ -1,13 +1,9 @@
 require u-boot-fslc-common_${PV}.inc
 
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
-SRC_URI += " \
-	file://default-gcc.patch \
-	file://fw_env.config \
-	"
+SRC_URI += "file://fw_env.config"
 
 SUMMARY = "U-Boot bootloader fw_printenv/setenv utilities"
-DEPENDS = "mtd-utils"
+DEPENDS += "mtd-utils"
 
 INSANE_SKIP_${PN} = "already-stripped"
 EXTRA_OEMAKE_class-target = 'CROSS_COMPILE=${TARGET_PREFIX} CC="${CC} ${CFLAGS} ${LDFLAGS}" HOSTCC="${BUILD_CC} ${BUILD_CFLAGS} ${BUILD_LDFLAGS}" V=1'
@@ -44,6 +40,7 @@ uboot_fw_utils_cross() {
     sysroot_stage_dir ${D}${bindir_cross} ${SYSROOT_DESTDIR}${bindir_cross}
 }
 
+PROVIDES += "u-boot-fw-utils"
 RPROVIDES_${PN} += "u-boot-fw-utils"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
