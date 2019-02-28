@@ -8,6 +8,8 @@ do_install_append () {
 	install -d ${D}/data
 	install -d ${D}/update
 
+	install -d ${D}${localstatedir}/lib/private
+
 	rm -rf ${D}${localstatedir}/log
 	ln -s /cfglog/var/log ${D}${localstatedir}/log
 
