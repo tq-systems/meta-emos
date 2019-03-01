@@ -10,7 +10,7 @@ SRC_URI_append_emos = " \
     file://nginx-log-setup.conf \
 "
 
-RDEPENDS_${PN}_append_emos = " faketime"
+RDEPENDS_${PN}_append_emos = " faketime openssl-bin"
 
 do_install_append_emos() {
     install -d ${D}${sbindir}/
