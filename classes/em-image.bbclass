@@ -41,6 +41,9 @@ IMAGE_INSTALL += " \
 		tzdata-europe tzdata-africa tzdata-antarctica \
 		tzdata-arctic tzdata-atlantic tzdata-australia \
 		tzdata-pacific tzdata-posix \
+		libstdc++ \
+		protobuf \
+		libmodbus \
 		${PRODUCT_INFO_PACKAGE} \
 		"
 
