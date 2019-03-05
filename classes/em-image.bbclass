@@ -42,8 +42,16 @@ IMAGE_INSTALL += " \
 		tzdata-arctic tzdata-atlantic tzdata-australia \
 		tzdata-pacific tzdata-posix \
 		libstdc++ \
+		libdaemon \
+		libmosquitto1 \
 		protobuf \
+		protobuf-c \
+		jansson \
+		gupnp \
+		libsqlite3 \
 		libmodbus \
+		libevdev \
+		libdeviceinfo \
 		${PRODUCT_INFO_PACKAGE} \
 		"
 
