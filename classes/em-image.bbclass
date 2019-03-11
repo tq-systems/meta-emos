@@ -73,6 +73,7 @@ IMAGE_INSTALL += " \
 		em-app-web-application \
 		em-app-data-transfer \
 		em-app-device-settings \
+		em-app-health-check \
 		em-app-smart-meter \
 		em-app-upnp \
 		em-app-web-login \
