@@ -65,7 +65,6 @@ IMAGE_INSTALL += " \
 		mosquitto \
 		nginx \
 		teridiand \
-		sensor-measurement \
 		"
 
 # Preinstalled apps
