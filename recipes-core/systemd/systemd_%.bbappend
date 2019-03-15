@@ -1,6 +1,3 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
-
-
 do_install_append() {
 	# We manage timesyncd enable status in emcfg
 	rm ${D}${sysconfdir}/systemd/timesyncd.conf
