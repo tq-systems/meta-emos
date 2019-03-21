@@ -67,12 +67,6 @@ cmd_update_ntp() {
 	' < $CFG/ntp.json > $RUNETC/systemd/timesyncd.conf
 }
 
-cmd_update() {
-	em-update-password
-	cmd_update_network
-	cmd_update_ntp
-}
-
 cmd_reset_password() {
 	logger 'Resetting password configuration.'
 
@@ -97,7 +91,17 @@ cmd_reset_network() {
 cmd_debug_access() {
 	logger 'Enabling SSH debug access.'
 
-	systemctl start dropbear.socket
+	systemctl --no-block start dropbear.socket
+}
+
+cmd_update() {
+	em-update-password
+	cmd_update_network
+	cmd_update_ntp
+
+	if [ "$(fw_printenv -n enable_ssh 2>/dev/null)" = '1' ]; then
+		cmd_debug_access
+	fi
 }
 
 cmd_factory_reset() {
