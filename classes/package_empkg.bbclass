@@ -59,7 +59,7 @@ python do_package_empkg () {
 
     os.chdir(outdir)
 
-    packagetar = '%s/%s' % (pkgoutdir, localdata.expand("${APP_ID}_${APP_VER}_${PACKAGE_ARCH}.empkg"))
+    packagetar = '%s/%s' % (pkgoutdir, localdata.expand("${PN}_${APP_VER}_${PACKAGE_ARCH}.empkg"))
     ret = subprocess.call(['tar', '-cf', packagetar, 'manifest.json', 'data.tar.xz'])
     if ret != 0:
         bb.error("Creation of empkg %s failed." % packagetar)
