@@ -9,6 +9,7 @@ inherit update-alternatives
 SRC_URI = " \
 	file://LICENSE \
 	file://emcfg \
+	file://em-config-reset \
 	file://em-init \
 	file://em-update-password \
 	file://00-emos-log.conf \
@@ -22,7 +23,7 @@ S = "${WORKDIR}"
 
 do_install() {
 	install -d ${D}${base_sbindir}
-	install -m 0755 emcfg em-init em-update-password ${D}${base_sbindir}/
+	install -m 0755 emcfg em-config-reset em-init em-update-password ${D}${base_sbindir}/
 
 	install -d ${D}${sysconfdir}/tmpfiles.d
 	install -m 0644 00-emos-log.conf ${D}${sysconfdir}/tmpfiles.d/
