@@ -1,0 +1,61 @@
+#!/bin/sh
+
+set -e
+
+if [ "$#" -lt "1" ]; then
+	echo "Pass at least one argument"
+	exit 1
+fi
+
+UNIT_LIST=""
+UNIT_CONFIG_LIST=""
+SYSTEM_CONFIG_LIST=""
+
+# validate arguments
+for arg in "$@"; do
+	case "$arg" in
+	timezone)
+		UNIT_LIST="$UNIT_LIST em-app-device-settings"
+		SYSTEM_CONFIG_LIST="$SYSTEM_CONFIG_LIST timezone"
+		;;
+	*/*)
+		echo >&2 "Argument contains a slash: $arg"
+		exit 1
+		;;
+	.|..)
+		echo >&2 "Not supported argument: $arg"
+		exit 1
+		;;
+	*)
+		UNIT_LIST="$UNIT_LIST $arg"
+		UNIT_CONFIG_LIST="$UNIT_CONFIG_LIST $arg"
+		;;
+	esac
+done
+
+echo "Stopping: $UNIT_LIST"
+systemctl stop $UNIT_LIST
+
+# remove app configurations
+for unit in $UNIT_CONFIG_LIST; do
+	case "$unit" in
+	em-app-*)
+		APP_ID="$(echo "$unit" | sed -e 's/^em-app-//')"
+		rm -vrf "/cfglog/apps/$APP_ID/"*
+		;;
+	esac
+done
+
+# remove system configurations
+for config in $SYSTEM_CONFIG_LIST; do
+	case "$config" in
+	timezone)
+		rm -vf /cfglog/system/timezone.json
+		;;
+	esac
+done
+
+echo "Starting: $UNIT_LIST"
+systemctl start $UNIT_LIST
+
+exit 0
