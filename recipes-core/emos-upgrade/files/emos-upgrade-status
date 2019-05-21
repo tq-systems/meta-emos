@@ -1,13 +1,19 @@
 #!/bin/sh
 
 #
-# Copyright (C) 2018, TQ Systems
+# Copyright (C) 2018-2019, TQ Systems
 #
 
 set -e
 
+FILE_LOCK="/update/lock"
 FILE_UPDATE_STATUS="/update/status"
 FILE_RAUC_SLOT_SAVED="/update/slot"
+
+
+exec 9>"$FILE_LOCK"
+flock 9
+
 
 RAUC_SLOT_ACTIVE="$(rauc status --output-format=json | jq -r '.booted')"
 
