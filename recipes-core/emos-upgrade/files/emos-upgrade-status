@@ -25,21 +25,38 @@ get_slot_active() {
 	echo "$RAUC_SLOT_ACTIVE"
 }
 
+get_status() {
+	cat "$FILE_UPDATE_STATUS" 2>/dev/null || true
+}
+
+check_transition() {
+	local old_status="$(get_status)"
+
+	if [ "$old_status" != "$1" ]; then
+		echo >&2 "emos-upgrade-status: invalid transition from '$old_status' to '$2'. Is there another upgrade running?"
+		exit 1
+	fi
+}
+
 set_status() {
 	[ $# -eq 1 -a ! -z "$1" ] || exit 1
 
 	case "$1" in
 	"update_1_started")
+		check_transition '' "$1"
 		logger -t emos-upgrade-status "Updating first rootfs. (currently running $RAUC_SLOT_ACTIVE)"
 		echo "$RAUC_SLOT_ACTIVE" > "$FILE_RAUC_SLOT_SAVED"
 		;;
 	"update_1_finished")
+		check_transition 'update_1_started' "$1"
 		logger -t emos-upgrade-status "Updated first rootfs successfully. (currently running $RAUC_SLOT_ACTIVE)"
 		;;
 	"update_2_started")
+		check_transition 'update_1_finished' "$1"
 		logger -t emos-upgrade-status "Updating second rootfs. (currently running $RAUC_SLOT_ACTIVE)"
 		;;
 	"update_2_finished")
+		check_transition 'update_2_started' "$1"
 		logger -t emos-upgrade-status "Updated second rootfs successfully. (currently running $RAUC_SLOT_ACTIVE)"
 		;;
 	*)
@@ -48,10 +65,6 @@ set_status() {
 	esac
 
 	echo "$1" > "$FILE_UPDATE_STATUS"
-}
-
-get_status() {
-	cat "$FILE_UPDATE_STATUS" 2>/dev/null || true
 }
 
 reset_status() {
