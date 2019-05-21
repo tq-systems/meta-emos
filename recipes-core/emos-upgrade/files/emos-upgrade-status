@@ -18,12 +18,7 @@ flock 9
 RAUC_SLOT_ACTIVE="$(rauc status --output-format=json | jq -r '.booted')"
 
 get_slot_saved() {
-	if [ -r "$FILE_RAUC_SLOT_SAVED" ]; then
-		RAUC_SLOT_SAVED="$(cat "$FILE_RAUC_SLOT_SAVED")"
-	else
-		RAUC_SLOT_SAVED=""
-	fi
-	echo "$RAUC_SLOT_SAVED"
+	cat "$FILE_RAUC_SLOT_SAVED" 2>/dev/null || true
 }
 
 get_slot_active() {
@@ -56,9 +51,7 @@ set_status() {
 }
 
 get_status() {
-	if [ -r "$FILE_UPDATE_STATUS" ]; then
-		echo "$(cat "$FILE_UPDATE_STATUS")"
-	fi
+	cat "$FILE_UPDATE_STATUS" 2>/dev/null || true
 }
 
 reset_status() {
