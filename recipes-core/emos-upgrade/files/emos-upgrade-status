@@ -1,27 +1,39 @@
 #!/bin/sh
 
 #
-# Copyright (C) 2018, TQ Systems
+# Copyright (C) 2018-2019, TQ Systems
 #
 
 set -e
 
+FILE_LOCK="/update/lock"
 FILE_UPDATE_STATUS="/update/status"
 FILE_RAUC_SLOT_SAVED="/update/slot"
 
-RAUC_SLOT_ACTIVE="$(rauc status --output-format=json | jq -r '.booted')"
+
+exec 9>"$FILE_LOCK"
+flock 9
+
 
 get_slot_saved() {
-	if [ -r "$FILE_RAUC_SLOT_SAVED" ]; then
-		RAUC_SLOT_SAVED="$(cat "$FILE_RAUC_SLOT_SAVED")"
-	else
-		RAUC_SLOT_SAVED=""
-	fi
-	echo "$RAUC_SLOT_SAVED"
+	cat "$FILE_RAUC_SLOT_SAVED" 2>/dev/null || true
 }
 
 get_slot_active() {
-	echo "$RAUC_SLOT_ACTIVE"
+	rauc status --output-format=json | jq -r '.booted'
+}
+
+get_status() {
+	cat "$FILE_UPDATE_STATUS" 2>/dev/null || true
+}
+
+check_transition() {
+	local old_status="$(get_status)"
+
+	if [ "$old_status" != "$1" ]; then
+		echo >&2 "emos-upgrade-status: invalid transition from '$old_status' to '$2'. Is there another upgrade running?"
+		exit 1
+	fi
 }
 
 set_status() {
@@ -29,17 +41,11 @@ set_status() {
 
 	case "$1" in
 	"update_1_started")
-		logger -t emos-upgrade-status "Updating first rootfs. (currently running $RAUC_SLOT_ACTIVE)"
-		echo "$RAUC_SLOT_ACTIVE" > "$FILE_RAUC_SLOT_SAVED"
+		check_transition '' "$1"
+		get_slot_active > "$FILE_RAUC_SLOT_SAVED"
 		;;
 	"update_1_finished")
-		logger -t emos-upgrade-status "Updated first rootfs successfully. (currently running $RAUC_SLOT_ACTIVE)"
-		;;
-	"update_2_started")
-		logger -t emos-upgrade-status "Updating second rootfs. (currently running $RAUC_SLOT_ACTIVE)"
-		;;
-	"update_2_finished")
-		logger -t emos-upgrade-status "Updated second rootfs successfully. (currently running $RAUC_SLOT_ACTIVE)"
+		check_transition 'update_1_started' "$1"
 		;;
 	*)
 		echo >&2 'emos-upgrade-status: Cannot set unknown status.'
@@ -49,10 +55,8 @@ set_status() {
 	echo "$1" > "$FILE_UPDATE_STATUS"
 }
 
-get_status() {
-	if [ -r "$FILE_UPDATE_STATUS" ]; then
-		echo "$(cat "$FILE_UPDATE_STATUS")"
-	fi
+reset_status() {
+	rm -f "$FILE_UPDATE_STATUS" "$FILE_RAUC_SLOT_SAVED"
 }
 
 CMD="$1"; shift
@@ -69,6 +73,9 @@ get_slot_active)
 	;;
 get_slot_saved)
 	get_slot_saved
+	;;
+reset)
+	reset_status
 	;;
 *)
 	echo >&2 'emos-upgrade-status: Unknown command.'
