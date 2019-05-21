@@ -61,6 +61,10 @@ get_status() {
 	fi
 }
 
+reset_status() {
+	rm -f "$FILE_UPDATE_STATUS" "$FILE_RAUC_SLOT_SAVED"
+}
+
 CMD="$1"; shift
 
 case "$CMD" in
@@ -75,6 +79,9 @@ get_slot_active)
 	;;
 get_slot_saved)
 	get_slot_saved
+	;;
+reset)
+	reset_status
 	;;
 *)
 	echo >&2 'emos-upgrade-status: Unknown command.'
