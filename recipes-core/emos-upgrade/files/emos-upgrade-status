@@ -51,14 +51,6 @@ set_status() {
 		check_transition 'update_1_started' "$1"
 		logger -t emos-upgrade-status "Updated first rootfs successfully. (currently running $RAUC_SLOT_ACTIVE)"
 		;;
-	"update_2_started")
-		check_transition 'update_1_finished' "$1"
-		logger -t emos-upgrade-status "Updating second rootfs. (currently running $RAUC_SLOT_ACTIVE)"
-		;;
-	"update_2_finished")
-		check_transition 'update_2_started' "$1"
-		logger -t emos-upgrade-status "Updated second rootfs successfully. (currently running $RAUC_SLOT_ACTIVE)"
-		;;
 	*)
 		echo >&2 'emos-upgrade-status: Cannot set unknown status.'
 		exit 1

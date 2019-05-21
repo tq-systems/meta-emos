@@ -17,16 +17,14 @@ trap on_exit EXIT
 
 UPDATE_STATUS="$(emos-upgrade-status get_status)"
 
-if [ "$UPDATE_STATUS" = "update_1_finished" -o "$UPDATE_STATUS" = "update_2_started" ]; then
+if [ "$UPDATE_STATUS" = 'update_1_finished' ]; then
 	RAUC_SLOT_ACTICE="$(emos-upgrade-status get_slot_active)"
 	RAUC_SLOT_SAVED="$(emos-upgrade-status get_slot_saved)"
 
 	if [ "$RAUC_SLOT_ACTIVE" = "$RAUC_SLOT_SAVED" ]; then
 		rauc status mark-bad other
 	else
-		emos-upgrade-status set_status update_2_started
 		rauc install /update/last-upgrade.raucb
 		rauc status mark-active booted
-		emos-upgrade-status set_status update_2_finished
 	fi
 fi
