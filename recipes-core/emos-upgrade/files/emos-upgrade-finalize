@@ -1,16 +1,26 @@
 #!/bin/sh
 
 #
-# Copyright (C) 2018, TQ Systems
+# Copyright (C) 2018-2019, TQ Systems
 #
 
 set -e
 
+on_exit() {
+	logger 'Cleaning up update directory.'
+	rm -f /update/*.raucb
+	emos-upgrade-status reset
+}
+
+trap on_exit EXIT
+
+
 UPDATE_STATUS="$(emos-upgrade-status get_status)"
-RAUC_SLOT_ACTICE="$(emos-upgrade-status get_slot_active)"
-RAUC_SLOT_SAVED="$(emos-upgrade-status get_slot_saved)"
 
 if [ "$UPDATE_STATUS" = "update_1_finished" -o "$UPDATE_STATUS" = "update_2_started" ]; then
+	RAUC_SLOT_ACTICE="$(emos-upgrade-status get_slot_active)"
+	RAUC_SLOT_SAVED="$(emos-upgrade-status get_slot_saved)"
+
 	if [ "$RAUC_SLOT_ACTIVE" = "$RAUC_SLOT_SAVED" ]; then
 		rauc status mark-bad other
 	else
@@ -20,8 +30,3 @@ if [ "$UPDATE_STATUS" = "update_1_finished" -o "$UPDATE_STATUS" = "update_2_star
 		emos-upgrade-status set_status update_2_finished
 	fi
 fi
-
-logger 'Cleaning up update directory.'
-rm -f /update/*.raucb
-rm -f /update/status
-rm -f /update/slot
