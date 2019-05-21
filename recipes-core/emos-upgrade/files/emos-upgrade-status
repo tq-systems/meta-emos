@@ -15,14 +15,12 @@ exec 9>"$FILE_LOCK"
 flock 9
 
 
-RAUC_SLOT_ACTIVE="$(rauc status --output-format=json | jq -r '.booted')"
-
 get_slot_saved() {
 	cat "$FILE_RAUC_SLOT_SAVED" 2>/dev/null || true
 }
 
 get_slot_active() {
-	echo "$RAUC_SLOT_ACTIVE"
+	rauc status --output-format=json | jq -r '.booted'
 }
 
 get_status() {
@@ -44,12 +42,10 @@ set_status() {
 	case "$1" in
 	"update_1_started")
 		check_transition '' "$1"
-		logger -t emos-upgrade-status "Updating first rootfs. (currently running $RAUC_SLOT_ACTIVE)"
-		echo "$RAUC_SLOT_ACTIVE" > "$FILE_RAUC_SLOT_SAVED"
+		get_slot_active > "$FILE_RAUC_SLOT_SAVED"
 		;;
 	"update_1_finished")
 		check_transition 'update_1_started' "$1"
-		logger -t emos-upgrade-status "Updated first rootfs successfully. (currently running $RAUC_SLOT_ACTIVE)"
 		;;
 	*)
 		echo >&2 'emos-upgrade-status: Cannot set unknown status.'
