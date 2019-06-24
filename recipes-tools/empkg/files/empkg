@@ -186,7 +186,12 @@ app_enable() {
 
 	if $OPT_SYSTEMD && has_systemd "$app"; then
 		systemctl daemon-reload
-		systemctl restart "em-app-${app}.service"
+
+		if is_autostart "$app"; then
+			systemctl restart "em-app-${app}.service"
+		else
+			systemctl try-restart "em-app-${app}.service"
+		fi
 	fi
 }
 
