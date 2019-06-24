@@ -42,6 +42,8 @@ IMAGE_INSTALL += " \
 		tzdata-arctic tzdata-atlantic tzdata-australia \
 		tzdata-pacific tzdata-posix \
 		libstdc++ \
+		avahi-daemon \
+		libavahi-client \
 		libdaemon \
 		libmosquitto1 \
 		protobuf \
