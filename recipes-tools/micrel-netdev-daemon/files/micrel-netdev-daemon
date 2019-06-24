@@ -8,34 +8,24 @@
 
 set -e
 
+GPIO_CHIP=0
 GPIO_INTR=6
 
-# Configure GPIO_INTR
-if [ ! -d /sys/class/gpio/gpio$GPIO_INTR ]; then
-	echo $GPIO_INTR >/sys/class/gpio/export
-fi
-echo in >/sys/class/gpio/gpio$GPIO_INTR/direction
-echo falling >/sys/class/gpio/gpio$GPIO_INTR/edge
-
-cleanup() {
-	kill $(jobs -p) >/dev/null 2>&1
-}
-trap "cleanup" INT TERM EXIT
 
 # Enable "P1 or P2 link change" interrupt
 micrel smi 0xBB 0x80
 
-# Do not restart networkd on the initial run
-restart=false
 
-while true; do
+handle_change() {
+	local restart="$1"
+
 	# Clear all interrupts (w1c)
 	micrel smi 0xBC 0xFF
 
 	# Read MII Basic Status register of port 1 and port 2
-	reg1=$(micrel --raw mdio 1 1)
-	reg2=$(micrel --raw mdio 2 1)
-	status=$(( ($reg1 | $reg2) & 0x4 ))
+	local reg1=$(micrel --raw mdio 1 1)
+	local reg2=$(micrel --raw mdio 2 1)
+	local status=$(( ($reg1 | $reg2) & 0x4 ))
 	if [ $status -eq 4 ]; then
 		if $restart; then
 			systemctl restart systemd-networkd.service
@@ -43,11 +33,15 @@ while true; do
 	else
 		ip link set eth0 down
 	fi
+}
 
-	restart=true
 
-	# Wait for GPIO interrupt
-	# Run gpio-wait in background to catch signals ourself.
-	gpio-wait $GPIO_INTR 0 &
-	wait $!
-done
+# gpiomon will print a newline for each falling edge
+gpiomon -b -f -F '' $GPIO_CHIP $GPIO_INTR | (
+	# Do not restart networkd on the initial run
+	handle_change false
+
+	while read; do
+		handle_change true
+	done
+)
