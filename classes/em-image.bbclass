@@ -36,7 +36,6 @@ IMAGE_INSTALL += " \
 		emos-upgrade \
 		emcfg \
 		empkg \
-		button-handler \
 		tzdata tzdata-americas tzdata-asia \
 		tzdata-europe tzdata-africa tzdata-antarctica \
 		tzdata-arctic tzdata-atlantic tzdata-australia \
@@ -59,24 +58,24 @@ IMAGE_INSTALL += " \
 
 IMAGE_INSTALL_append_em310 += " micrel-netdev-daemon"
 
-IMAGE_INSTALL_append_em300 += " flash-scan"
-IMAGE_INSTALL_append_em310 += " flash-scan"
-
-# System services; some will become apps eventually
 IMAGE_INSTALL += " \
 		mosquitto \
 		nginx \
-		teridiand \
+		teridiand-config \
+		teridiand-fw \
 		"
 
 # Preinstalled apps
 IMAGE_INSTALL += " \
-		em-app-web-application \
+		em-app-button-handler \
 		em-app-data-transfer \
 		em-app-device-settings \
 		em-app-health-check \
+		em-app-flash-scan \
 		em-app-smart-meter \
+		em-app-teridiand \
 		em-app-upnp \
+		em-app-web-application \
 		em-app-web-login \
 		"
 
