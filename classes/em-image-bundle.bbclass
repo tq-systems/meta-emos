@@ -24,3 +24,5 @@ em_image_bundle_virtclass_handler[eventmask] = "bb.event.RecipePreFinalise"
 
 IMAGE_VARIANT_COMPATIBLE ?= "${IMAGE_VARIANT}"
 IMAGE_COMPATIBLE = "${MACHINE}/${IMAGE_VARIANT_COMPATIBLE}"
+
+PRODUCT_INFO_PACKAGE ?= "em-product-info-${IMAGE_VARIANT}"

@@ -11,7 +11,7 @@
 
 inherit core-image
 
-PRODUCT_INFO_PACKAGE ?= "em-product-info-${IMAGE_VARIANT}"
+PRODUCT_INFO_PACKAGE ?= ""
 
 # rootfs with 384 MiB (raw disk space)
 IMAGE_ROOTFS_SIZE_em300 = "393216"
@@ -53,31 +53,31 @@ IMAGE_INSTALL += " \
 		libmodbus \
 		libevdev \
 		libdeviceinfo \
-		${PRODUCT_INFO_PACKAGE} \
-		"
-
-IMAGE_INSTALL_append_em310 += " micrel-netdev-daemon"
-
-IMAGE_INSTALL += " \
 		mosquitto \
 		nginx \
 		teridiand-config \
 		teridiand-fw \
+		${PRODUCT_INFO_PACKAGE} \
 		"
 
+IMAGE_INSTALL_append_em310 = " micrel-netdev-daemon"
+
 # Preinstalled apps
-IMAGE_INSTALL += " \
+DEFAULT_APPS ?= " \
 		em-app-button-handler \
 		em-app-data-transfer \
 		em-app-device-settings \
 		em-app-health-check \
 		em-app-flash-scan \
+		em-app-micrel-switch-tool \
 		em-app-smart-meter \
 		em-app-teridiand \
 		em-app-upnp \
 		em-app-web-application \
 		em-app-web-login \
 		"
+
+IMAGE_INSTALL += "${DEFAULT_APPS}"
 
 # Install u-boot to rootfs only for shipping license information
 IMAGE_INSTALL_append_em310 += " u-boot-fslc"
