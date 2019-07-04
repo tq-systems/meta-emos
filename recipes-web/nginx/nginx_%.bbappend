@@ -2,18 +2,16 @@ FILESEXTRAPATHS_prepend_emos := "${THISDIR}/files:"
 
 SRC_URI_append_emos = " \
     file://nginx-emos.conf \
-    file://nginx-keygen \
     file://no_cache.conf \
     file://static_cache.conf \
     file://ssl.conf \
     file://nginx-log-setup \
 "
 
-RDEPENDS_${PN}_append_emos = " faketime openssl-bin"
+RDEPENDS_${PN}_append_emos = " emcfg"
 
 do_install_append_emos() {
     install -d ${D}${sbindir}/
-    install -m 0755 ${WORKDIR}/nginx-keygen ${D}${sbindir}
     install -m 0755 ${WORKDIR}/nginx-log-setup ${D}${sbindir}
 
     install -d ${D}${systemd_unitdir}/system/nginx.service.d/

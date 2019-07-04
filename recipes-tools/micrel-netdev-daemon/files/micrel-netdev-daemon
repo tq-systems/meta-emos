@@ -8,23 +8,30 @@
 
 set -e
 
+
+MICREL=/apps/installed/micrel-switch-tool/bin/micrel
+
+
+[ -x $MICREL ] || exit 0
+
+
 GPIO_CHIP=0
 GPIO_INTR=6
 
 
 # Enable "P1 or P2 link change" interrupt
-micrel smi 0xBB 0x80
+$MICREL smi 0xBB 0x80
 
 
 handle_change() {
 	local restart="$1"
 
 	# Clear all interrupts (w1c)
-	micrel smi 0xBC 0xFF
+	$MICREL smi 0xBC 0xFF
 
 	# Read MII Basic Status register of port 1 and port 2
-	local reg1=$(micrel --raw mdio 1 1)
-	local reg2=$(micrel --raw mdio 2 1)
+	local reg1=$($MICREL --raw mdio 1 1)
+	local reg2=$($MICREL --raw mdio 2 1)
 	local status=$(( ($reg1 | $reg2) & 0x4 ))
 	if [ $status -eq 4 ]; then
 		if $restart; then

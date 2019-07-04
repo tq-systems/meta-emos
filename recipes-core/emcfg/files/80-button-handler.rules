@@ -1,0 +1,5 @@
+ACTION=="remove", GOTO="button_handler_end"
+
+SUBSYSTEM=="input", ENV{ID_PATH}=="platform-buttons", TAG+="systemd", ENV{SYSTEMD_WANTS}+="em-app-button-handler.service"
+
+LABEL="button_handler_end"

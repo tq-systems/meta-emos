@@ -1,0 +1,10 @@
+[Unit]
+Description=Execute scan and refresh of Micron eMMC monthly
+ConditionPathExists=/apps/enabled/flash-scan/em-app-flash-scan.service
+
+[Timer]
+OnUnitActiveSec=1month
+OnBootSec=5min
+
+[Install]
+WantedBy=multi-user.target

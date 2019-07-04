@@ -4,7 +4,7 @@ LICENSE = "TQSSLA_V1.0.2"
 LIC_FILES_CHKSUM = "file://${WORKDIR}/LICENSE;md5=5a77156d011829e57ffe26e62f07ff2d"
 SRC_DISTRIBUTE_LICENSES += "TQSSLA_V1.0.2"
 
-inherit update-alternatives
+inherit update-alternatives systemd
 
 SRC_URI = " \
 	file://LICENSE \
@@ -16,8 +16,14 @@ SRC_URI = " \
 	file://sysctl.conf \
 	file://emcfg.service \
 	file://etc-shadow.mount \
+	file://em-app-flash-scan.timer \
 	file://emcfg-generator \
+	file://80-button-handler.rules \
+	file://em-keygen \
+	file://openssl-em.cnf \
 "
+
+SYSTEMD_SERVICE_${PN} = "em-app-flash-scan.timer"
 
 S = "${WORKDIR}"
 
@@ -36,14 +42,23 @@ do_install() {
 	ln -s /run/em/etc/systemd/network/50-wired.network ${D}${sysconfdir}/systemd/network/
 
 	install -d ${D}${systemd_unitdir}/system/sysinit.target.wants/
-	install -m 0644 emcfg.service etc-shadow.mount ${D}${systemd_unitdir}/system/
+	install -m 0644 emcfg.service etc-shadow.mount em-app-flash-scan.timer ${D}${systemd_unitdir}/system/
 	ln -s ../emcfg.service ../etc-shadow.mount ${D}${systemd_unitdir}/system/sysinit.target.wants/
 
 	install -d ${D}${systemd_unitdir}/system-generators
 	install -m 0755 emcfg-generator ${D}${systemd_unitdir}/system-generators/
+
+	install -d ${D}${base_libdir}/udev/rules.d
+	install -m 0644 ${WORKDIR}/80-button-handler.rules ${D}${base_libdir}/udev/rules.d/
+
+	install -d ${D}${sysconfdir}/ssl
+	install -m 0644 ${WORKDIR}/openssl-em.cnf ${D}${sysconfdir}/ssl/
+
+	install -d ${D}${bindir}
+	install -m 0755 ${WORKDIR}/em-keygen ${D}${bindir}/
 }
 
-RDEPENDS_${PN} += "jq u-boot-fslc-fw-utils"
+RDEPENDS_${PN} += "jq u-boot-fslc-fw-utils openssl-bin faketime"
 
 FILES_${PN} += " \
 	${sysconfdir}/tmpfiles.d/00-emos-log.conf \

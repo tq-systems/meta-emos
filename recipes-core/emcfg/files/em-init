@@ -33,10 +33,16 @@ factory_reset() {
 	mkfs.ext4 -Fvj $DEV_CFGLOG
 	mkfs.ext4 -Fvj $DEV_DATA
 
+	mount -t tmpfs apps /apps
+	mkdir /apps/installed
+	mount --bind /opt/apps /apps/installed
+
+	local TBIN=/apps/installed/teridiand/bin
+
 	# Reset teridian registers
-	if which tboot >/dev/null 2>&1; then
-		tboot
-		tcmd SPI_CMD_CLEAR_REGISTERS
+	if [ -x $TBIN/tboot ]; then
+		$TBIN/tboot
+		$TBIN/tcmd SPI_CMD_CLEAR_REGISTERS
 	fi
 }
 

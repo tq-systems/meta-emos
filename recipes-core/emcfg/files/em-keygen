@@ -1,9 +1,10 @@
 #!/bin/sh
 
-CERTDIR=/cfglog/system/ssl
+CERTPATH="$1"
+CERTDIR="$(dirname "$CERTPATH")"
 
-KEYFILE="$CERTDIR/default.key"
-CERTFILE="$CERTDIR/default.crt"
+KEYFILE="$CERTPATH.key"
+CERTFILE="$CERTPATH.crt"
 
 CONFFILE="/etc/ssl/openssl-em.cnf"
 
