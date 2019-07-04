@@ -19,6 +19,8 @@ SRC_URI = " \
 	file://em-app-flash-scan.timer \
 	file://emcfg-generator \
 	file://80-button-handler.rules \
+	file://em-keygen \
+	file://openssl-em.cnf \
 "
 
 SYSTEMD_SERVICE_${PN} = "em-app-flash-scan.timer"
@@ -48,9 +50,15 @@ do_install() {
 
 	install -d ${D}${base_libdir}/udev/rules.d
 	install -m 0644 ${WORKDIR}/80-button-handler.rules ${D}${base_libdir}/udev/rules.d/
+
+	install -d ${D}${sysconfdir}/ssl
+	install -m 0644 ${WORKDIR}/openssl-em.cnf ${D}${sysconfdir}/ssl/
+
+	install -d ${D}${bindir}
+	install -m 0755 ${WORKDIR}/em-keygen ${D}${bindir}/
 }
 
-RDEPENDS_${PN} += "jq u-boot-fslc-fw-utils"
+RDEPENDS_${PN} += "jq u-boot-fslc-fw-utils openssl-bin faketime"
 
 FILES_${PN} += " \
 	${sysconfdir}/tmpfiles.d/00-emos-log.conf \
