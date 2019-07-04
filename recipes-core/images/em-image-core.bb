@@ -4,6 +4,7 @@ TOOLCHAIN_HOST_TASK_append = " \
 	nativesdk-protobuf-dev \
 	nativesdk-protobuf-compiler \
 	nativesdk-protobuf-c-compiler \
+	nativesdk-emit \
 "
 
 TOOLCHAIN_TARGET_TASK_append = " \
