@@ -1,0 +1,19 @@
+product_info:
+  name: 'Energy Manager 400'
+  code: 'EM400' # This is used for the default hostname
+
+  manufacturer: 'TQ-Systems GmbH'
+  manufacturer_url: 'https://www.tq-group.com/'
+
+apps:
+  devel:
+    version: 'latest'
+    cache: false
+
+  sensors:
+    version: 'latest'
+    cache: false
+
+  smart-meter:
+    version: 'latest'
+    cache: false
