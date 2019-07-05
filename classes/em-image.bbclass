@@ -56,7 +56,6 @@ IMAGE_INSTALL += " \
 		mosquitto \
 		nginx \
 		teridiand-config \
-		teridiand-fw \
 		${PRODUCT_INFO_PACKAGE} \
 		"
 
@@ -72,6 +71,7 @@ DEFAULT_APPS ?= " \
 		em-app-micrel-switch-tool \
 		em-app-smart-meter \
 		em-app-teridiand \
+		em-app-teridiand-fw \
 		em-app-upnp \
 		em-app-web-application \
 		em-app-web-login \
