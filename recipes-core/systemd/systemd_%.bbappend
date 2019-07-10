@@ -1,3 +1,7 @@
+FILESEXTRAPATHS_prepend := "${THISDIR}/systemd:"
+
+SRC_URI += "file://0001-core-set-fs.file-max-sysctl-to-LONG_MAX-rather-than-.patch"
+
 do_install_append_emos() {
 	# We manage timesyncd enable status in emcfg
 	rm ${D}${sysconfdir}/systemd/timesyncd.conf
