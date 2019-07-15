@@ -208,9 +208,9 @@ app_enable() {
 		systemctl daemon-reload
 
 		if is_autostart "$app"; then
-			systemctl restart "em-app-${app}.service"
+			systemctl restart "em-app-${app}.service" || true
 		else
-			systemctl try-restart "em-app-${app}.service"
+			systemctl try-restart "em-app-${app}.service" || true
 		fi
 	fi
 }
