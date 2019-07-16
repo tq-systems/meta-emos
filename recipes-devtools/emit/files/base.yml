@@ -1,0 +1,48 @@
+defaults:
+  url: http://develx01.tq-net.de/updates/apps/{app}/{name}_{version}_{arch}.empkg
+
+apps:
+  button-handler:
+    version: 'latest'
+    cache: false
+
+  data-transfer:
+    version: 'latest'
+    cache: false
+
+  device-settings:
+    version: 'latest'
+    cache: false
+
+  flash-scan:
+    version: 'latest'
+    cache: false
+
+  health-check:
+    version: 'latest'
+    cache: false
+
+  micrel-switch-tool:
+    version: 'latest'
+    cache: false
+
+  teridiand:
+    version: 'latest'
+    cache: false
+
+  teridiand-fw:
+    version: 'latest'
+    cache: false
+
+  upnp:
+    version: 'latest'
+    cache: false
+
+  web-application:
+    name: 'web-application-tq'
+    version: 'latest'
+    cache: false
+
+  web-login:
+    version: 'latest'
+    cache: false

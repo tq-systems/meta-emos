@@ -1,83 +1,97 @@
-# em-bundle.bbclass: Energy Manager upgrade bundle definitions
-#
-# This bundle definition includes support for rootfs and
-# bootloader upgrades. The rootfs image name is determined
-# automatically be replacing the first occurence of the string
-# -bundle- with -image- in the recipe name. If your image names
-# do not follow this scheme, RAUC_SLOT_rootfs must be set
-# manually.
+EM_CORE_IMAGE ?= "em-image-core"
+
+EM_IMAGE_NAME ??= "invalid"
+EM_BUNDLE_SPEC ?= "${EM_IMAGE_NAME}.yml"
+EM_BUNDLE_SPEC_URI ?= "file://${EM_BUNDLE_SPEC}"
+
+EM_BUNDLE_VERSION ?= "${PV}"
+
+BUNDLE_BASENAME ??= "${PN}"
+BUNDLE_NAME ??= "${BUNDLE_BASENAME}-${MACHINE}-${EM_BUNDLE_VERSION}"
+BUNDLE_NAME[vardepsexclude] = "DATETIME"
+BUNDLE_LINK_NAME ??= "${BUNDLE_BASENAME}-${MACHINE}"
 
 
-HOOK_SH() {
-#!/bin/sh
-#
-# (c) Gateware Communications GmbH, Nuremberg 2018
-#
+do_patch[noexec] = "1"
+do_configure[noexec] = "1"
+do_compile[noexec] = "1"
+do_install[noexec] = "1"
+do_package[noexec] = "1"
+do_populate_lic[noexec] = "1"
+do_package_qa[noexec] = "1"
+do_packagedata[noexec] = "1"
+do_package_write_ipk[noexec] = "1"
+do_package_write_deb[noexec] = "1"
+do_package_write_rpm[noexec] = "1"
 
-set -eo pipefail
+S = "${WORKDIR}"
+B = "${WORKDIR}/build"
 
-echo "i.MX28 bootloader install script"
+inherit python3native
 
-if [ "$1" != "slot-install" ]; then
-	echo "Invalid action '$1'! Aborting." >&2
-	exit 1
-fi
-if [ "$RAUC_SLOT_CLASS" != "u-boot" ]; then
-	echo "Invalid slot class '$RAUC_SLOT_CLASS'! Aborting" >&2
-	exit 1
-fi
+DEPENDS = "emit-native ${EM_CORE_IMAGE}"
 
-BOOT_SLOT="$(imx28-blupdate status --device "$RAUC_SLOT_DEVICE" --boot-source | awk '/NOTICE: Boot source: / {print $4}')"
+LICENSE = "MIT"
 
-case "$BOOT_SLOT" in
-Primary)
-	SLOTS='second first'
-	;;
-Secondary)
-	SLOTS='first second'
-	;;
-*)
-	echo "Unable to determine boot slot! Aborting." >&2
-	exit 1
-esac
+PACKAGE_ARCH = "${MACHINE_ARCH}"
 
-for slot in $SLOTS; do
-	INSTALLED=$( \
-		imx28-blupdate extract --device "$RAUC_SLOT_DEVICE" --$slot - \
-		| sha256sum | awk '{print $1}' || true \
-	)
-	if [ "$INSTALLED" == "$RAUC_IMAGE_DIGEST" ]; then
-		echo "Bootloader in $slot slot is already up to date! Skipping."
-	else
-		imx28-blupdate upgrade --device "$RAUC_SLOT_DEVICE" --$slot "$RAUC_IMAGE_NAME"
-		imx28-blupdate status --device "$RAUC_SLOT_DEVICE" --$slot
-	fi
-done
+SRC_URI = "${EM_BUNDLE_SPEC_URI}"
+
+EMIT_DOWNLOAD_DIR = "${DL_DIR}/apps"
+EMIT = "emit \
+    --download-dir ${EMIT_DOWNLOAD_DIR} \
+    --arch ${TUNE_PKGARCH} \
+"
+
+
+python emit_fetch_post() {
+    download_dir = d.getVar('EMIT_DOWNLOAD_DIR')
+    os.makedirs(download_dir, exist_ok=True)
+
+    fetcher = bb.fetch2.Fetch([d.getVar('EM_BUNDLE_SPEC_URI')], d)
+    url = fetcher.urls[0]
+    ud = fetcher.ud[url]
+
+    lockfile = os.path.join(download_dir, 'emit.lock')
+    lf = bb.utils.lockfile(lockfile)
+
+    try:
+        bb.fetch2.runfetchcmd('{} --bundle-spec {} download'.format(
+            d.getVar('EMIT'),
+            ud.localpath,
+        ), d)
+    finally:
+        bb.utils.unlockfile(lf)
 }
+do_fetch[depends] += "emit-native:do_populate_sysroot"
+do_fetch[postfuncs] += "emit_fetch_post"
 
-
-python do_unpack() {
-    hookdata = d.getVar('HOOK_SH', False)
-    hookfile = d.expand('${WORKDIR}/hook.sh')
-
-    with open(hookfile, 'w') as f:
-        f.write(hookdata)
+do_bundle() {
+    ${EMIT} \
+        --bundle-spec ${WORKDIR}/${EM_BUNDLE_SPEC} \
+        build \
+        --build-dir ${B}/tmp \
+        --bundle-version ${EM_BUNDLE_VERSION} \
+        --machine ${MACHINE} \
+        --rauc-key ${RAUC_KEY_FILE} \
+        --rauc-cert ${RAUC_CERT_FILE} \
+        --rauc-keyring ${RAUC_KEYRING_FILE} \
+        --core-image ${DEPLOY_DIR_IMAGE}/${EM_CORE_IMAGE}-${MACHINE}.tar \
+        --output-bundle ${B}/bundle.raucb \
+        --image-name ${EM_IMAGE_NAME}
 }
+do_bundle[depends] += "${EM_CORE_IMAGE}:do_image_complete"
+do_bundle[dirs] = "${B}"
 
+addtask bundle after do_configure before do_build
 
-inherit bundle
+inherit deploy
 
-LICENSE = "TQSSLA_V1.0.2"
+do_deploy() {
+	install -d ${DEPLOYDIR}
+	install ${B}/bundle.raucb ${DEPLOYDIR}/${BUNDLE_NAME}.raucb
+	ln -sf ${BUNDLE_NAME}.raucb ${DEPLOYDIR}/${BUNDLE_LINK_NAME}.raucb
+}
+do_deploy[cleandirs] = "${DEPLOYDIR}"
 
-RDEPENDS_${PN} += "imx28-blupdate"
-
-RAUC_BUNDLE_COMPATIBLE = "${IMAGE_COMPATIBLE}"
-RAUC_BUNDLE_SLOTS = "rootfs u-boot"
-RAUC_BUNDLE_HOOKS[file] = "hook.sh"
-
-RAUC_SLOT_rootfs ?= "em-image-${IMAGE_VARIANT}"
-
-RAUC_SLOT_u-boot = "u-boot"
-RAUC_SLOT_u-boot[type] = "boot"
-RAUC_SLOT_u-boot[file] = "u-boot-${MACHINE}.sb"
-RAUC_SLOT_u-boot[hooks] = "install"
+addtask deploy after do_bundle before do_build

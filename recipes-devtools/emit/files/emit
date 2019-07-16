@@ -1,0 +1,385 @@
+#!/usr/bin/env python3
+
+# Copyright (c) 2019, TQ-Systems GmbH
+
+import argparse
+import hashlib
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tarfile
+from urllib.parse import urlparse
+import yaml
+
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_SPEC = os.path.join(BASE_DIR, '..', 'share', 'emit', 'base.yml')
+
+
+parser = argparse.ArgumentParser(description='Build Energy Manager bundles')
+parser.add_argument('--arch', required=True, help='CPU architecture of included app packages')
+parser.add_argument('--download-dir', default='downloads', help='Directory for app downloads')
+parser.add_argument('--bundle-spec', required=True, action='append',
+	help='Bundle specification. May be passed multiple times.',
+)
+
+subparsers = parser.add_subparsers(title='commands', description='valid commands')
+
+parser_download = subparsers.add_parser('download', help='Download app packages referenced in the base and bundle specs')
+
+parser_build = subparsers.add_parser('build')
+parser_build.add_argument('--build-dir', default='tmp', help='Directory for temporary build artifacts')
+parser_build.add_argument('--bundle-version', help='Bundle version number')
+parser_build.add_argument('--machine', required=True, help='Machine name for compatible string and U-boot version')
+parser_build.add_argument('--rauc-key', required=True, help='Private key for bundle signature')
+parser_build.add_argument('--rauc-cert', required=True, help='Certificate for bundle signature')
+parser_build.add_argument('--rauc-keyring', required=True, help='Certificate authority to be included in the image. Bundles are verified against this CA on system upgrades.')
+parser_build.add_argument('--core-image', required=True, help='Core image used to generate bundle')
+parser_build.add_argument('--image-name', required=True,
+	help='Image name of the generated bundle. This is included in the compatible string and various filenames by default.',
+)
+parser_build.add_argument('--output-bundle', required=True, help='Output bundle filename')
+
+
+def filehash(path):
+	"""Returns the SHA256 hash of a file."""
+
+	m = hashlib.sha256()
+
+	with open(path, 'rb') as f:
+		while True:
+			data = f.read(64 * 1024)
+			if not data:
+				break
+			m.update(data)
+
+	return m.hexdigest()
+
+def checkhash(path, expected):
+	"""Check whether the SHA256 hash of a file matches an expected value and raises an exception otherwise."""
+
+	expected = expected.lower()
+	actual = filehash(path).lower()
+	if expected != actual:
+		raise Exception('Incorrect SHA256 checksum on file \'{}\' (expected {}, actual {})'.format(path, expected, actual))
+
+
+def merge_dicts(a, b):
+	ret = {}
+
+	for k, av in a.items():
+		ret[k] = av
+	for k, bv in b.items():
+		av = ret.get(k)
+		if isinstance(av, dict) and isinstance(bv, dict):
+			ret[k] = merge_dicts(av, bv)
+		else:
+			ret[k] = bv
+
+	return ret
+
+
+class CommandCommon:
+	"""Common functions for all commands"""
+
+	def __init__(self, args):
+		self.args = args
+
+		with open(BASE_SPEC, 'r') as f:
+			self.bundle_spec = yaml.load(f)
+		
+		for spec in self.args.bundle_spec:
+			with open(spec, 'r') as f:
+				bundle_spec = yaml.load(f)
+				self.bundle_spec = merge_dicts(self.bundle_spec, bundle_spec)
+
+		self.defaults = self.bundle_spec['defaults']
+		self.apps = self.bundle_spec['apps']
+
+	def app_url(self, app, info):
+		"""Given an app name and its info structure, returns the URL and destination filename of an app."""
+
+		template = info.get('url', self.defaults['url'])
+		url = template.format(
+			app=app,
+			name=info.get('name', app),
+			version=info.get('version'),
+			arch=self.args.arch,
+		)
+		filename = urlparse(url).path.rpartition('/')[2]
+
+		return (url, filename)
+
+
+class CommandDownload(CommandCommon):
+	"""Implementation of the 'download' command"""
+
+	def download_app(self, app, info):
+		"""
+		Given an app name and its info structure, download the app package using wget.
+
+		When the app package is already cached and the file hash matches the expected value, the download is
+		skipped.
+		"""
+
+		url, filename = self.app_url(app, info)
+		path = os.path.join(self.args.download_dir, filename)
+
+		if info.get('cache') != False:
+			if not info.get('sha256'):
+				raise Exception('App \'{}\' has no sha256 field'.format(app))
+
+			if os.access(path, os.R_OK):
+				try:
+					checkhash(path, info['sha256'])
+					print('App \'{}\' found in cache.'.format(app), file=sys.stderr, flush=True)
+					return
+				except:
+					pass
+
+		print('Downloading app \'{}\' from: {}'.format(app, url), file=sys.stderr, flush=True)
+
+		subprocess.run(['wget', '-O', path, url], check=True)
+		if info.get('cache') != False or type(info.get('sha256')) == str:
+			checkhash(path, info['sha256'])
+
+	def download_apps(self):
+		"""Download all apps listed in the base and bundle specs"""
+
+		for app, info in self.apps.items():
+			if info != None:
+				self.download_app(app, info)
+
+	def run(self):
+		os.makedirs(self.args.download_dir, exist_ok=True)
+		self.download_apps()
+
+class CommandBuild(CommandCommon):
+	"""Implementation of the 'build' command"""
+
+	def __init__(self, args):
+		CommandCommon.__init__(self, args)
+
+		self.root_dir = os.path.join(self.args.build_dir, 'root')
+		self.app_install_dir = os.path.join(self.root_dir, 'opt', 'apps')
+		self.bundle_dir = os.path.join(self.args.build_dir, 'bundle')
+		self.build_image = os.path.join(self.args.build_dir, 'em-image-{}-{}.tar'.format(self.args.image_name, self.args.machine))
+
+	def prepare(self):
+		"""Prepares for the build by removing old build artifacts and creating directories."""
+
+		try:
+			shutil.rmtree(self.args.build_dir)
+		except FileNotFoundError:
+			pass
+
+		try:
+			os.remove(self.args.output_bundle)
+		except FileNotFoundError:
+			pass
+
+		os.makedirs(self.app_install_dir)
+		os.makedirs(self.bundle_dir)
+
+	def install_app(self, app, info):
+		"""Unpacks an app to the app install dir."""
+
+		filename = self.app_url(app, info)[1]
+		path = os.path.join(self.args.download_dir, filename)
+
+		with tarfile.open(path, mode='r:') as empkg:
+			with empkg.extractfile('manifest.json') as manifest_json:
+				manifest = json.load(manifest_json)
+
+			dirname = os.path.join(self.app_install_dir, manifest['id'])
+			os.mkdir(dirname)
+
+			with empkg.extractfile('data.tar.xz') as data_tar:
+				with tarfile.open(fileobj=data_tar, mode='r:xz') as data:
+					data.extractall(dirname)
+
+			empkg.extract('manifest.json', dirname)
+
+	def install_apps(self):
+		"""Unpacks all apps to the app install dir."""
+
+		for app, info in self.apps.items():
+			if info != None:
+				self.install_app(app, info)
+
+	def get_description(self):
+		return 'EM bundle {}'.format(self.args.image_name)
+
+	def get_version(self):
+		"""
+		Returns the version number to be added to the product info and the bundle manifest.
+
+		A bundle version passed on the command line always takes predence; otherwise,
+		product_info.software_version from the bundle spec is used.
+		"""
+
+		if self.args.bundle_version != None:
+			return self.args.bundle_version
+
+		return self.bundle_spec['product_info'].get('software_version', '0')
+
+	def get_compatible(self):
+		"""
+		Returns a compatible string for the RAUC config and bundle manifest.
+
+		The compatible string has the format $MACHINE/$COMPATIBLE, where $COMPATIBLE is set in the bundle spec,
+		falling back to the bundle name if unset in the spec.
+		"""
+
+		return '{}/{}'.format(self.args.machine, self.bundle_spec.get('compatible', self.args.image_name))
+
+	def write_product_info(self):
+		"""Writes the product info from the bundle spec to /etc/product-info.json in the image root"""
+
+		info = self.bundle_spec['product_info']
+
+		etcdir = os.path.join(self.root_dir, 'etc')
+		os.makedirs(etcdir, exist_ok=True)
+		with open(os.path.join(etcdir, 'product-info.json'), 'w') as f:
+			json.dump({
+				'manufacturer': info['manufacturer'],
+				'manufacturer_url': info['manufacturer_url'],
+				'code': info['code'],
+				'name': info['name'],
+				'software_version': self.get_version(),
+			}, f, sort_keys=True)
+
+	def get_rauc_config(self):
+		"""Returns the RAUC config to be written to /etc/rauc/system.conf in the image root"""
+
+		return '''\
+[system]
+compatible={compatible}
+bootloader=uboot
+
+[keyring]
+path=/etc/rauc/ca.cert.pem
+use-bundle-signing-time=true
+
+[slot.u-boot.0]
+device=/dev/mmcblk0
+type=raw
+
+[slot.rootfs.0]
+device=/dev/mmcblk0p2
+type=ext4
+bootname=1
+
+[slot.rootfs.1]
+device=/dev/mmcblk0p3
+type=ext4
+bootname=2
+'''.format(compatible=self.get_compatible())
+
+	def write_rauc_config(self):
+		"""Writes the RAUC config and keyring to /etc/rauc/ in the image root"""
+
+		raucdir = os.path.join(self.root_dir, 'etc', 'rauc')
+		os.makedirs(raucdir, exist_ok=True)
+		with open(os.path.join(raucdir, 'system.conf'), 'w') as f:
+			f.write(self.get_rauc_config())
+
+		shutil.copyfile(self.args.rauc_keyring, os.path.join(raucdir, 'ca.cert.pem'))
+
+	def pack_image(self):
+		"""
+		Creates the rootfs image.
+
+		A copy of the core image tar is created, then the additional files (apps, RAUC config, product info) is
+		appended.
+		"""
+
+		def tarinfo_filter(info):
+			info.uid = 0
+			info.gid = 0
+			info.uname = ''
+			info.gname = ''
+			return info
+
+		shutil.copyfile(self.args.core_image, self.build_image)
+
+		with tarfile.open(self.build_image, mode='a:') as tar:
+			tar.add(self.root_dir, '.', filter=tarinfo_filter)
+
+	def get_manifest(self):
+		"""Returns the RAUC manifest to be added to the bundle."""
+
+		def fileinfo(name):
+			path = os.path.join(self.bundle_dir, name)
+			sha256 = filehash(path)
+			size = os.stat(path).st_size
+
+			return 'sha256={}\nsize={}\nfilename={}'.format(sha256, size, name)
+
+		return '''\
+[update]
+description={description}
+compatible={compatible}
+version={version}
+
+[hooks]
+filename=hook.sh
+
+[image.rootfs]
+{rootfs}
+
+[image.u-boot]
+{uboot}
+hooks=install;
+'''.format(
+			description=self.get_description(),
+			compatible=self.get_compatible(),
+			version=self.get_version(),
+			rootfs=fileinfo('em-image-{}-{}.tar'.format(self.args.image_name, self.args.machine)),
+			uboot=fileinfo('u-boot-{}.sb'.format(self.args.machine)),
+		)
+
+	def make_bundle(self):
+		"""
+		Creates the RAUC bundle
+
+		In addition to the root filesystem, U-Boot is added to the bundle as a separate image. For this purpose,
+		U-Boot is extracted from the core image.
+		"""
+
+		# Add rootfs to bundle
+		shutil.move(self.build_image, self.bundle_dir)
+
+		# Add u-boot to bundle
+		with tarfile.open(self.args.core_image, mode='r:') as tar:
+			with tar.extractfile('./boot/u-boot.sb-{}'.format(self.args.machine)) as src:
+				with open(os.path.join(self.bundle_dir, 'u-boot-{}.sb'.format(self.args.machine)), 'wb') as dst:
+					shutil.copyfileobj(src, dst)
+		# Add u-boot install hook to bundle
+		shutil.copy(os.path.join(BASE_DIR, '..', 'share', 'emit', 'hook.sh'), self.bundle_dir)
+		os.chmod(os.path.join(self.bundle_dir, 'hook.sh'), 0o755)
+
+		# Generate manifest
+		with open(os.path.join(self.bundle_dir, 'manifest.raucm'), 'w') as manifest:
+			manifest.write(self.get_manifest())
+
+		subprocess.run(['rauc', '--key=' + self.args.rauc_key, '--cert=' + self.args.rauc_cert, 'bundle', self.bundle_dir, self.args.output_bundle], check=True)
+
+	def run(self):
+		os.umask(0o022)
+
+		self.prepare()
+		self.install_apps()
+		self.write_product_info()
+		self.write_rauc_config()
+		self.pack_image()
+		self.make_bundle()
+
+
+parser_download.set_defaults(cmd=CommandDownload)
+parser_build.set_defaults(cmd=CommandBuild)
+
+args = parser.parse_args()
+args.cmd(args).run()

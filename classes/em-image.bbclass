@@ -11,13 +11,6 @@
 
 inherit core-image
 
-PRODUCT_INFO_PACKAGE ?= ""
-
-# rootfs with 384 MiB (raw disk space)
-IMAGE_ROOTFS_SIZE_em300 = "393216"
-IMAGE_ROOTFS_SIZE_em310 = "393216"
-
-
 # Basic system components
 IMAGE_INSTALL += " \
 		packagegroup-core-boot \
@@ -56,30 +49,10 @@ IMAGE_INSTALL += " \
 		mosquitto \
 		nginx \
 		teridiand-config \
-		${PRODUCT_INFO_PACKAGE} \
 		"
 
 IMAGE_INSTALL_append_em310 = " micrel-netdev-daemon"
 
-# Preinstalled apps
-DEFAULT_APPS ?= " \
-		em-app-button-handler \
-		em-app-data-transfer \
-		em-app-device-settings \
-		em-app-health-check \
-		em-app-flash-scan \
-		em-app-micrel-switch-tool \
-		em-app-smart-meter \
-		em-app-teridiand \
-		em-app-teridiand-fw \
-		em-app-upnp \
-		em-app-web-application \
-		em-app-web-login \
-		"
-
-IMAGE_INSTALL += "${DEFAULT_APPS}"
-
-# Install u-boot to rootfs only for shipping license information
 IMAGE_INSTALL_append_em310 += " u-boot-fslc"
 IMAGE_INSTALL_append_em300 += " u-boot-fslc"
 
@@ -90,6 +63,7 @@ BAD_RECOMMENDATIONS += " \
                       "
 
 IMAGE_LINGUAS = ""
+IMAGE_FSTYPES = "tar"
 
 
 dropbear_rsakey_dir_hook () {
