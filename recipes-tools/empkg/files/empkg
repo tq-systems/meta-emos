@@ -348,6 +348,7 @@ app_sync() {
 	done
 
 	mkdir -p "$APPDIR/installed/"
+	mkdir -p "$DBUSDIR"
 
 	# Link builtin apps into $APPDIR/installed
 	for appdir in "$BUILTIN_DIR"/*; do
