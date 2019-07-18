@@ -151,7 +151,6 @@ app_dbus() {
 		mkdir -p "$APPTMP/dbus"
 
 		cp -f "$conf" "$APPTMP/dbus/$app.conf"
-		mkdir -p "$DBUSDIR"
 		mv -f "$APPTMP/dbus/$app.conf" "$DBUSDIR/$app.conf"
 
 		rm -rf "$APPTMP/dbus"
