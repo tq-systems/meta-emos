@@ -110,31 +110,6 @@ output_array() {
 	fi
 }
 
-copy_defaults() {
-	local app="$1"
-	local defaultdir="$APPDIR/installed/$app/default"
-	local configdir="$CONFIGDIR/$app"
-
-	mkdir -p "$CONFIGDIR"
-
-	(
-		umask 0077
-		mkdir -p "$configdir"
-
-		[ -d "$defaultdir" ] || exit 0 # Exit subshell
-		cd "$defaultdir"
-
-		find -type d | while read -r dir; do
-			mkdir -p "$configdir/$dir"
-		done
-		find ! -type d | while read -r file; do
-			if [ ! -e "$configdir/$file" ]; then
-				cp "$file" "$configdir/$file" || true
-			fi
-		done
-	)
-}
-
 
 # Prints the names of all installed apps, separated by newlines
 list_installed() {
@@ -197,8 +172,6 @@ app_register() {
 app_enable() {
 	local app="$1"
 	ensure_installed "$app"
-
-	copy_defaults "$app"
 
 	mkdir -p "$APPDIR/enabled"
 	ln -snf "../installed/$app" "$APPDIR/enabled/$app"
