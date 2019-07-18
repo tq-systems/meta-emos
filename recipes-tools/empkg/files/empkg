@@ -110,6 +110,13 @@ output_array() {
 	fi
 }
 
+app_config() {
+	local app="$1"
+
+	mkdir -p "$CONFIGDIR"
+	( umask 0077 && mkdir -p "$CONFIGDIR/$app" )
+}
+
 
 # Prints the names of all installed apps, separated by newlines
 list_installed() {
@@ -171,6 +178,8 @@ app_register() {
 app_enable() {
 	local app="$1"
 	ensure_installed "$app"
+
+	app_config "$app"
 
 	mkdir -p "$APPDIR/enabled"
 	ln -snf "../installed/$app" "$APPDIR/enabled/$app"
