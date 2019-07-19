@@ -258,6 +258,7 @@ class CommandBuild(CommandCommon):
 [system]
 compatible={compatible}
 bootloader=uboot
+statusfile=/update/rauc.status
 
 [keyring]
 path=/etc/rauc/ca.cert.pem
