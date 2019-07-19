@@ -10,6 +10,9 @@ DEV_DATA=/dev/mmcblk0p8
 DEV_AUTH=/dev/mmcblk0p9
 
 
+haveged_running=false
+
+
 fatal() {
 	echo >&2 "$1"
 	exit 1
@@ -22,11 +25,23 @@ add_config() {
 	mount --bind "$src" "$dest" || fatal "Failed to bind ${src}."
 }
 
+start_haveged() {
+	$haveged_running || haveged
+	haveged_running=true
+}
+
+stop_haveged() {
+	if $haveged_running; then
+		killall haveged
+		haveged_running=false
+	fi
+}
+
 factory_reset() {
 	echo >&2 'Performing factory reset.'
 
 	# Gather entropy for mkfs.ext4
-	haveged
+	start_haveged
 
 	mkfs.ext4 -Fvj $DEV_APPS
 	mkfs.ext4 -Fvj $DEV_UPDATE
@@ -65,8 +80,10 @@ mount -o nosuid,nodev $DEV_UPDATE /update || fatal '/update mount failed.'
 if [ -e /update/factory-reset ]; then
 	umount /update
 	factory_reset
-	reboot -f
+	mount -o nosuid,nodev $DEV_UPDATE /update || fatal '/update mount failed.'
 fi
+
+stop_haveged
 
 mount -o nosuid,nodev,ro $DEV_AUTH /auth || fatal '/auth mount failed.'
 mount -o nosuid,nodev $DEV_CFGLOG /cfglog || fatal '/cfglog mount failed.'
