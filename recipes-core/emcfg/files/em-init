@@ -10,6 +10,9 @@ DEV_DATA=/dev/mmcblk0p8
 DEV_AUTH=/dev/mmcblk0p9
 
 
+haveged_running=false
+
+
 fatal() {
 	echo >&2 "$1"
 	exit 1
@@ -22,16 +25,20 @@ add_config() {
 	mount --bind "$src" "$dest" || fatal "Failed to bind ${src}."
 }
 
+start_haveged() {
+	$haveged_running || haveged
+	haveged_running=true
+}
+
+stop_haveged() {
+	if $haveged_running; then
+		killall haveged
+		haveged_running=false
+	fi
+}
+
 factory_reset() {
 	echo >&2 'Performing factory reset.'
-
-	# Gather entropy for mkfs.ext4
-	haveged
-
-	mkfs.ext4 -Fvj $DEV_APPS
-	mkfs.ext4 -Fvj $DEV_UPDATE
-	mkfs.ext4 -Fvj $DEV_CFGLOG
-	mkfs.ext4 -Fvj $DEV_DATA
 
 	mount -t tmpfs apps /apps
 	mkdir /apps/installed
@@ -44,6 +51,22 @@ factory_reset() {
 		$TBIN/tboot
 		$TBIN/tcmd SPI_CMD_CLEAR_REGISTERS
 	fi
+
+	# Gather entropy for mkfs.ext4
+	start_haveged
+
+	mkfs.ext4 -Fvj $DEV_APPS
+	mkfs.ext4 -Fvj $DEV_CFGLOG
+	mkfs.ext4 -Fvj $DEV_DATA
+}
+
+update_reset() {
+	echo >&2 'Formatting /update.'
+
+	# Gather entropy for mkfs.ext4
+	start_haveged
+
+	mkfs.ext4 -Fvj $DEV_UPDATE
 }
 
 
@@ -60,13 +83,29 @@ mount -t sysfs sysfs /sys || fatal '/sys mount failed.'
 mount -t tmpfs -o nosuid,nodev,mode=755 run /run || fatal '/run mount failed.'
 
 # Mount eMMC partitions
-mount -o nosuid,nodev $DEV_UPDATE /update || fatal '/update mount failed.'
+
+# This check handles power loss during factory reset.
+# As /update is formatted last, there are two possiblities for unfinsihed
+# factory resets:
+# 1) /update is not formatted yet. In this case, /update can still be mounted
+#    and /update/factory-reset exists. The factory reset will be repeated on the
+#    next boot.
+# 2) /update is in the process of being formatted when the factory reset occurs.
+#    In this case, the following mount may fail. In result, /update will be
+#    formatted again, completing the factory reset.
+if ! mount -o nosuid,nodev $DEV_UPDATE /update; then
+	update_reset
+	mount -o nosuid,nodev $DEV_UPDATE /update || fatal '/update mount failed.'
+fi
 
 if [ -e /update/factory-reset ]; then
 	umount /update
 	factory_reset
-	reboot -f
+	update_reset
+	mount -o nosuid,nodev $DEV_UPDATE /update || fatal '/update mount failed.'
 fi
+
+stop_haveged
 
 mount -o nosuid,nodev,ro $DEV_AUTH /auth || fatal '/auth mount failed.'
 mount -o nosuid,nodev $DEV_CFGLOG /cfglog || fatal '/cfglog mount failed.'
