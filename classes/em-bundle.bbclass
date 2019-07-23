@@ -89,7 +89,7 @@ inherit deploy
 
 do_deploy() {
 	install -d ${DEPLOYDIR}
-	install ${B}/bundle.raucb ${DEPLOYDIR}/${BUNDLE_NAME}.raucb
+	install -m 0644 ${B}/bundle.raucb ${DEPLOYDIR}/${BUNDLE_NAME}.raucb
 	ln -sf ${BUNDLE_NAME}.raucb ${DEPLOYDIR}/${BUNDLE_LINK_NAME}.raucb
 }
 do_deploy[cleandirs] = "${DEPLOYDIR}"
