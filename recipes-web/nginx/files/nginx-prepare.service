@@ -1,0 +1,8 @@
+[Unit]
+Description=NGINX initial setup
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/nginx-log-setup
+ExecStart=/usr/bin/em-keygen /cfglog/system/ssl/default
