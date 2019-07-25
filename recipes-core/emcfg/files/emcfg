@@ -111,6 +111,17 @@ cmd_factory_reset() {
 	reboot
 }
 
+cmd_restore_backup() {
+	if [ ! -e '/update/backup.tar.gz' ]; then
+		echo >&2 'No backup file found.'
+		exit 1
+	fi
+
+	logger 'Importing backup.'
+	touch /update/backup-restore
+	reboot
+}
+
 case "$CMD" in
 init|\
 update|\
@@ -119,7 +130,8 @@ update_ntp|\
 reset_password|\
 reset_network|\
 debug_access|\
-factory_reset)
+factory_reset|\
+restore_backup)
 	"cmd_$CMD"
 	;;
 
