@@ -8,12 +8,34 @@ set -e
 
 
 usage() {
-	echo >&2 "Usage: emos-upgrade install BUNDLE"
+	echo >&2 "Usage: emos-upgrade install [--no-reboot] BUNDLE"
 	exit 1
 }
 
 cmd_install() {
-	[ $# -eq 1 -a -e "$1" ] || usage
+	local OPT_REBOOT=true
+	local arg
+
+	while [ "${1:0:1}" = '-' ]; do
+		arg="$1"; shift
+		case "$arg" in
+		--no-reboot)
+			OPT_REBOOT=false
+			;;
+
+		*)
+			usage
+			exit 1
+		esac
+	done
+
+	[ $# -eq 1 ] || usage
+
+	local file="$1"
+	if [ ! -e "$file" ]; then
+		echo >&2 "Upgrade bundle '$file' not found."
+		exit 1
+	fi
 
 	emos-upgrade-status set_status update_1_started
 
@@ -21,14 +43,16 @@ cmd_install() {
 
 	logger -t emos-upgrade "Starting system upgrade (currently running boot slot $(emos-upgrade-status get_slot_saved))"
 
-	rauc install "$1"
-	mv "$1" /update/last-upgrade.raucb
+	rauc install "$file"
+	mv "$file" /update/last-upgrade.raucb
 	emos-upgrade-status set_status update_1_finished
 
 	trap - EXIT
 
-	sleep 3
-	reboot
+	if $OPT_REBOOT; then
+		sleep 3
+		reboot
+	fi
 }
 
 
