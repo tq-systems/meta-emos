@@ -8,7 +8,7 @@ LIC_FILES_CHKSUM = "file://Licenses/README;md5=a2c678cfd4a4d97135585cad908541c6"
 
 SRC_URI = "git://github.com/tq-systems/u-boot-em.git;branch=${SRCBRANCH};protocol=https"
 
-SRCREV = "43d834926114932cd5293200b5f6b7b238b8ef88"
+SRCREV = "7ae3a195708955a8b256341b4bc753972b53edf1"
 SRCBRANCH = "EM3x0-v2017.03+fslc"
 
 PV = "v2017.03+git${SRCPV}"
