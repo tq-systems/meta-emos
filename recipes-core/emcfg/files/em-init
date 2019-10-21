@@ -38,26 +38,29 @@ stop_haveged() {
 }
 
 factory_reset() {
-	echo >&2 'Performing factory reset.'
+	local reset_data=$1
 
 	mount -t tmpfs apps /apps
 	mkdir /apps/installed
 	mount --bind /opt/apps /apps/installed
-
-	local TBIN=/apps/installed/teridiand/bin
-
-	# Reset teridian registers
-	if [ -x $TBIN/tboot ]; then
-		$TBIN/tboot
-		$TBIN/tcmd SPI_CMD_CLEAR_REGISTERS
-	fi
 
 	# Gather entropy for mkfs.ext4
 	start_haveged
 
 	mkfs.ext4 -Fvj $DEV_APPS
 	mkfs.ext4 -Fvj $DEV_CFGLOG
-	mkfs.ext4 -Fvj $DEV_DATA
+
+	if $reset_data; then
+		mkfs.ext4 -Fvj $DEV_DATA
+
+		local TBIN=/apps/installed/teridiand/bin
+
+		# Reset teridian registers
+		if [ -x $TBIN/tboot ]; then
+			$TBIN/tboot
+			$TBIN/tcmd SPI_CMD_CLEAR_REGISTERS
+		fi
+	fi
 }
 
 update_reset() {
@@ -69,6 +72,9 @@ update_reset() {
 	mkfs.ext4 -Fvj $DEV_UPDATE
 }
 
+backup_restore() {
+	tar -C / -xzf /update/backup.tar.gz
+}
 
 [ $$ -eq 1 ] || fatal 'em-init must run as PID1.'
 
@@ -85,7 +91,7 @@ mount -t tmpfs -o nosuid,nodev,mode=755 run /run || fatal '/run mount failed.'
 # Mount eMMC partitions
 
 # This check handles power loss during factory reset.
-# As /update is formatted last, there are two possiblities for unfinsihed
+# As /update is formatted last, there are two possiblities for unfinished
 # factory resets:
 # 1) /update is not formatted yet. In this case, /update can still be mounted
 #    and /update/factory-reset exists. The factory reset will be repeated on the
@@ -99,20 +105,36 @@ if ! mount -o nosuid,nodev $DEV_UPDATE /update; then
 fi
 
 if [ -e /update/factory-reset ]; then
+	echo >&2 'Performing factory reset.'
+
+	factory_reset true
+
 	umount /update
-	factory_reset
 	update_reset
 	mount -o nosuid,nodev $DEV_UPDATE /update || fatal '/update mount failed.'
 fi
 
-stop_haveged
+if [ -e /update/backup-restore ]; then
+	echo >&2 'Restoring backup.'
+
+	factory_reset false
+fi
 
 mount -o nosuid,nodev,ro $DEV_AUTH /auth || fatal '/auth mount failed.'
 mount -o nosuid,nodev $DEV_CFGLOG /cfglog || fatal '/cfglog mount failed.'
 
+if [ -e /update/backup-restore ]; then
+	backup_restore
+
+	umount /update
+	update_reset
+	mount -o nosuid,nodev $DEV_UPDATE /update || fatal '/update mount failed.'
+fi
+
 mount -o nosuid,nodev $DEV_DATA /data || fatal '/data mount failed.'
 mount -o nosuid,nodev $DEV_APPS /apps || fatal '/apps mount failed.'
 
+stop_haveged
 
 mkdir -p /run/lock
 
