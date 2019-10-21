@@ -8,6 +8,7 @@ SRC_DISTRIBUTE_LICENSES += "TQSSLA_V1.0.2"
 SRC_URI = " \
 	file://LICENSE \
 	file://empkg \
+	file://em-app.target \
 	file://em-app-generator \
 	file://empkg.conf \
 "
@@ -20,6 +21,9 @@ do_install() {
 	install -d ${D}${sbindir}
 	install -m 0755 empkg ${D}${sbindir}
 
+	install -d ${D}${systemd_system_unitdir}
+	install -m 0644 em-app.target ${D}${systemd_system_unitdir}/
+
 	install -d ${D}${systemd_unitdir}/system-generators
 	install -m 0755 em-app-generator ${D}${systemd_unitdir}/system-generators/
 
@@ -27,4 +31,8 @@ do_install() {
 	install -m 0644 empkg.conf ${D}${datadir}/dbus-1/system.d/
 }
 
-FILES_${PN} += "${systemd_unitdir}/system-generators/em-app-generator ${datadir}/dbus-1/system.d/empkg.conf"
+FILES_${PN} += "\
+	${systemd_system_unitdir}/em-app.target \
+	${systemd_unitdir}/system-generators/em-app-generator \
+	${datadir}/dbus-1/system.d/empkg.conf \
+"
