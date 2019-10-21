@@ -1,0 +1,13 @@
+[Unit]
+Description=Store Teridian meter registers on shutdown
+Before=em-app-teridiand.service
+ConditionFileIsExecutable=/apps/installed/teridiand/bin/tcmd
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStop=/apps/installed/teridiand/bin/tboot
+ExecStop=/apps/installed/teridiand/bin/tcmd SPI_CMD_STORE_REGISTERS
+
+[Install]
+WantedBy=multi-user.target

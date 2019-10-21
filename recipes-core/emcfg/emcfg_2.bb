@@ -17,6 +17,7 @@ SRC_URI = " \
 	file://emcfg.service \
 	file://etc-shadow.mount \
 	file://em-app-flash-scan.timer \
+	file://em-store-teridian-registers.service \
 	file://emos.target \
 	file://emcfg-generator \
 	file://80-button-handler.rules \
@@ -24,7 +25,7 @@ SRC_URI = " \
 	file://openssl-em.cnf \
 "
 
-SYSTEMD_SERVICE_${PN} = "em-app-flash-scan.timer"
+SYSTEMD_SERVICE_${PN} = "em-app-flash-scan.timer em-store-teridian-registers.service"
 
 S = "${WORKDIR}"
 
@@ -47,6 +48,7 @@ do_install() {
 		emcfg.service \
 		etc-shadow.mount \
 		em-app-flash-scan.timer \
+		em-store-teridian-registers.service \
 		emos.target \
 		${D}${systemd_unitdir}/system/
 	ln -s ../emcfg.service ../etc-shadow.mount ${D}${systemd_unitdir}/system/sysinit.target.wants/
