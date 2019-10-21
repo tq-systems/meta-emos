@@ -1,8 +1,26 @@
 #!/bin/sh
 
-WANTDIR="$1/multi-user.target.wants"
+CORE_TARGET="multi-user.target"
+APP_TARGET="em-app.target"
 
-mkdir -p "$WANTDIR" || exit 1
+mkdir -p "$1/$CORE_TARGET.wants" "$1/$APP_TARGET.wants" || exit 1
+
+# Core apps aren't stopped during backups / upgrades / ...
+is_core_app() {
+	case "$1" in
+	button-handler|\
+	devel|\
+	device-settings|\
+	health-check|\
+	micrel-switch-tool|\
+	upnp|\
+	web-login)
+		return 0
+		;;
+	*)
+		return 1
+	esac
+}
 
 for app in $(empkg --plain list-enabled); do
 	service="/apps/installed/$app/em-app-$app.service"
@@ -15,7 +33,18 @@ for app in $(empkg --plain list-autostart); do
 	service="/apps/installed/$app/em-app-$app.service"
 	[ -e "$1/em-app-$app.service" ] || continue
 
-	ln -s "$1/em-app-$app.service" "$WANTDIR/em-app-$app.service"
+	if is_core_app "$app"; then
+		ln -s "$1/em-app-$app.service" "$1/$CORE_TARGET.wants/em-app-$app.service"
+		continue
+	fi
+
+	mkdir -p "$1/em-app-$app.service.d"
+	cat >"$1/em-app-$app.service.d/part-of.conf" <<EOF
+[Unit]
+PartOf=$APP_TARGET
+EOF
+
+	ln -s "$1/em-app-$app.service" "$1/$APP_TARGET.wants/em-app-$app.service"
 done
 
 exit 0
