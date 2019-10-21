@@ -1,6 +1,6 @@
 [Unit]
 Description=status-led is setting the status LED after boot
-After=multi-user.target
+After=multi-user.target emos.target
 
 [Service]
 Type=simple

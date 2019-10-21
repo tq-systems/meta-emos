@@ -17,6 +17,7 @@ SRC_URI = " \
 	file://emcfg.service \
 	file://etc-shadow.mount \
 	file://em-app-flash-scan.timer \
+	file://emos.target \
 	file://emcfg-generator \
 	file://80-button-handler.rules \
 	file://em-keygen \
@@ -42,7 +43,12 @@ do_install() {
 	ln -s /run/em/etc/systemd/network/50-wired.network ${D}${sysconfdir}/systemd/network/
 
 	install -d ${D}${systemd_unitdir}/system/sysinit.target.wants/
-	install -m 0644 emcfg.service etc-shadow.mount em-app-flash-scan.timer ${D}${systemd_unitdir}/system/
+	install -m 0644 \
+		emcfg.service \
+		etc-shadow.mount \
+		em-app-flash-scan.timer \
+		emos.target \
+		${D}${systemd_unitdir}/system/
 	ln -s ../emcfg.service ../etc-shadow.mount ${D}${systemd_unitdir}/system/sysinit.target.wants/
 
 	install -d ${D}${systemd_unitdir}/system-generators
@@ -63,11 +69,7 @@ RDEPENDS_${PN} += "jq u-boot-fslc-fw-utils openssl-bin faketime"
 FILES_${PN} += " \
 	${sysconfdir}/tmpfiles.d/00-emos-log.conf \
 	${sysconfdir}/systemd/network/50-wired.network \
-	${systemd_unitdir}/system/em-update-password.service \
-	${systemd_unitdir}/system/etc-shadow.mount \
-	${systemd_unitdir}/system/emcfg.service \
-	${systemd_unitdir}/system/sysinit.target.wants/etc-shadow.mount \
-	${systemd_unitdir}/system/sysinit.target.wants/emcfg.service \
+	${systemd_unitdir}/system/ \
 	${systemd_unitdir}/system-generators/emcfg-generator \
 "
 

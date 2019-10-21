@@ -1,0 +1,6 @@
+[Unit]
+Description=Full EMOS boot
+Wants=multi-user.target em-app.target
+Conflicts=rescue.service rescue.target
+After=basic.target rescue.service rescue.target
+AllowIsolate=yes

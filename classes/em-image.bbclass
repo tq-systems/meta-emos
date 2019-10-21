@@ -74,6 +74,7 @@ dropbear_rsakey_dir_hook () {
 }
 ROOTFS_POSTPROCESS_COMMAND += "dropbear_rsakey_dir_hook; "
 IMAGE_FEATURES += "read-only-rootfs allow-root-login"
+SYSTEMD_DEFAULT_TARGET = "emos.target"
 
 COPY_LIC_MANIFEST = "1"
 COPY_LIC_DIRS = "1"
