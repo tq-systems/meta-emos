@@ -37,12 +37,16 @@ stop_haveged() {
 	fi
 }
 
+check_flag() {
+	if [ -e "/update/$1" ]; then
+		echo 'true'
+	else
+		echo 'false'
+	fi
+}
+
 factory_reset() {
 	local reset_data=$1
-
-	mount -t tmpfs apps /apps
-	mkdir /apps/installed
-	mount --bind /opt/apps /apps/installed
 
 	# Gather entropy for mkfs.ext4
 	start_haveged
@@ -53,6 +57,10 @@ factory_reset() {
 	if $reset_data; then
 		mkfs.ext4 -Fvj $DEV_DATA
 
+		mount -t tmpfs apps /apps
+		mkdir /apps/installed
+		mount --bind /opt/apps /apps/installed
+
 		local TBIN=/apps/installed/teridiand/bin
 
 		# Reset teridian registers
@@ -60,7 +68,19 @@ factory_reset() {
 			$TBIN/tboot
 			$TBIN/tcmd SPI_CMD_CLEAR_REGISTERS
 		fi
+
+		umount /apps/installed
+		umount /apps
 	fi
+}
+
+data_reset() {
+	echo >&2 'Formatting /data.'
+
+	# Gather entropy for mkfs.ext4
+	start_haveged
+
+	mkfs.ext4 -Fvj $DEV_DATA
 }
 
 update_reset() {
@@ -75,6 +95,13 @@ update_reset() {
 backup_restore() {
 	tar -C / -xzf /update/backup.tar.gz
 }
+
+# Delete files that may not be restored from backups
+# (because they constitute a security risk)
+backup_sanitize() {
+	rm -f /cfglog/system/password
+}
+
 
 [ $$ -eq 1 ] || fatal 'em-init must run as PID1.'
 
@@ -104,7 +131,10 @@ if ! mount -o nosuid,nodev $DEV_UPDATE /update; then
 	mount -o nosuid,nodev $DEV_UPDATE /update || fatal '/update mount failed.'
 fi
 
-if [ -e /update/factory-reset ]; then
+
+FACTORY_RESET=$(check_flag factory-reset)
+
+if $FACTORY_RESET; then
 	echo >&2 'Performing factory reset.'
 
 	factory_reset true
@@ -114,7 +144,11 @@ if [ -e /update/factory-reset ]; then
 	mount -o nosuid,nodev $DEV_UPDATE /update || fatal '/update mount failed.'
 fi
 
-if [ -e /update/backup-restore ]; then
+
+SAFE_MODE=$(check_flag safe-mode)
+BACKUP_RESTORE=$(check_flag backup-restore)
+
+if $BACKUP_RESTORE; then
 	echo >&2 'Restoring backup.'
 
 	factory_reset false
@@ -123,15 +157,32 @@ fi
 mount -o nosuid,nodev,ro $DEV_AUTH /auth || fatal '/auth mount failed.'
 mount -o nosuid,nodev $DEV_CFGLOG /cfglog || fatal '/cfglog mount failed.'
 
-if [ -e /update/backup-restore ]; then
+if $BACKUP_RESTORE; then
 	backup_restore
+
+	backup_sanitize
 
 	umount /update
 	update_reset
 	mount -o nosuid,nodev $DEV_UPDATE /update || fatal '/update mount failed.'
 fi
 
-mount -o nosuid,nodev $DEV_DATA /data || fatal '/data mount failed.'
+if ! mount -o nosuid,nodev $DEV_DATA /data; then
+	# When a backup import was interrupted while /data was being formatted,
+	# the mount may fail. Rather than failing to boot, we will just try to
+	# format it again.
+	# To avoid formatting /data in other cases (potentially leading to data
+	# loss), we only do so when the safe-mode, but not backup-restore is
+	# set.
+	# As long as backup-restore is not set, /update will not be formatted,
+	# so we don't lose the safe-mode flag, indicating a failed backup
+	# restore.
+	$SAFE_MODE && ! $BACKUP_RESTORE || fatal '/data mount failed.'
+
+	data_reset
+	mount -o nosuid,nodev $DEV_DATA /data || fatal '/data mount failed.'
+fi
+
 mount -o nosuid,nodev $DEV_APPS /apps || fatal '/apps mount failed.'
 
 stop_haveged
