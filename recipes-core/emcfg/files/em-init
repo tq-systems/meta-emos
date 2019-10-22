@@ -71,6 +71,15 @@ factory_reset() {
 	fi
 }
 
+data_reset() {
+	echo >&2 'Formatting /data.'
+
+	# Gather entropy for mkfs.ext4
+	start_haveged
+
+	mkfs.ext4 -Fvj $DEV_DATA
+}
+
 update_reset() {
 	echo >&2 'Formatting /update.'
 
@@ -126,6 +135,7 @@ if $FACTORY_RESET; then
 fi
 
 
+SAFE_MODE=$(check_flag safe-mode)
 BACKUP_RESTORE=$(check_flag backup-restore)
 
 if $BACKUP_RESTORE; then
@@ -145,7 +155,22 @@ if $BACKUP_RESTORE; then
 	mount -o nosuid,nodev $DEV_UPDATE /update || fatal '/update mount failed.'
 fi
 
-mount -o nosuid,nodev $DEV_DATA /data || fatal '/data mount failed.'
+if ! mount -o nosuid,nodev $DEV_DATA /data; then
+	# When a backup import was interrupted while /data was being formatted,
+	# the mount may fail. Rather than failing to boot, we will just try to
+	# format it again.
+	# To avoid formatting /data in other cases (potentially leading to data
+	# loss), we only do so when the safe-mode, but not backup-restore is
+	# set.
+	# As long as backup-restore is not set, /update will not be formatted,
+	# so we don't lose the safe-mode flag, indicating a failed backup
+	# restore.
+	$SAFE_MODE && ! $BACKUP_RESTORE || fatal '/data mount failed.'
+
+	data_reset
+	mount -o nosuid,nodev $DEV_DATA /data || fatal '/data mount failed.'
+fi
+
 mount -o nosuid,nodev $DEV_APPS /apps || fatal '/apps mount failed.'
 
 stop_haveged
