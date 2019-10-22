@@ -9,26 +9,28 @@ SRC_URI = " \
 	file://LICENSE \
 	file://empkg \
 	file://em-app.target \
-	file://em-app-generator \
 	file://empkg.conf \
+	file://src/em-app-generator.c;localdir=src \
+	file://src/Makefile;localdir=src \
 "
 
-S = "${WORKDIR}"
+S = "${WORKDIR}/src"
 
+DEPENDS = "jansson"
 RDEPENDS_${PN} += "jq"
 
 do_install() {
 	install -d ${D}${sbindir}
-	install -m 0755 empkg ${D}${sbindir}
+	install -m 0755 ${WORKDIR}/empkg ${D}${sbindir}
 
 	install -d ${D}${systemd_system_unitdir}
-	install -m 0644 em-app.target ${D}${systemd_system_unitdir}/
-
-	install -d ${D}${systemd_unitdir}/system-generators
-	install -m 0755 em-app-generator ${D}${systemd_unitdir}/system-generators/
+	install -m 0644 ${WORKDIR}/em-app.target ${D}${systemd_system_unitdir}/
 
 	install -d ${D}${datadir}/dbus-1/system.d
-	install -m 0644 empkg.conf ${D}${datadir}/dbus-1/system.d/
+	install -m 0644 ${WORKDIR}/empkg.conf ${D}${datadir}/dbus-1/system.d/
+
+	install -d ${D}${systemd_unitdir}/system-generators
+	install -m 0755 ${S}/em-app-generator ${D}${systemd_unitdir}/system-generators/
 }
 
 FILES_${PN} += "\
