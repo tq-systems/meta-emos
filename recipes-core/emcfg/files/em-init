@@ -93,6 +93,13 @@ backup_restore() {
 	tar -C / -xzf /update/backup.tar.gz
 }
 
+# Delete files that may not be restored from backups
+# (because they constitute a security risk)
+backup_sanitize() {
+	rm -f /cfglog/system/password
+}
+
+
 [ $$ -eq 1 ] || fatal 'em-init must run as PID1.'
 
 
@@ -149,6 +156,8 @@ mount -o nosuid,nodev $DEV_CFGLOG /cfglog || fatal '/cfglog mount failed.'
 
 if $BACKUP_RESTORE; then
 	backup_restore
+
+	backup_sanitize
 
 	umount /update
 	update_reset
