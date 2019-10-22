@@ -37,6 +37,14 @@ stop_haveged() {
 	fi
 }
 
+check_flag() {
+	if [ -e "/update/$1" ]; then
+		echo 'true'
+	else
+		echo 'false'
+	fi
+}
+
 factory_reset() {
 	local reset_data=$1
 
@@ -104,7 +112,10 @@ if ! mount -o nosuid,nodev $DEV_UPDATE /update; then
 	mount -o nosuid,nodev $DEV_UPDATE /update || fatal '/update mount failed.'
 fi
 
-if [ -e /update/factory-reset ]; then
+
+FACTORY_RESET=$(check_flag factory-reset)
+
+if $FACTORY_RESET; then
 	echo >&2 'Performing factory reset.'
 
 	factory_reset true
@@ -114,7 +125,10 @@ if [ -e /update/factory-reset ]; then
 	mount -o nosuid,nodev $DEV_UPDATE /update || fatal '/update mount failed.'
 fi
 
-if [ -e /update/backup-restore ]; then
+
+BACKUP_RESTORE=$(check_flag backup-restore)
+
+if $BACKUP_RESTORE; then
 	echo >&2 'Restoring backup.'
 
 	factory_reset false
@@ -123,7 +137,7 @@ fi
 mount -o nosuid,nodev,ro $DEV_AUTH /auth || fatal '/auth mount failed.'
 mount -o nosuid,nodev $DEV_CFGLOG /cfglog || fatal '/cfglog mount failed.'
 
-if [ -e /update/backup-restore ]; then
+if $BACKUP_RESTORE; then
 	backup_restore
 
 	umount /update
