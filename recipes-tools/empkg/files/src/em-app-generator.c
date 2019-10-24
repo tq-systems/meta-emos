@@ -18,11 +18,10 @@
 #include <string.h>
 #include <unistd.h>
 
-#define CORE_TARGET "multi-user.target"
-#define APP_TARGET "em-app.target"
+#define APP_BEFORE_TARGET "em-app-before.target"
 
-#define CORE_TARGET_WANTS CORE_TARGET ".wants"
-#define APP_TARGET_WANTS APP_TARGET ".wants"
+#define CORE_TARGET_WANTS "multi-user.target.wants"
+#define APP_TARGET_WANTS "em-app.target.wants"
 
 const char *const CORE_APPS[] = {
 	"button-handler",
@@ -87,9 +86,9 @@ void symlink_wants(const char *app, const char *target) {
 	}
 }
 
-void make_part_of(const char *app) {
+void add_dependencies(const char *app) {
 	const char *snippet_dir_pattern = "em-app-%s.service.d";
-	const char *snippet_pattern = "em-app-%s.service.d/part-of.conf";
+	const char *snippet_pattern = "em-app-%s.service.d/em-app-deps.conf";
 
 	char snippet_dir[strlen(snippet_dir_pattern) + strlen(app) + 1];
 	char snippet[strlen(snippet_pattern) + strlen(app) + 1];
@@ -110,7 +109,8 @@ void make_part_of(const char *app) {
 	}
 
 	fprintf(f, "[Unit]\n");
-	fprintf(f, "PartOf=%s\n", APP_TARGET);
+	fprintf(f, "Requires=%s\n", APP_BEFORE_TARGET);
+	fprintf(f, "After=%s\n", APP_BEFORE_TARGET);
 
 	fclose(f);
 }
@@ -142,7 +142,7 @@ void handle_app(const char *app) {
 	}
 
 	symlink_wants(app, APP_TARGET_WANTS);
-	make_part_of(app);
+	add_dependencies(app);
 }
 
 
