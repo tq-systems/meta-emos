@@ -1,5 +1,4 @@
 [Unit]
 Description=EM apps
-Requires=basic.target
-Conflicts=rescue.service rescue.target
-After=basic.target rescue.service rescue.target
+Requires=em-app-before.target
+After=em-app-before.target
