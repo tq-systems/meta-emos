@@ -15,7 +15,9 @@ PROVIDES += "u-boot"
 #        during the build process.
 EXTRA_OEMAKE += 'HOSTCC="${BUILD_CC} ${BUILD_CPPFLAGS}" \
                  HOSTLDFLAGS="${BUILD_LDFLAGS}" \
-                 HOSTSTRIP=true'
+                 HOSTSTRIP=true \
+                 PYTHON=nativepython \
+'
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 COMPATIBLE_MACHINE = "(em300|em310)"
