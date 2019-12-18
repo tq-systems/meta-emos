@@ -1,5 +1,5 @@
 defaults:
-  url: http://develx01.tq-net.de/updates/apps/{app}/{name}_{version}_{arch}.empkg
+  url: http://develx01.tq-net.de/updates/apps/{app}/master/{name}_{version}_{arch}.empkg
 
 apps:
   button-handler:
