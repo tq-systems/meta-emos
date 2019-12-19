@@ -1,3 +1,5 @@
+compatible: sdk
+
 product_info:
   name: 'Energy Manager 400'
   code: 'EM400' # This is used for the default hostname
@@ -6,7 +8,15 @@ product_info:
   manufacturer_url: 'https://www.tq-group.com/'
 
 apps:
+  access-token:
+    version: 'latest'
+    cache: false
+
   devel:
+    version: 'latest'
+    cache: false
+
+  json:
     version: 'latest'
     cache: false
 
