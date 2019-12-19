@@ -89,7 +89,7 @@ class CommandCommon:
 
 		with open(BASE_SPEC, 'r') as f:
 			self.bundle_spec = yaml.load(f)
-		
+
 		for spec in self.args.bundle_spec:
 			with open(spec, 'r') as f:
 				bundle_spec = yaml.load(f)
@@ -101,13 +101,13 @@ class CommandCommon:
 	def app_url(self, app, info):
 		"""Given an app name and its info structure, returns the URL and destination filename of an app."""
 
-		template = info.get('url', self.defaults['url'])
-		url = template.format(
-			app=app,
-			name=info.get('name', app),
-			version=info.get('version'),
-			arch=self.args.arch,
-		)
+		info = merge_dicts(self.defaults, info)
+		info = merge_dicts(info, {
+			'app': app,
+			'name': info.get('name', app),
+			'arch': self.args.arch,
+		})
+		url = info['url'].format(**info)
 		filename = urlparse(url).path.rpartition('/')[2]
 
 		return (url, filename)
