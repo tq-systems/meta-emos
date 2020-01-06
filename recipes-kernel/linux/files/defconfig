@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm 4.19.53 Kernel Configuration
+# Linux/arm 4.19.78 Kernel Configuration
 #
 
 #
@@ -66,7 +66,7 @@ CONFIG_NO_HZ_COMMON=y
 # CONFIG_HZ_PERIODIC is not set
 CONFIG_NO_HZ_IDLE=y
 # CONFIG_NO_HZ is not set
-# CONFIG_HIGH_RES_TIMERS is not set
+CONFIG_HIGH_RES_TIMERS=y
 # CONFIG_PREEMPT_NONE is not set
 CONFIG_PREEMPT_VOLUNTARY=y
 # CONFIG_PREEMPT is not set
@@ -311,6 +311,7 @@ CONFIG_HZ_100=y
 # CONFIG_HZ_500 is not set
 # CONFIG_HZ_1000 is not set
 CONFIG_HZ=100
+CONFIG_SCHED_HRTICK=y
 CONFIG_AEABI=y
 # CONFIG_OABI_COMPAT is not set
 CONFIG_HAVE_ARCH_PFN_VALID=y
@@ -969,7 +970,7 @@ CONFIG_SWPHY=y
 #
 # CONFIG_AMD_PHY is not set
 # CONFIG_AQUANTIA_PHY is not set
-# CONFIG_ASIX_PHY is not set
+# CONFIG_AX88796B_PHY is not set
 # CONFIG_AT803X_PHY is not set
 # CONFIG_BCM7XXX_PHY is not set
 # CONFIG_BCM87XX_PHY is not set
