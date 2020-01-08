@@ -1,49 +1,48 @@
 defaults:
-  url: http://develx01.tq-net.de/updates/apps/{app}/{branch}/{name}_{version}_{arch}.empkg
-  branch: master
+  url: http://packages.tq-group.com/energymanager/apps/{app}/{name}_{version}_{arch}.empkg
 
 apps:
   button-handler:
-    version: 'latest'
-    cache: false
+    version: '2.0.1'
+    sha256: '6344e247fabd865129485dbf70433cd523d3bafe9324303e14463cb2658bcf8f'
 
   data-transfer:
-    version: 'latest'
-    cache: false
+    version: '3.0.2'
+    sha256: '03ee49ca008c4b679407d2b3391888edf38af72955478a57bb74b027d3b433a7'
 
   device-settings:
-    version: 'latest'
-    cache: false
+    version: '2.2.2'
+    sha256: 'ecf70c6daa4df662d1553d76d9c36b348cf2e294cbfa9583f899fc2ea961855b'
 
   flash-scan:
-    version: 'latest'
-    cache: false
+    version: '2.0.1'
+    sha256: '0ab35950f51993f667fd7e71850a1cb67ebcffac8ee62962818ca3548fd364fc'
 
   health-check:
-    version: 'latest'
-    cache: false
+    version: '1.1.1'
+    sha256: 'e653eae0111dc8a6886674fcbd59bbb1ed339aea18ce7931653b67e51a3b3cb8'
 
   micrel-switch-tool:
-    version: 'latest'
-    cache: false
+    version: '1.0.2'
+    sha256: 'f5d2e7f09f0190dfb9d1d5b55abc17b0f18e30f233c5667e8e08b258ad8357d1'
 
   teridiand:
-    version: 'latest'
-    cache: false
+    version: '1.4.5'
+    sha256: 'e9c4ee78506b1bef345921b09fda18b9d0028f41b1cb366f57ee70c64e6893f1'
 
   teridiand-fw:
-    version: 'latest'
-    cache: false
+    version: '1.0.1'
+    sha256: '7c7b00368e2d44725ee39c574ca574401a62d7448d5f519966e17aa3f38cd0d3'
 
   upnp:
-    version: 'latest'
-    cache: false
+    version: '1.1.2'
+    sha256: '67e78d5c64a89c041432a1f4b8a368aacd2e63bcb0822486b806b2e23ecb1e74'
 
   web-application:
-    name: 'web-application-tq'
-    version: 'latest'
-    cache: false
+    name: web-application-tq
+    version: '2.5.3'
+    sha256: 'f7ba404d3caa525b75139aae72ce47fc6fe4e201ed5768df6386a7fc8adb2df6'
 
   web-login:
-    version: 'latest'
-    cache: false
+    version: '2.3.3'
+    sha256: '40e7ae1a2db685c44dfd8ebb98766bb5aa25e1469c9ab00d3490e575201bf5e7'
