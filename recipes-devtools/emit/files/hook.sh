@@ -13,8 +13,27 @@ set -eo pipefail
 case "$1" in
 
 install-check)
-	if [ "$RAUC_MF_COMPATIBLE" != "$RAUC_SYSTEM_COMPATIBLE" ]; then
-		echo "Compatible does not match!" >&2
+	# Split compatible strings at /
+	oldIFS="$IFS"; IFS='/'
+
+	set -- $RAUC_SYSTEM_COMPATIBLE
+	SYSTEM_MACHINE="$1"
+	SYSTEM_COMPATIBLE="$2"
+
+	set -- $RAUC_MF_COMPATIBLE
+	MF_MACHINE="$1"
+	MF_COMPATIBLE="$2"
+
+	IFS="$oldIFS"
+
+
+	if [ "$MF_MACHINE" != "$SYSTEM_MACHINE" ]; then
+		echo "Your hardware is not supported by this firmware bundle." >&2
+		exit 10
+	fi
+
+	if [ "$MF_COMPATIBLE" != "$SYSTEM_COMPATIBLE" ]; then
+		echo "Incorrect firmware." >&2
 		exit 10
 	fi
 
