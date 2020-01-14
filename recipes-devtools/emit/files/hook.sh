@@ -32,6 +32,10 @@ install-check)
 		exit 10
 	fi
 
+	if [ -e /run/ignore-compatible ]; then
+		exit 0
+	fi
+
 	if [ "$MF_COMPATIBLE" != "$SYSTEM_COMPATIBLE" ]; then
 		echo "Incorrect firmware." >&2
 		exit 10
