@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -58,12 +59,21 @@ def filehash(path):
 	return m.hexdigest()
 
 def checkhash(path, expected):
-	"""Check whether the SHA256 hash of a file matches an expected value and raises an exception otherwise."""
+	"""Checks whether the SHA256 hash of a file matches an expected value and raises an exception otherwise."""
 
 	expected = expected.lower()
 	actual = filehash(path).lower()
 	if expected != actual:
 		raise Exception('Incorrect SHA256 checksum on file \'{}\' (expected {}, actual {})'.format(path, expected, actual))
+
+
+def checkstring(s):
+	"""
+	Checks whether a string is composed from "safe" characters.
+
+	At the moment, this only excludes the forward slash, as it is used as a separator in the compatible string.
+	"""
+	return bool(re.fullmatch(r'[^/]+', s))
 
 
 def merge_dicts(a, b):
@@ -212,6 +222,13 @@ class CommandBuild(CommandCommon):
 	def get_description(self):
 		return 'EM bundle {}'.format(self.args.image_name)
 
+	def get_compatible(self):
+		ret = self.bundle_spec.get('compatible', self.args.image_name)
+
+		if not checkstring(ret):
+			raise Exception('Invalid compatible string \'{}\''.format(ret))
+		return ret
+
 	def get_version(self):
 		"""
 		Returns the version number to be added to the product info and the bundle manifest.
@@ -221,19 +238,39 @@ class CommandBuild(CommandCommon):
 		"""
 
 		if self.args.bundle_version != None:
-			return self.args.bundle_version
+			ret = self.args.bundle_version
+		else:
+			ret = self.bundle_spec['product_info'].get('software_version', '0')
 
-		return self.bundle_spec['product_info'].get('software_version', '0')
+		if not checkstring(ret):
+			raise Exception('Invalid version string \'{}\''.format(ret))
+		return ret
 
-	def get_compatible(self):
+	def get_compatible_bundle(self):
 		"""
-		Returns a compatible string for the RAUC config and bundle manifest.
+		Returns a compatible string for the bundle manifest.
 
 		The compatible string has the format $MACHINE/$COMPATIBLE, where $COMPATIBLE is set in the bundle spec,
 		falling back to the bundle name if unset in the spec.
 		"""
 
-		return '{}/{}'.format(self.args.machine, self.bundle_spec.get('compatible', self.args.image_name))
+		machine = self.args.machine
+
+		if not checkstring(machine):
+			raise Exception('Invalid machine string \'{}\''.format(machine))
+
+		return '{}/{}'.format(machine, self.get_compatible())
+
+	def get_compatible_config(self):
+		"""
+		Returns a compatible string for the RAUC config.
+
+		The compatible string has the format $MACHINE/$COMPATIBLE/1/$VERSION, where $MACHINE/$COMPATIBLE is
+                generated as described in get_compatible_bundle(), 1 the version of the compatible string format, and
+                $VERSION is the bundle version.
+		"""
+
+		return '{}/1/{}'.format(self.get_compatible_bundle(), self.get_version())
 
 	def write_product_info(self):
 		"""Writes the product info from the bundle spec to /etc/product-info.json in the image root"""
@@ -279,7 +316,7 @@ device=/dev/mmcblk0p3
 type=ext4
 bootname=2
 force-install-same=true
-'''.format(compatible=self.get_compatible())
+'''.format(compatible=self.get_compatible_config())
 
 	def write_rauc_config(self):
 		"""Writes the RAUC config and keyring to /etc/rauc/ in the image root"""
@@ -339,7 +376,7 @@ hooks=install-check
 hooks=install
 '''.format(
 			description=self.get_description(),
-			compatible=self.get_compatible(),
+			compatible=self.get_compatible_bundle(),
 			version=self.get_version(),
 			rootfs=fileinfo('em-image-{}-{}.tar'.format(self.args.image_name, self.args.machine)),
 			uboot=fileinfo('u-boot-{}.sb'.format(self.args.machine)),

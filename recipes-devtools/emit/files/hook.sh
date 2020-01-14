@@ -1,4 +1,5 @@
 #!/bin/sh
+
 #
 # Copyright (C) 2020, TQ Systems
 #
@@ -10,6 +11,27 @@
 set -eo pipefail
 
 
+check_version() {
+	local system_version="$1" bundle_version="$2"
+
+	# Get prefix composed of digits and periods, we don't care about snapshot suffixes etc.
+	system_version="$(echo "$system_version" | grep -Eo '^[0-9.]+')"
+	bundle_version="$(echo "$bundle_version" | grep -Eo '^[0-9.]+')"
+
+	# Take the first 3 fields (separated by periods), sort each numerically
+	# Sub-patchlevel numbers are ignored if they exist
+	local lower_version="$(
+		printf '%s\n%s\n' "$system_version" "$bundle_version" | \
+		sort -s -t . -k 1,1n -k 2,2n -k 3,3n | \
+		head -n 1
+	)"
+
+	# Return true when the system version is the lower on of the two versions
+	# - so this is an upgrade, or both version strings are equal
+	[ "$system_version" = "$lower_version" ]
+}
+
+
 case "$1" in
 
 install-check)
@@ -19,6 +41,8 @@ install-check)
 	set -- $RAUC_SYSTEM_COMPATIBLE
 	SYSTEM_MACHINE="$1"
 	SYSTEM_COMPATIBLE="$2"
+	SYSTEM_FORMAT="$3"
+	SYSTEM_VERSION="$4"
 
 	set -- $RAUC_MF_COMPATIBLE
 	MF_MACHINE="$1"
@@ -40,6 +64,26 @@ install-check)
 		echo "Incorrect firmware." >&2
 		exit 10
 	fi
+
+	case "$SYSTEM_FORMAT" in
+	'')
+		# Old firmware, upgrade is always allowed
+		;;
+
+	'1')
+		if ! check_version "$SYSTEM_VERSION" "$RAUC_MF_VERSION"; then
+			echo "Installed firmware too new, downgrades are not supported." >&2
+			exit 10
+		fi
+		;;
+
+	*)
+		# Unknown compatible string format, the installed firmware
+		# must be newer than this script
+		echo "Installed firmware too new, downgrades are not supported." >&2
+		exit 10
+		;;
+	esac
 
 	;;
 
