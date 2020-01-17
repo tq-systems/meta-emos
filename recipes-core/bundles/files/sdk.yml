@@ -21,8 +21,8 @@ apps:
     sha256: '76607b95ad93a36e2da9ac27d7db68ecc81ef8dc6c4a183b04034b3567a8ce01'
 
   sensors:
-    version: '1.0.4'
-    sha256: '546f78c803505a1fdf90b9c7e4dd404e6c4e6b2bc006515c5a2a2db8a8f27b91'
+    version: '1.1.0'
+    sha256: '1796e4fe484cbafc7bea842e32ab54f290f09e7f08b27284ab7e64143ddc5093'
 
   smart-meter:
     version: '2.1.4'
