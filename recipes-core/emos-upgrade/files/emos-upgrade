@@ -41,7 +41,7 @@ cmd_install() {
 
 	trap 'emos-upgrade-status reset' EXIT
 
-	logger -t emos-upgrade "Starting system upgrade (currently running boot slot $(emos-upgrade-status get_slot_saved))"
+	logger -t emos-upgrade "Starting system upgrade (currently running boot slot $(emos-upgrade-status get_slot_active))"
 
 	rauc install "$file"
 	rm -f "$file"
