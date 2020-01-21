@@ -29,14 +29,14 @@ get_slot_other() {
 		;;
 
 	*)
-		exit 1
+		return 1
 	esac
 
-	exit 0
+	return 0
 }
 
 get_slot_device() {
-	[ $# -eq 1  ] || exit 1
+	[ $# -eq 1  ] || return 1
 
 	rauc status --output-format=json | jq -r "
 		.slots |
@@ -54,12 +54,12 @@ check_transition() {
 
 	if [ "$old_status" != "$1" ]; then
 		echo >&2 "emos-upgrade-status: invalid transition from '$old_status' to '$2'. Is there another upgrade running?"
-		exit 1
+		return 1
 	fi
 }
 
 set_status() {
-	[ $# -eq 1 -a ! -z "$1" ] || exit 1
+	[ $# -eq 1 -a ! -z "$1" ] || return 1
 
 	case "$1" in
 	"update_1_started")
@@ -70,7 +70,7 @@ set_status() {
 		;;
 	*)
 		echo >&2 'emos-upgrade-status: Cannot set unknown status.'
-		exit 1
+		return 1
 	esac
 
 	echo "$1" > "$FILE_UPDATE_STATUS"
