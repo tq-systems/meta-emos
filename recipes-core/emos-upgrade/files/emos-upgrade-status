@@ -8,16 +8,11 @@ set -e
 
 FILE_LOCK="/update/lock"
 FILE_UPDATE_STATUS="/update/status"
-FILE_RAUC_SLOT_SAVED="/update/slot"
 
 
 exec 9>"$FILE_LOCK"
 flock 9
 
-
-get_slot_saved() {
-	cat "$FILE_RAUC_SLOT_SAVED" 2>/dev/null || true
-}
 
 get_slot_active() {
 	rauc status --output-format=json | jq -r '.booted'
@@ -69,7 +64,6 @@ set_status() {
 	case "$1" in
 	"update_1_started")
 		check_transition '' "$1"
-		get_slot_active > "$FILE_RAUC_SLOT_SAVED"
 		;;
 	"update_1_finished")
 		check_transition 'update_1_started' "$1"
@@ -83,7 +77,7 @@ set_status() {
 }
 
 reset_status() {
-	rm -f "$FILE_UPDATE_STATUS" "$FILE_RAUC_SLOT_SAVED"
+	rm -f "$FILE_UPDATE_STATUS" /update/slot
 }
 
 CMD="$1"; shift
@@ -97,9 +91,6 @@ get_status)
 	;;
 get_slot_active)
 	get_slot_active
-	;;
-get_slot_saved)
-	get_slot_saved
 	;;
 get_slot_other)
 	get_slot_other
