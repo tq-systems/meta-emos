@@ -1,44 +1,134 @@
 #!/bin/sh
+
+#
+# Copyright (C) 2020, TQ Systems
+#
+# slot-install handling is:
 #
 # (c) Gateware Communications GmbH, Nuremberg 2018
 #
 
 set -eo pipefail
 
-echo "i.MX28 bootloader install script"
 
-if [ "$1" != "slot-install" ]; then
-	echo "Invalid action '$1'! Aborting." >&2
-	exit 1
-fi
-if [ "$RAUC_SLOT_CLASS" != "u-boot" ]; then
-	echo "Invalid slot class '$RAUC_SLOT_CLASS'! Aborting" >&2
-	exit 1
-fi
+check_version() {
+	local system_version="$1" bundle_version="$2"
 
-BOOT_SLOT="$(imx28-blupdate status --device "$RAUC_SLOT_DEVICE" --boot-source | awk '/NOTICE: Boot source: / {print $4}')"
+	# Get prefix composed of digits and periods, we don't care about snapshot suffixes etc.
+	system_version="$(echo "$system_version" | grep -Eo '^[0-9.]+')"
+	bundle_version="$(echo "$bundle_version" | grep -Eo '^[0-9.]+')"
 
-case "$BOOT_SLOT" in
-Primary)
-	SLOTS='second first'
+	# Take the first 3 fields (separated by periods), sort each numerically
+	# Sub-patchlevel numbers are ignored if they exist
+	local lower_version="$(
+		printf '%s\n%s\n' "$system_version" "$bundle_version" | \
+		sort -s -t . -k 1,1n -k 2,2n -k 3,3n | \
+		head -n 1
+	)"
+
+	# Return true when the system version is the lower on of the two versions
+	# - so this is an upgrade, or both version strings are equal
+	[ "$system_version" = "$lower_version" ]
+}
+
+
+case "$1" in
+
+install-check)
+	# Split compatible strings at /
+	oldIFS="$IFS"; IFS='/'
+
+	set -- $RAUC_SYSTEM_COMPATIBLE
+	SYSTEM_MACHINE="$1"
+	SYSTEM_COMPATIBLE="$2"
+	SYSTEM_FORMAT="$3"
+	SYSTEM_VERSION="$4"
+
+	set -- $RAUC_MF_COMPATIBLE
+	MF_MACHINE="$1"
+	MF_COMPATIBLE="$2"
+
+	IFS="$oldIFS"
+
+
+	if [ "$MF_MACHINE" != "$SYSTEM_MACHINE" ]; then
+		echo "Your hardware is not supported by this firmware bundle." >&2
+		exit 10
+	fi
+
+	if [ -e /run/ignore-compatible ]; then
+		exit 0
+	fi
+
+	if [ "$MF_COMPATIBLE" != "$SYSTEM_COMPATIBLE" ]; then
+		echo "Incorrect firmware." >&2
+		exit 10
+	fi
+
+	case "$SYSTEM_FORMAT" in
+	'')
+		# Old firmware, upgrade is always allowed
+		;;
+
+	'1')
+		if ! check_version "$SYSTEM_VERSION" "$RAUC_MF_VERSION"; then
+			echo "Installed firmware too new, downgrades are not supported." >&2
+			exit 10
+		fi
+		;;
+
+	*)
+		# Unknown compatible string format, the installed firmware
+		# must be newer than this script
+		echo "Installed firmware too new, downgrades are not supported." >&2
+		exit 10
+		;;
+	esac
+
 	;;
-Secondary)
-	SLOTS='first second'
-	;;
-*)
-	echo "Unable to determine boot slot! Aborting." >&2
-	exit 1
-esac
 
-for slot in $SLOTS; do
-	INSTALLED=$( \
-		imx28-blupdate extract --device "$RAUC_SLOT_DEVICE" --$slot - \
-		| sha256sum | awk '{print $1}' || true \
-	)
-	if [ "$INSTALLED" == "$RAUC_IMAGE_DIGEST" ]; then
-		echo "Bootloader in $slot slot is already up to date! Skipping."
-	else
+slot-install)
+	if [ "$RAUC_SLOT_CLASS" != "u-boot" ]; then
+		echo "Invalid slot class '$RAUC_SLOT_CLASS'! Aborting" >&2
+		exit 1
+	fi
+
+	BOOT_SLOT="$(imx28-blupdate status --device "$RAUC_SLOT_DEVICE" --boot-source | awk '/NOTICE: Boot source: / {print $4}')"
+
+	case "$BOOT_SLOT" in
+	Primary)
+		SLOTS='second first'
+		;;
+	Secondary)
+		SLOTS='first second'
+		;;
+	*)
+		echo "Unable to determine boot slot! Aborting." >&2
+		exit 1
+	esac
+
+	for slot in $SLOTS; do
+		INSTALLED=$( \
+			imx28-blupdate extract --device "$RAUC_SLOT_DEVICE" --$slot - \
+			| sha256sum | awk '{print $1}' || true \
+		)
+		if [ "$INSTALLED" = "$RAUC_IMAGE_DIGEST" ]; then
+			echo "Bootloader in slot $slot is already up to date! Skipping."
+			continue
+		fi
+
+		echo "Updating bootloader in slot $slot"
+
 		imx28-blupdate upgrade --device "$RAUC_SLOT_DEVICE" --$slot "$RAUC_IMAGE_NAME"
 		imx28-blupdate status --device "$RAUC_SLOT_DEVICE" --$slot
-	fi
-done
+	done
+
+	;;
+
+*)
+	exit 1
+	;;
+
+esac
+
+exit 0

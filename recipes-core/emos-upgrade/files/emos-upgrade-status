@@ -1,26 +1,48 @@
 #!/bin/sh
 
 #
-# Copyright (C) 2018-2019, TQ Systems
+# Copyright (C) 2018-2020, TQ Systems
 #
 
 set -e
 
 FILE_LOCK="/update/lock"
 FILE_UPDATE_STATUS="/update/status"
-FILE_RAUC_SLOT_SAVED="/update/slot"
 
 
 exec 9>"$FILE_LOCK"
 flock 9
 
 
-get_slot_saved() {
-	cat "$FILE_RAUC_SLOT_SAVED" 2>/dev/null || true
-}
-
 get_slot_active() {
 	rauc status --output-format=json | jq -r '.booted'
+}
+
+get_slot_other() {
+	case "$(get_slot_active)" in
+	1)
+		echo 2
+		;;
+
+	2)
+		echo 1
+		;;
+
+	*)
+		return 1
+	esac
+
+	return 0
+}
+
+get_slot_device() {
+	[ $# -eq 1  ] || return 1
+
+	rauc status --output-format=json | jq -r "
+		.slots |
+		map(to_entries | .[0].value | select(.class == \"rootfs\" and .bootname == \"$1\")) |
+		.[0].device
+	"
 }
 
 get_status() {
@@ -32,31 +54,30 @@ check_transition() {
 
 	if [ "$old_status" != "$1" ]; then
 		echo >&2 "emos-upgrade-status: invalid transition from '$old_status' to '$2'. Is there another upgrade running?"
-		exit 1
+		return 1
 	fi
 }
 
 set_status() {
-	[ $# -eq 1 -a ! -z "$1" ] || exit 1
+	[ $# -eq 1 -a ! -z "$1" ] || return 1
 
 	case "$1" in
 	"update_1_started")
 		check_transition '' "$1"
-		get_slot_active > "$FILE_RAUC_SLOT_SAVED"
 		;;
 	"update_1_finished")
 		check_transition 'update_1_started' "$1"
 		;;
 	*)
 		echo >&2 'emos-upgrade-status: Cannot set unknown status.'
-		exit 1
+		return 1
 	esac
 
 	echo "$1" > "$FILE_UPDATE_STATUS"
 }
 
 reset_status() {
-	rm -f "$FILE_UPDATE_STATUS" "$FILE_RAUC_SLOT_SAVED"
+	rm -f "$FILE_UPDATE_STATUS" /update/slot
 }
 
 CMD="$1"; shift
@@ -71,8 +92,11 @@ get_status)
 get_slot_active)
 	get_slot_active
 	;;
-get_slot_saved)
-	get_slot_saved
+get_slot_other)
+	get_slot_other
+	;;
+get_slot_device)
+	get_slot_device "$@"
 	;;
 reset)
 	reset_status

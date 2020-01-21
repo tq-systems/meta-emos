@@ -5,7 +5,7 @@ DESCRIPTION = "EMOS RAUC wrapper"
 SECTION = "core"
 
 LICENSE = "TQSSLA_V1.0.2"
-LIC_FILES_CHKSUM = "file://emos-upgrade;beginline=3;endline=5;md5=819552d271eebc04f10ce08d8639124e"
+LIC_FILES_CHKSUM = "file://emos-upgrade;beginline=3;endline=5;md5=81086d9e1356cd540984044d078650e8"
 
 PR = "r1"
 

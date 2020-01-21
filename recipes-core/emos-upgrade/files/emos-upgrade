@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# Copyright (C) 2018-2019, TQ Systems
+# Copyright (C) 2018-2020, TQ Systems
 #
 
 set -e
@@ -41,10 +41,10 @@ cmd_install() {
 
 	trap 'emos-upgrade-status reset' EXIT
 
-	logger -t emos-upgrade "Starting system upgrade (currently running boot slot $(emos-upgrade-status get_slot_saved))"
+	logger -t emos-upgrade "Starting system upgrade (currently running boot slot $(emos-upgrade-status get_slot_active))"
 
 	rauc install "$file"
-	mv "$file" /update/last-upgrade.raucb
+	rm -f "$file"
 	emos-upgrade-status set_status update_1_finished
 
 	trap - EXIT
