@@ -9,6 +9,7 @@ CONFIGDIR="/cfglog/apps"
 APPTMP="$APPDIR/tmp"
 WWWDIR="$APPDIR/www"
 WWWAPPS="$WWWDIR/apps.json"
+WWWLANG="$WWWDIR/langs.json"
 LICDIR="$APPDIR/licenses"
 DBUSDIR="$APPDIR/dbus"
 
@@ -394,7 +395,7 @@ $new_apps"
 	done
 }
 
-# Updates the web-container app directory (app symlinks, list JSON)
+# Updates the web-container app directory (app symlinks, list JSON, langs JSON)
 update_www() {
 	rm -rf "$WWWDIR"
 	mkdir -p "$WWWDIR"
@@ -411,6 +412,15 @@ update_www() {
 		echo "$app/index.js?$(md5sum "$index" | awk '{print $1}')"
 	done | jq -nRc '[inputs]' > "$WWWAPPS".tmp
 	mv -f "$WWWAPPS.tmp" "$WWWAPPS"
+
+	for app in $(list_enabled); do
+		local lang="$APPDIR/installed/$app/www/i18n/lang.js"
+		[ -r "$lang" ] || continue
+
+		echo "$app/i18n/lang.js?$(md5sum "$lang" | awk '{print $1}')"
+	done | jq -nRc '[inputs]' > "$WWWLANG".tmp
+
+	mv -f "$WWWLANG.tmp" "$WWWLANG"
 
 	sync
 }
