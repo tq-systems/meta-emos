@@ -126,9 +126,9 @@ mount -t tmpfs -o nosuid,nodev,mode=755 run /run || fatal '/run mount failed.'
 # 2) /update is in the process of being formatted when the factory reset occurs.
 #    In this case, the following mount may fail. In result, /update will be
 #    formatted again, completing the factory reset.
-if ! mount -o nosuid,nodev $DEV_UPDATE /update; then
+if ! mount -o nosuid,nodev,noatime $DEV_UPDATE /update; then
 	update_reset
-	mount -o nosuid,nodev $DEV_UPDATE /update || fatal '/update mount failed.'
+	mount -o nosuid,nodev,noatime $DEV_UPDATE /update || fatal '/update mount failed.'
 fi
 
 
@@ -141,7 +141,7 @@ if $FACTORY_RESET; then
 
 	umount /update
 	update_reset
-	mount -o nosuid,nodev $DEV_UPDATE /update || fatal '/update mount failed.'
+	mount -o nosuid,nodev,noatime $DEV_UPDATE /update || fatal '/update mount failed.'
 fi
 
 
@@ -155,7 +155,7 @@ if $BACKUP_RESTORE; then
 fi
 
 mount -o nosuid,nodev,ro $DEV_AUTH /auth || fatal '/auth mount failed.'
-mount -o nosuid,nodev $DEV_CFGLOG /cfglog || fatal '/cfglog mount failed.'
+mount -o nosuid,nodev,noatime $DEV_CFGLOG /cfglog || fatal '/cfglog mount failed.'
 
 if $BACKUP_RESTORE; then
 	backup_restore
@@ -164,10 +164,10 @@ if $BACKUP_RESTORE; then
 
 	umount /update
 	update_reset
-	mount -o nosuid,nodev $DEV_UPDATE /update || fatal '/update mount failed.'
+	mount -o nosuid,nodev,noatime $DEV_UPDATE /update || fatal '/update mount failed.'
 fi
 
-if ! mount -o nosuid,nodev $DEV_DATA /data; then
+if ! mount -o nosuid,nodev,noatime $DEV_DATA /data; then
 	# When a backup import was interrupted while /data was being formatted,
 	# the mount may fail. Rather than failing to boot, we will just try to
 	# format it again.
@@ -180,10 +180,10 @@ if ! mount -o nosuid,nodev $DEV_DATA /data; then
 	$SAFE_MODE && ! $BACKUP_RESTORE || fatal '/data mount failed.'
 
 	data_reset
-	mount -o nosuid,nodev $DEV_DATA /data || fatal '/data mount failed.'
+	mount -o nosuid,nodev,noatime $DEV_DATA /data || fatal '/data mount failed.'
 fi
 
-mount -o nosuid,nodev $DEV_APPS /apps || fatal '/apps mount failed.'
+mount -o nosuid,nodev,noatime $DEV_APPS /apps || fatal '/apps mount failed.'
 
 stop_haveged
 
