@@ -309,13 +309,11 @@ type=raw
 device=/dev/mmcblk0p2
 type=ext4
 bootname=1
-force-install-same=true
 
 [slot.rootfs.1]
 device=/dev/mmcblk0p3
 type=ext4
 bootname=2
-force-install-same=true
 '''.format(compatible=self.get_compatible_config())
 
 	def write_rauc_config(self):
