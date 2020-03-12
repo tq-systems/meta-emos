@@ -50,7 +50,7 @@ python emit_fetch_post() {
 
     fetcher = bb.fetch2.Fetch([d.getVar('EM_BUNDLE_SPEC_URI')], d)
     url = fetcher.urls[0]
-    ud = fetcher.ud[url]
+    bundle_spec = fetcher.localpath(url)
 
     lockfile = os.path.join(download_dir, 'emit.lock')
     lf = bb.utils.lockfile(lockfile)
@@ -58,7 +58,7 @@ python emit_fetch_post() {
     try:
         bb.fetch2.runfetchcmd('{} --bundle-spec {} download'.format(
             d.getVar('EMIT'),
-            ud.localpath,
+            bundle_spec,
         ), d)
     finally:
         bb.utils.unlockfile(lf)
