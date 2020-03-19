@@ -1,6 +1,7 @@
 [Unit]
 Description=status-led is setting the status LED after boot
 After=multi-user.target emos.target
+ConditionPathExists=!/update/end_of_life
 
 [Service]
 Type=simple
