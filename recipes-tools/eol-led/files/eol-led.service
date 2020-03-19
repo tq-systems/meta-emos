@@ -1,0 +1,11 @@
+[Unit]
+Description=eol-led is setting all LEDs for end of life mode
+After=multi-user.target emos.target
+ConditionPathExists=/update/end_of_life
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/eol-led
+
+[Install]
+WantedBy=multi-user.target
