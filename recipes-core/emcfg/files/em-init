@@ -2,22 +2,22 @@
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 
-
 DEV_APPS=/dev/mmcblk0p5
 DEV_UPDATE=/dev/mmcblk0p6
 DEV_CFGLOG=/dev/mmcblk0p7
 DEV_DATA=/dev/mmcblk0p8
 DEV_AUTH=/dev/mmcblk0p9
 
-
 haveged_running=false
+
+MOUNT_OPTS_RO="nosuid,nodev,ro"
+MOUNT_OPTS_RW="nosuid,nodev,noatime"
 
 
 fatal() {
 	echo >&2 "$1"
 	exit 1
 }
-
 
 add_config() {
 	local file="$1"
@@ -126,11 +126,10 @@ mount -t tmpfs -o nosuid,nodev,mode=755 run /run || fatal '/run mount failed.'
 # 2) /update is in the process of being formatted when the factory reset occurs.
 #    In this case, the following mount may fail. In result, /update will be
 #    formatted again, completing the factory reset.
-if ! mount -o nosuid,nodev,noatime $DEV_UPDATE /update; then
+if ! mount -o $MOUNT_OPTS_RW $DEV_UPDATE /update; then
 	update_reset
-	mount -o nosuid,nodev,noatime $DEV_UPDATE /update || fatal '/update mount failed.'
+	mount -o $MOUNT_OPTS_RW $DEV_UPDATE /update || fatal '/update mount failed.'
 fi
-
 
 FACTORY_RESET=$(check_flag factory-reset)
 
@@ -141,9 +140,8 @@ if $FACTORY_RESET; then
 
 	umount /update
 	update_reset
-	mount -o nosuid,nodev,noatime $DEV_UPDATE /update || fatal '/update mount failed.'
+	mount -o $MOUNT_OPTS_RW $DEV_UPDATE /update || fatal '/update mount failed.'
 fi
-
 
 SAFE_MODE=$(check_flag safe-mode)
 BACKUP_RESTORE=$(check_flag backup-restore)
@@ -154,20 +152,19 @@ if $BACKUP_RESTORE; then
 	factory_reset false
 fi
 
-mount -o nosuid,nodev,ro $DEV_AUTH /auth || fatal '/auth mount failed.'
-mount -o nosuid,nodev,noatime $DEV_CFGLOG /cfglog || fatal '/cfglog mount failed.'
+mount -o $MOUNT_OPTS_RO $DEV_AUTH /auth || fatal '/auth mount failed.'
+mount -o $MOUNT_OPTS_RW $DEV_CFGLOG /cfglog || fatal '/cfglog mount failed.'
 
 if $BACKUP_RESTORE; then
 	backup_restore
-
 	backup_sanitize
 
 	umount /update
 	update_reset
-	mount -o nosuid,nodev,noatime $DEV_UPDATE /update || fatal '/update mount failed.'
+	mount -o $MOUNT_OPTS_RW $DEV_UPDATE /update || fatal '/update mount failed.'
 fi
 
-if ! mount -o nosuid,nodev,noatime $DEV_DATA /data; then
+if ! mount -o $MOUNT_OPTS_RW $DEV_DATA /data; then
 	# When a backup import was interrupted while /data was being formatted,
 	# the mount may fail. Rather than failing to boot, we will just try to
 	# format it again.
@@ -180,15 +177,14 @@ if ! mount -o nosuid,nodev,noatime $DEV_DATA /data; then
 	$SAFE_MODE && ! $BACKUP_RESTORE || fatal '/data mount failed.'
 
 	data_reset
-	mount -o nosuid,nodev,noatime $DEV_DATA /data || fatal '/data mount failed.'
+	mount -o $MOUNT_OPTS_RW $DEV_DATA /data || fatal '/data mount failed.'
 fi
 
-mount -o nosuid,nodev,noatime $DEV_APPS /apps || fatal '/apps mount failed.'
+mount -o $MOUNT_OPTS_RW $DEV_APPS /apps || fatal '/apps mount failed.'
 
 stop_haveged
 
 mkdir -p /run/lock
-
 
 # Initialize default config
 emcfg init
@@ -197,10 +193,9 @@ emcfg init
 add_config machine-id
 add_config hostname
 
-
 if command -v empkg >/dev/null; then
-        # Sync new preinstalled apps in rootfs to appfs
-        empkg --no-systemd sync
+	# Sync new preinstalled apps in rootfs to appfs
+	empkg --no-systemd sync
 fi
 
 
