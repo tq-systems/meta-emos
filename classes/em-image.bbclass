@@ -22,6 +22,7 @@ IMAGE_INSTALL += " \
 		u-boot-fslc-fw-utils \
 		mmc-utils \
 		e2fsprogs \
+		e2fsprogs-tune2fs \
 		less \
 		haveged \
 		eol-led \
