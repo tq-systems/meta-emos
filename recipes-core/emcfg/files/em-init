@@ -8,11 +8,13 @@ DEV_CFGLOG=/dev/mmcblk0p7
 DEV_DATA=/dev/mmcblk0p8
 DEV_AUTH=/dev/mmcblk0p9
 
-haveged_running=false
-
 MOUNT_OPTS_RO="nosuid,nodev,ro"
 MOUNT_OPTS_RW="nosuid,nodev,noatime"
 
+haveged_running=false
+END_OF_LIFE=false
+FSCK_REBOOT=false
+FSCK_TMP_LOG="/run/em/fsck.log"
 
 fatal() {
 	echo >&2 "$1"
@@ -102,6 +104,36 @@ backup_sanitize() {
 	rm -f /cfglog/system/password
 }
 
+check_filesystem() {
+	local partition="$1"
+	local part_name="$2"
+
+	MAX_COUNT="$(tune2fs -l "$partition" | awk -F':[[:blank:]]*' '/^Maximum mount count:/ {print $2}')"
+	if [ "$MAX_COUNT" = "-1" ]; then
+		# set check interval to 6 months
+		tune2fs -i 6m "$partition"
+		# set max mount counts to 30 (mkfs.ext4 creates a random number between 20 and 40)
+		tune2fs -c 30 "$partition"
+	fi
+
+	mkdir -p /run/em
+	fsck -a "$partition" 2>> $FSCK_TMP_LOG
+	local fsck_return="$?"
+
+	# return code = 2 requests a reboot
+	if [ "$fsck_return" = "2" ]; then
+		FSCK_REBOOT=true
+	fi
+
+	# return code > 2 -  should be logged persistently
+	if [ "$fsck_return" -gt "2" ]; then
+		echo "Fsck found an error checking $part_name: $fsck_return" >> $FSCK_TMP_LOG
+		# The file /run/fsck_status is written only on return codes greater than 2.
+		# It is used as a start condition for em-log-fsck-errors.service and the return
+		# codes are used by the health-check app.
+		echo "$fsck_return" >> /run/em/fsck_status
+	fi
+}
 
 [ $$ -eq 1 ] || fatal 'em-init must run as PID1.'
 
@@ -116,7 +148,6 @@ mount -t sysfs sysfs /sys || fatal '/sys mount failed.'
 mount -t tmpfs -o nosuid,nodev,mode=755 run /run || fatal '/run mount failed.'
 
 # End of life status
-END_OF_LIFE=false
 mkdir -p /run/lock
 
 if [ "$(fw_printenv -n END_OF_LIFE 2>/dev/null)" = "1" ]; then
@@ -160,6 +191,14 @@ if $BACKUP_RESTORE && ! $END_OF_LIFE; then
 	factory_reset false
 fi
 
+# Check file systems of read/write mounted partitions
+check_filesystem $DEV_APPS   "/apps"
+check_filesystem $DEV_CFGLOG "/cfglog"
+check_filesystem $DEV_DATA   "/data"
+
+# Reboot if fsck wants it
+$FSCK_REBOOT && reboot
+
 mount -o $MOUNT_OPTS_RO $DEV_AUTH /auth || fatal '/auth mount failed.'
 mount -o $MOUNT_OPTS_RW $DEV_CFGLOG /cfglog || fatal '/cfglog mount failed.'
 
@@ -191,8 +230,6 @@ fi
 mount -o $MOUNT_OPTS_RW $DEV_APPS /apps || fatal '/apps mount failed.'
 
 stop_haveged
-
-mkdir -p /run/lock
 
 # Initialize default config
 emcfg init
