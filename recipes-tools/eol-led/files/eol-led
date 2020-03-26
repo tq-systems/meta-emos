@@ -1,0 +1,18 @@
+#!/bin/sh
+#
+# Copyright (C) 2020, TQ Systems
+#
+
+set -e
+
+# end boot sequence
+LED_GREEN_STATUS=/sys/class/leds/energymanager:green:status
+echo none > $LED_GREEN_STATUS/trigger
+
+# set EOL mode
+LED_RED_NETWORK=/sys/class/leds/energymanager:red:network
+LED_RED_SENSOR=/sys/class/leds/energymanager:red:sensor
+LED_RED_STATUS=/sys/class/leds/energymanager:red:status
+echo timer > $LED_RED_NETWORK/trigger
+echo timer > $LED_RED_SENSOR/trigger
+echo timer > $LED_RED_STATUS/trigger

@@ -24,6 +24,7 @@ IMAGE_INSTALL += " \
 		e2fsprogs \
 		less \
 		haveged \
+		eol-led \
 		status-led \
 		netdev-led \
 		emos-upgrade \
