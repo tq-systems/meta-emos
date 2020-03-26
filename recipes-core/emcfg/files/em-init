@@ -201,24 +201,15 @@ emcfg init
 add_config machine-id
 add_config hostname
 
-if $END_OF_LIFE; then
-	# This file is written once in EOL mode and indicates whether an EOL has been reached.
-	# In this case, systemd only starts certain apps.
-	APPS_EOL="/update/end_of_life"
-
-	if [ ! -f "$APPS_EOL" ]; then
-		# Display a reduced setting of apps for EOL in the web-application
-		echo '["device-settings/index.js","health-check/index.js"]' > /apps/www/apps.json
-		echo '["device-settings/i18n/lang.js","health-check/i18n/lang.js"]' > /apps/www/langs.json
-		touch "$APPS_EOL"
-		sync
-	fi
-else
-	if command -v empkg >/dev/null; then
+if command -v empkg >/dev/null; then
+	if $END_OF_LIFE; then
+		# This file is written once in EOL mode and indicates whether an EOL has been reached
+		touch "/update/end_of_life"
+		empkg --no-systemd --set-eol sync
+	else
 		# Sync new preinstalled apps in rootfs to appfs
 		empkg --no-systemd sync
 	fi
 fi
-
 
 exec /lib/systemd/systemd
