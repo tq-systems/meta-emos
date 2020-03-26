@@ -1,0 +1,26 @@
+From e24f5f3b3b6f2b22c796a7c55ba278d836d96c43 Mon Sep 17 00:00:00 2001
+From: Christoph Krutz <christoph.krutz@tq-group.com>
+Date: Thu, 26 Mar 2020 10:04:03 +0100
+Subject: [PATCH] patch 2
+
+Signed-off-by: Christoph Krutz <christoph.krutz@tq-group.com>
+---
+ misc/mke2fs.conf.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/misc/mke2fs.conf.in b/misc/mke2fs.conf.in
+index 25105b3a..344a813a 100644
+--- a/misc/mke2fs.conf.in
++++ b/misc/mke2fs.conf.in
+@@ -1,7 +1,7 @@
+ [defaults]
+ 	base_features = sparse_super,large_file,filetype,resize_inode,dir_index,ext_attr
+ 	default_mntopts = acl,user_xattr
+-	enable_periodic_fsck = 0
++	enable_periodic_fsck = 1
+ 	blocksize = 4096
+ 	inode_size = 256
+ 	inode_ratio = 16384
+-- 
+2.17.1
+
