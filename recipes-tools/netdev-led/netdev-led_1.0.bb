@@ -7,13 +7,13 @@ SRC_DISTRIBUTE_LICENSES += "TQSSLA_V1.0.2"
 
 SRC_URI = " \
 	file://LICENSE \
-	file://${PN} \
-	file://${PN}.service \
+	file://${BPN} \
+	file://${BPN}.service \
 "
 
 inherit systemd
 
-SYSTEMD_SERVICE_${PN} = "${PN}.service"
+SYSTEMD_SERVICE_${PN} = "${BPN}.service"
 
 S = "${WORKDIR}"
 
@@ -22,7 +22,7 @@ do_install() {
 	install -d ${D}${systemd_unitdir}/system
 
 	install -m 0755 netdev-led			${D}${bindir}
-	install -m 0644 ${WORKDIR}/netdev-led.service	${D}${systemd_unitdir}/system
+	install -m 0644 netdev-led.service	${D}${systemd_unitdir}/system
 }
 
 COMPATIBLE_MACHINE = "(em300|em310)"
