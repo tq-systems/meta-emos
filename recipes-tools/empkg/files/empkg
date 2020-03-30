@@ -17,6 +17,7 @@ DBUSDIR="$APPDIR/dbus"
 OPT_ENABLE=true
 OPT_SYSTEMD=true
 OPT_PLAIN=false
+OPT_EOL=false
 
 
 usage() {
@@ -393,6 +394,12 @@ $new_apps"
 	echo -n "$new_apps" | while read -r app; do
 		app_enable "$app" || true
 	done
+
+	if $OPT_EOL; then
+		for app in $(list_enabled); do
+			is_essential "$app" || app_disable "$app"
+		done
+	fi
 }
 
 # Updates the web-container app directory (app symlinks, list JSON, langs JSON)
@@ -455,6 +462,10 @@ while [ "${1:0:1}" = '-' ]; do
 
 	--plain)
 		OPT_PLAIN=true
+		;;
+
+	--set-eol)
+		OPT_EOL=true
 		;;
 
 	*)
