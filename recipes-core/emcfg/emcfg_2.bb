@@ -17,6 +17,7 @@ SRC_URI = " \
 	file://emcfg.service \
 	file://etc-shadow.mount \
 	file://em-app-flash-scan.timer \
+	file://em-log-fsck-errors.service \
 	file://em-store-teridian-registers.service \
 	file://emos.target \
 	file://emcfg-generator \
@@ -25,7 +26,11 @@ SRC_URI = " \
 	file://openssl-em.cnf \
 "
 
-SYSTEMD_SERVICE_${PN} = "em-app-flash-scan.timer em-store-teridian-registers.service"
+SYSTEMD_SERVICE_${PN} = " \
+	em-app-flash-scan.timer \
+	em-log-fsck-errors.service \
+	em-store-teridian-registers.service \
+"
 
 S = "${WORKDIR}"
 
@@ -48,10 +53,11 @@ do_install() {
 		emcfg.service \
 		etc-shadow.mount \
 		em-app-flash-scan.timer \
+		em-log-fsck-errors.service \
 		em-store-teridian-registers.service \
 		emos.target \
 		${D}${systemd_unitdir}/system/
-	ln -s ../emcfg.service ../etc-shadow.mount ${D}${systemd_unitdir}/system/sysinit.target.wants/
+	ln -s ../emcfg.service ../etc-shadow.mount ../em-log-fsck-errors.service ${D}${systemd_unitdir}/system/sysinit.target.wants/
 
 	install -d ${D}${systemd_unitdir}/system-generators
 	install -m 0755 emcfg-generator ${D}${systemd_unitdir}/system-generators/

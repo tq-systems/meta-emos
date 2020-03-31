@@ -22,6 +22,7 @@ IMAGE_INSTALL += " \
 		u-boot-fslc-fw-utils \
 		mmc-utils \
 		e2fsprogs \
+		e2fsprogs-tune2fs \
 		less \
 		haveged \
 		eol-led \
@@ -30,6 +31,7 @@ IMAGE_INSTALL += " \
 		emos-upgrade \
 		emcfg \
 		empkg \
+		em-flash-read \
 		tzdata tzdata-americas tzdata-asia \
 		tzdata-europe tzdata-africa tzdata-antarctica \
 		tzdata-arctic tzdata-atlantic tzdata-australia \

@@ -17,7 +17,7 @@ SRC_URI = " \
 
 inherit systemd
 
-SYSTEMD_SERVICE_${PN} = "micrel-netdev-daemon.service"
+SYSTEMD_SERVICE_${PN} = "${BPN}.service"
 
 S = "${WORKDIR}"
 
@@ -26,7 +26,7 @@ do_install() {
 	install -d ${D}${systemd_unitdir}/system
 
 	install -m 0755 micrel-netdev-daemon			${D}${bindir}
-	install -m 0644 ${WORKDIR}/micrel-netdev-daemon.service	${D}${systemd_unitdir}/system
+	install -m 0644 micrel-netdev-daemon.service	${D}${systemd_unitdir}/system
 }
 
 COMPATIBLE_MACHINE = "em310"

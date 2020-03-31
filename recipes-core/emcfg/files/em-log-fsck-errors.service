@@ -1,0 +1,11 @@
+[Unit]
+Description=Push error messages from filesystem checks to systemd journal
+ConditionPathExists=/run/em/fsck_status
+
+[Service]
+Type=oneshot
+StandardOutput=journal
+SyslogIdentifier=em-fsck
+SyslogLevel=warning
+ExecStart=-/bin/grep -vxF '' /run/em/fsck.log
+ExecStart=rm /run/em/fsck.log

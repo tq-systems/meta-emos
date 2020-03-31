@@ -1,0 +1,46 @@
+#!/bin/sh
+
+set -eo pipefail
+
+. /etc/em-flash_hw.conf
+
+usage() {
+	cat >&2 <<'EOF'
+Usage: em-flash-read --help
+       em-flash-read --est-lifetime
+       em-flash-read --end-of-life
+EOF
+}
+
+if [ "$#" != "1" ]; then
+	usage
+	exit 1
+fi
+
+read_extcsd_register() {
+	local register="$1"
+
+	mmc extcsd read /dev/mmcblk0 | grep -e "$register" | awk -F ': ' '{print $2}'
+}
+
+cmd_lifetime() {
+	read_extcsd_register "$REGISTER_EST_LIFETIME"
+}
+
+cmd_eol() {
+	read_extcsd_register "$REGISTER_EOL_INFO"
+}
+
+case "$1" in
+	--est-lifetime)
+		cmd_lifetime
+		;;
+
+	--end-of-life)
+		cmd_eol
+		;;
+
+	*)
+		usage
+		exit 1
+esac
