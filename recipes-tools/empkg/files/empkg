@@ -23,6 +23,7 @@ OPT_EOL=false
 usage() {
 	cat >&2 <<'EOF'
 Usage: empkg help
+       empkg list
        empkg list-installed
        empkg list-enabled
        empkg list-autostart
@@ -148,6 +149,21 @@ list_autostart() {
 		is_autostart "$app" || continue
 		echo "$app"
 	done
+}
+
+list_apps() {
+	local app
+	local list
+	for app in $(list_installed); do
+		app="$app - $(app_info "$app" | jq -re '.version')"
+		if [ -z "$list" ]; then
+			list="$app"
+		else
+			list="$list
+$app"
+		fi
+	done
+	echo "$list"
 }
 
 # Updates the dbus policy provided by an app
@@ -499,6 +515,10 @@ list-enabled)
 
 list-autostart)
 	list_autostart | output_array
+	;;
+
+list)
+	list_apps
 	;;
 
 status)
