@@ -62,6 +62,13 @@ error() {
 	exit 1
 }
 
+log_journal() {
+	local loglevel="$1"
+	local message="$2"
+
+	echo "$message" | systemd-cat -t "empkg" -p "$loglevel"
+}
+
 # Checks that an app is installed and exits with an error message otherwise
 ensure_installed() {
 	is_installed "$1" || error "app '$1' not found."
@@ -287,9 +294,11 @@ pkg_install() {
 	rm -rf "$APPTMP"
 
 	if $is_new; then
-		echo >&2 "Installing $app $version_new..."
+		echo >&2 "Installing app: $app $version_new..."
+		log_journal "notice" "Installing app: $app $version_new..."
 	else
-		echo >&2 "Updating $app $version_old to $version_new..."
+		echo >&2 "Updating app: $app from $version_old to $version_new..."
+		log_journal "notice" "Updating app: $app from $version_old to $version_new..."
 	fi
 
 	local appdir="$APPDIR/installed/$app"
