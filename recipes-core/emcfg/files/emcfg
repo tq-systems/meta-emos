@@ -19,10 +19,18 @@ get_default_hostname() {
 
 cmd_init() {
 	mkdir -p $CFG
-	[ -e $CFG/hostname	] || get_default_hostname >	$CFG/hostname
-	[ -e $CFG/machine-id	] || touch 			$CFG/machine-id
-	[ -e $CFG/ntp.json	] || echo '{"enable":true}' >	$CFG/ntp.json
-	[ -e $CFG/network.json	] || echo '{"mode":"dhcp"}' >	$CFG/network.json
+
+	[ -e $CFG/machine-id ] || touch                    $CFG/machine-id
+	[ -e $CFG/hostname ]   || get_default_hostname   > $CFG/hostname
+	[ -e $CFG/ntp.json ]   || echo '{"enable":true}' > $CFG/ntp.json
+
+	if [ ! -e $CFG/network.json ]; then
+		if [ -e /apps/installed/presets/system/network.json ]; then
+			cp /apps/installed/presets/system/network.json $CFG/network.json
+		else
+			echo '{"mode":"dhcp"}' > $CFG/network.json
+		fi
+	fi
 }
 
 cmd_update_network() {
