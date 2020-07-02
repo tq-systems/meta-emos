@@ -40,8 +40,8 @@ apps:
 
   web-application:
     name: web-application-tq
-    version: '2.6.0'
-    sha256: 'e909311d8a163924972175cbbb7ff081e6c9ef47c5e1cc5edf656a29adaa583d'
+    version: '2.6.1'
+    sha256: '376f76efddfa6523106ddd7b19cbe908b4d38efab777dfaaa9ac0cb935b0726c'
 
   web-login:
     version: '2.3.4'
