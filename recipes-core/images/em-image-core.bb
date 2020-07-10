@@ -1,5 +1,7 @@
 inherit em-image
 
+IMAGE_VERSION_SUFFIX = "-${DISTRO_VERSION}"
+
 TOOLCHAIN_HOST_TASK_append = " \
 	nativesdk-protobuf-dev \
 	nativesdk-protobuf-compiler \
