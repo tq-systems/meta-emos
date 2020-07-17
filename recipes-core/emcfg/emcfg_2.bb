@@ -18,7 +18,6 @@ SRC_URI = " \
 	file://etc-shadow.mount \
 	file://em-app-flash-scan.timer \
 	file://em-log-fsck-errors.service \
-	file://em-store-teridian-registers.service \
 	file://emos.target \
 	file://emcfg-generator \
 	file://80-button-handler.rules \
@@ -29,7 +28,6 @@ SRC_URI = " \
 SYSTEMD_SERVICE_${PN} = " \
 	em-app-flash-scan.timer \
 	em-log-fsck-errors.service \
-	em-store-teridian-registers.service \
 "
 
 S = "${WORKDIR}"
@@ -54,7 +52,6 @@ do_install() {
 		etc-shadow.mount \
 		em-app-flash-scan.timer \
 		em-log-fsck-errors.service \
-		em-store-teridian-registers.service \
 		emos.target \
 		${D}${systemd_unitdir}/system/
 	ln -s ../emcfg.service ../etc-shadow.mount ../em-log-fsck-errors.service ${D}${systemd_unitdir}/system/sysinit.target.wants/
