@@ -1,7 +1,9 @@
 # Copyright (C) 2012-2017 O.S. Systems Software LTDA.
 # Released under the MIT license (see COPYING.MIT for the terms)
 
-inherit fsl-u-boot-localversion
+inherit fsl-u-boot-localversion pythonnative
+
+UBOOT_INITIAL_ENV = ""
 
 LICENSE = "GPLv2+"
 LIC_FILES_CHKSUM = "file://Licenses/README;md5=a2c678cfd4a4d97135585cad908541c6"
