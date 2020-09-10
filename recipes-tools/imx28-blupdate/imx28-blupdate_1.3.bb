@@ -1,7 +1,9 @@
 DESCRIPTION = "Manage i.MX28 Bootloader Updates"
 SECTION = "tools"
 
-SRC_URI = "file://imx28-blupdate-v${PV}.tar.bz2"
+SRC_URI = "https://packages.tq-group.com/energymanager/imx28-blupdate-v${PV}.tar.bz2"
+SRC_URI[sha256sum] = "1ae47619efd3b45272bfb7d65b17f0748d2b2e98a86c0994122d71576128e235"
+
 S = "${WORKDIR}/imx28-blupdate-v${PV}"
 
 LICENSE = "GPLv2"
