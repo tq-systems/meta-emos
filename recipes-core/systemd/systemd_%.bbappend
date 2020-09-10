@@ -1,13 +1,17 @@
 do_install_append_emos() {
+	# Set watchdog timeout
+	sed -i -e 's/.*RuntimeWatchdogSec.*/RuntimeWatchdogSec=29/' ${D}${sysconfdir}/systemd/system.conf
+
+	# Set configurations in journald.conf
+	sed -i \
+		-e 's/.*RateLimitIntervalSec.*/RateLimitIntervalSec=5m/' \
+		-e 's/.*RateLimitBurst.*/RateLimitBurst=100/' \
+		-e 's/.*SystemMaxUse.*/SystemMaxUse=80M/' \
+		-e 's/.*SystemKeepFree.*/SystemKeepFree=16M/' \
+		-e 's/.*MaxLevelStore.*/MaxLevelStore=notice/' \
+		${D}${sysconfdir}/systemd/journald.conf
+
 	# We manage timesyncd enable status in emcfg
 	rm ${D}${sysconfdir}/systemd/timesyncd.conf
-	rm ${D}${sysconfdir}/systemd/system/sysinit.target.wants/systemd-timesyncd.service
+	sed -i -e '/^enable systemd-timesyncd\.service$/d' ${D}${systemd_unitdir}/system-preset/90-systemd.preset
 }
-
-# Ensure these files end up in systemd-container rather than systemd - otherwise
-# systemd will have an unwanted dependency on systemd-container!
-FILES_${PN}-container += "\
-	${sysconfdir}/systemd/system/multi-user.target.wants/machines.target \
-	${systemd_system_unitdir}/machines.target.wants/var-lib-machines.mount \
-	${systemd_system_unitdir}/remote-fs.target.wants/var-lib-machines.mount \
-"
