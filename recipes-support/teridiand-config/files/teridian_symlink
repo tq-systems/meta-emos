@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Match on modalias, which is derived from tq,teridian compatible string
+if [ "$(cat /sys/$1/device/modalias)" = 'spi:teridian' ]; then
+	echo 'teridian'
+fi
