@@ -19,12 +19,12 @@ do_install_append_emos() {
     install -m 0644 ${WORKDIR}/nginx-prepare.service ${D}${systemd_unitdir}/system/
     install -m 0644 ${WORKDIR}/nginx-emos.conf ${D}${systemd_unitdir}/system/nginx.service.d/
 
-    # Fix path to busybox kill command
-    sed -i 's@=${bindir}/kill@=${base_bindir}/kill@' ${D}${systemd_unitdir}/system/nginx.service
-
     install -m 0644 ${WORKDIR}/no_cache.conf ${D}${sysconfdir}/nginx/
     install -m 0644 ${WORKDIR}/static_cache.conf ${D}${sysconfdir}/nginx/
     install -m 0644 ${WORKDIR}/ssl.conf ${D}${sysconfdir}/nginx/
+
+    # Do not create /var/log/nginx, as it will fail due to our symlink setup
+    sed -i '/\/log\//d' ${D}${sysconfdir}/tmpfiles.d/${BPN}.conf
 }
 
 FILES_${PN}_append_emos = "\

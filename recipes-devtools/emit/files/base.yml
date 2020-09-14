@@ -34,9 +34,9 @@ apps:
     version: '1.0.1'
     sha256: '7c7b00368e2d44725ee39c574ca574401a62d7448d5f519966e17aa3f38cd0d3'
 
-  upnp:
-    version: '1.1.2'
-    sha256: '67e78d5c64a89c041432a1f4b8a368aacd2e63bcb0822486b806b2e23ecb1e74'
+  #upnp:
+  #  version: '1.1.2'
+  #  sha256: '67e78d5c64a89c041432a1f4b8a368aacd2e63bcb0822486b806b2e23ecb1e74'
 
   web-application:
     name: web-application-tq

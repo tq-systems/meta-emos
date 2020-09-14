@@ -6,11 +6,17 @@ DESCRIPTION = "Teridian metering processor querying daemon - hardware-specific c
 
 SRC_URI = " \
 	file://teridiand_hw.conf \
+	file://teridian_symlink \
+	file://70-teridian.rules \
 "
 
 do_install () {
 	install -d ${D}${sysconfdir}
         install -m 0644 ${WORKDIR}/teridiand_hw.conf ${D}${sysconfdir}/teridiand_hw.conf
+
+	install -d ${D}/lib/udev/rules.d/
+	install -m 0755 ${WORKDIR}/teridian_symlink ${D}/lib/udev/
+	install -m 0644 ${WORKDIR}/70-teridian.rules ${D}/lib/udev/rules.d/
 }
 
 COMPATIBLE_MACHINE = "(em300|em310)"
