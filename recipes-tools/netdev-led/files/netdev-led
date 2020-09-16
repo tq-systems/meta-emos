@@ -8,7 +8,7 @@ set -e
 LED=/sys/class/leds/energymanager:green:network
 
 echo netdev >$LED/trigger
-echo eth0 >$LED/device_name
+echo br0 >$LED/device_name
 echo 1 >$LED/link
 echo 1 >$LED/rx
 echo 1 >$LED/tx

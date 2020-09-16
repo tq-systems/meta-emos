@@ -5,6 +5,9 @@ CFG=/cfglog/system
 APPCFG=/cfglog/apps
 RUNETC=/run/em/etc
 
+NETCONF=/usr/lib/emos/network-config
+RUNSDNET=/run/systemd/network
+
 CMD="$1"; shift
 
 
@@ -34,11 +37,28 @@ cmd_init() {
 }
 
 cmd_update_network() {
-	mkdir -p $RUNETC/systemd/network/
+	local macaddr="$(cat /sys/class/net/eth0/address)"
+	local config=single
 
-	jq -r '
+	if [ -e /sys/class/net/lan0 ]; then
+		config=switch
+	fi
+
+	rm -rf $RUNSDNET
+	mkdir -p $RUNSDNET
+
+	for file in "$NETCONF/$config/"*; do
+		ln -s "$file" $RUNSDNET/
+	done
+
+	jq \
+		--arg macaddr "$macaddr" \
+		-r '
 "[Match]
-Name=eth0
+Name=br0
+
+[Link]
+MACAddress=\($macaddr)
 
 [DHCP]
 ClientIdentifier=mac
@@ -63,7 +83,7 @@ else
 	"DHCP=ipv4"
 
 end
-	' < $CFG/network.json > $RUNETC/systemd/network/50-wired.network
+	' < $CFG/network.json > $RUNSDNET/br0.network
 }
 
 cmd_update_ntp() {
