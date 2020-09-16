@@ -22,10 +22,6 @@ apps:
     version: '1.1.1'
     sha256: 'e653eae0111dc8a6886674fcbd59bbb1ed339aea18ce7931653b67e51a3b3cb8'
 
-  micrel-switch-tool:
-    version: '1.0.2'
-    sha256: 'f5d2e7f09f0190dfb9d1d5b55abc17b0f18e30f233c5667e8e08b258ad8357d1'
-
   teridiand:
     version: '1.4.5'
     sha256: 'e9c4ee78506b1bef345921b09fda18b9d0028f41b1cb366f57ee70c64e6893f1'

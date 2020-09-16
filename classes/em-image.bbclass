@@ -55,8 +55,6 @@ IMAGE_INSTALL += " \
 		teridiand-config \
 		"
 
-IMAGE_INSTALL_append_em310 = " micrel-netdev-daemon"
-
 IMAGE_INSTALL_append_em310 += " u-boot-fslc"
 IMAGE_INSTALL_append_em300 += " u-boot-fslc"
 
