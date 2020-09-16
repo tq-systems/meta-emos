@@ -122,6 +122,10 @@ class CommandCommon:
 
 		return (url, filename)
 
+	def app_sha256(self, info):
+		"""Given an app info structure, returns the SHA256 checksum for the current arch."""
+		return info.get('sha256[{}]'.format(self.args.arch))
+
 
 class CommandDownload(CommandCommon):
 	"""Implementation of the 'download' command"""
@@ -137,13 +141,15 @@ class CommandDownload(CommandCommon):
 		url, filename = self.app_url(app, info)
 		path = os.path.join(self.args.download_dir, filename)
 
+		sha256 = self.app_sha256(info)
+
 		if info.get('cache') != False:
-			if not info.get('sha256'):
-				raise Exception('App \'{}\' has no sha256 field'.format(app))
+			if sha256 is None:
+				raise Exception('App \'{}\' has no sha256 field for arch {}'.format(app, self.args.arch))
 
 			if os.access(path, os.R_OK):
 				try:
-					checkhash(path, info['sha256'])
+					checkhash(path, sha256)
 					print('App \'{}\' found in cache.'.format(app), file=sys.stderr, flush=True)
 					return
 				except:
@@ -152,8 +158,8 @@ class CommandDownload(CommandCommon):
 		print('Downloading app \'{}\' from: {}'.format(app, url), file=sys.stderr, flush=True)
 
 		subprocess.run(['wget', '-O', path, url], check=True)
-		if info.get('cache') != False or type(info.get('sha256')) == str:
-			checkhash(path, info['sha256'])
+		if info.get('cache') != False or sha256 is not None:
+			checkhash(path, sha256)
 
 	def download_apps(self):
 		"""Download all apps listed in the base and bundle specs"""
