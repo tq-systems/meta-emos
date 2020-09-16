@@ -98,11 +98,11 @@ class CommandCommon:
 		self.args = args
 
 		with open(BASE_SPEC, 'r') as f:
-			self.bundle_spec = yaml.load(f)
+			self.bundle_spec = yaml.safe_load(f)
 
 		for spec in self.args.bundle_spec:
 			with open(spec, 'r') as f:
-				bundle_spec = yaml.load(f)
+				bundle_spec = yaml.safe_load(f)
 				self.bundle_spec = merge_dicts(self.bundle_spec, bundle_spec)
 
 		self.defaults = self.bundle_spec['defaults']
