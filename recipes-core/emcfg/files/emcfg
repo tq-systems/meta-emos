@@ -25,8 +25,8 @@ cmd_init() {
 	[ -e $CFG/ntp.json ]   || echo '{"enable":true}' > $CFG/ntp.json
 
 	if [ ! -e $CFG/network.json ]; then
-		if [ -e /apps/installed/presets/system/network.json ]; then
-			cp /apps/installed/presets/system/network.json $CFG/network.json
+		if [ -e /opt/apps/presets/system/network.json ]; then
+			cp /opt/apps/presets/system/network.json $CFG/network.json
 		else
 			echo '{"mode":"dhcp"}' > $CFG/network.json
 		fi
