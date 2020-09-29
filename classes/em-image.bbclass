@@ -19,7 +19,7 @@ IMAGE_INSTALL += " \
 		kernel-devicetree \
 		kernel-modules \
 		imx28-blupdate \
-		u-boot-fslc-fw-utils \
+		libubootenv-bin \
 		mmc-utils \
 		e2fsprogs \
 		e2fsprogs-tune2fs \

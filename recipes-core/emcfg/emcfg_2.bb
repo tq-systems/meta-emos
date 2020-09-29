@@ -68,7 +68,7 @@ do_install() {
 	install -m 0755 ${WORKDIR}/em-keygen ${D}${bindir}/
 }
 
-RDEPENDS_${PN} += "jq u-boot-fslc-fw-utils openssl-bin faketime em-network-config"
+RDEPENDS_${PN} += "jq libubootenv-bin openssl-bin faketime em-network-config"
 
 FILES_${PN} += " \
 	${sysconfdir}/tmpfiles.d/00-emos-log.conf \
