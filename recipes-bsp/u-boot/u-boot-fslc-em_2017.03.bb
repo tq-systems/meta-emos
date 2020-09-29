@@ -19,12 +19,14 @@ SRCREV = "facc91b845b23949f6b54a54d0c376b994ade0f4"
 SRCBRANCH = "EM3x0-v2017.03+fslc"
 
 PV = "v2017.03+git${SRCPV}"
+LOCALVERSION = "-em"
 
 S = "${WORKDIR}/git"
 
 DEPENDS += "dtc-native"
 
-PROVIDES += "u-boot"
+PROVIDES += "u-boot u-boot-em"
+RPROVIDES_${PN} += "u-boot u-boot-em"
 
 EXTRA_OEMAKE += ' \
 	HOSTCC="${BUILD_CC} ${BUILD_CPPFLAGS}" \
