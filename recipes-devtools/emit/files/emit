@@ -91,6 +91,15 @@ def merge_dicts(a, b):
 	return ret
 
 
+class AppData:
+	"""Common information derived from app info"""
+
+	def __init__(self, app_info):
+		self.url = app_info['url'].format(**app_info)
+		self.filename = urlparse(self.url).path.rpartition('/')[2]
+		self.arch = app_info['arch']
+		self.sha256 = app_info.get('sha256[{}]'.format(self.arch))
+
 class CommandCommon:
 	"""Common functions for all commands"""
 
@@ -106,25 +115,21 @@ class CommandCommon:
 				self.bundle_spec = merge_dicts(self.bundle_spec, bundle_spec)
 
 		self.defaults = self.bundle_spec['defaults']
+		self.defaults['arch'] = self.args.arch
+
 		self.apps = self.bundle_spec['apps']
 
-	def app_url(self, app, info):
-		"""Given an app name and its info structure, returns the URL and destination filename of an app."""
-
-		info = merge_dicts(self.defaults, info)
-		info = merge_dicts(info, {
+	def app_data(self, app, info):
+		"""
+		Returns the app data for an app.
+		"""
+		app_info = merge_dicts(self.defaults, info)
+		app_info = merge_dicts(app_info, {
 			'app': app,
-			'name': info.get('name', app),
-			'arch': self.args.arch,
+			'name': app_info.get('name', app),
 		})
-		url = info['url'].format(**info)
-		filename = urlparse(url).path.rpartition('/')[2]
 
-		return (url, filename)
-
-	def app_sha256(self, info):
-		"""Given an app info structure, returns the SHA256 checksum for the current arch."""
-		return info.get('sha256[{}]'.format(self.args.arch))
+		return AppData(app_info)
 
 
 class CommandDownload(CommandCommon):
@@ -138,28 +143,26 @@ class CommandDownload(CommandCommon):
 		skipped.
 		"""
 
-		url, filename = self.app_url(app, info)
-		path = os.path.join(self.args.download_dir, filename)
-
-		sha256 = self.app_sha256(info)
+		app_data = self.app_data(app, info)
+		path = os.path.join(self.args.download_dir, app_data.filename)
 
 		if info.get('cache') != False:
-			if sha256 is None:
-				raise Exception('App \'{}\' has no sha256 field for arch {}'.format(app, self.args.arch))
+			if app_data.sha256 is None:
+				raise Exception('App \'{}\' has no sha256 field for arch {}'.format(app, app_data.arch))
 
 			if os.access(path, os.R_OK):
 				try:
-					checkhash(path, sha256)
+					checkhash(path, app_data.sha256)
 					print('App \'{}\' found in cache.'.format(app), file=sys.stderr, flush=True)
 					return
 				except:
 					pass
 
-		print('Downloading app \'{}\' from: {}'.format(app, url), file=sys.stderr, flush=True)
+		print('Downloading app \'{}\' from: {}'.format(app, app_data.url), file=sys.stderr, flush=True)
 
-		subprocess.run(['wget', '-O', path, url], check=True)
-		if info.get('cache') != False or sha256 is not None:
-			checkhash(path, sha256)
+		subprocess.run(['wget', '-O', path, app_data.url], check=True)
+		if info.get('cache') != False or app_data.sha256 is not None:
+			checkhash(path, app_data.sha256)
 
 	def download_apps(self):
 		"""Download all apps listed in the base and bundle specs"""
@@ -202,8 +205,8 @@ class CommandBuild(CommandCommon):
 	def install_app(self, app, info):
 		"""Unpacks an app to the app install dir."""
 
-		filename = self.app_url(app, info)[1]
-		path = os.path.join(self.args.download_dir, filename)
+		app_data = self.app_data(app, info)
+		path = os.path.join(self.args.download_dir, app_data.filename)
 
 		with tarfile.open(path, mode='r:') as empkg:
 			with empkg.extractfile('manifest.json') as manifest_json:
