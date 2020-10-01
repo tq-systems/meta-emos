@@ -40,6 +40,17 @@ is_valid_name() {
 	echo "$1" | grep -qE '^[a-z0-9-]+$'
 }
 
+is_arch_supported() {
+	local arch
+	for arch in $(awk '{ print $2 }' /etc/opkg/arch.conf); do
+		if [ "$1" = "$arch" ]; then
+			return 0
+		fi
+	done
+
+	return 1
+}
+
 is_builtin() {
 	is_valid_name "$1" && [ -d "$BUILTIN_DIR/$1" ]
 }
@@ -280,8 +291,23 @@ pkg_info() {
 pkg_install() {
 	local pkg="$1"
 	local info="$(pkg_info "$pkg")"
+	if [ -z "$info" ]; then
+		echo >&2 "Unable to install '$pkg': failed to read manifest"
+		return 1
+	fi
 
 	local app="$(echo "$info" | jq -r '.id')"
+	if [ -z "$app" ]; then
+		echo >&2 "Unable to install '$pkg': invalid manifest"
+		return 1
+	fi
+
+	local arch="$(echo "$info" | jq -r '.arch')"
+	if ! is_arch_supported "$arch"; then
+		echo >&2 "Unable to install '$pkg': unsupported platform '$arch'"
+		return 1
+	fi
+
 	local version_old
 	local version_new="$(echo "$info" | jq -r '.version')"
 
