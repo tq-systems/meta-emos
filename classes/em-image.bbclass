@@ -18,7 +18,6 @@ IMAGE_INSTALL += " \
 		kernel \
 		kernel-devicetree \
 		kernel-modules \
-		imx28-blupdate \
 		u-boot-em \
 		libubootenv-bin \
 		mmc-utils \
