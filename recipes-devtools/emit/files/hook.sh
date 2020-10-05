@@ -11,6 +11,11 @@
 set -eo pipefail
 
 
+BASEDIR="$(dirname "$0")"
+
+. "$BASEDIR"/bootloader.sh
+
+
 check_version() {
 	local system_version="$1" bundle_version="$2"
 
@@ -93,34 +98,8 @@ slot-install)
 		exit 1
 	fi
 
-	BOOT_SLOT="$(imx28-blupdate status --device "$RAUC_SLOT_DEVICE" --boot-source | awk '/NOTICE: Boot source: / {print $4}')"
-
-	case "$BOOT_SLOT" in
-	Primary)
-		SLOTS='second first'
-		;;
-	Secondary)
-		SLOTS='first second'
-		;;
-	*)
-		echo "Unable to determine boot slot! Aborting." >&2
-		exit 1
-	esac
-
-	for slot in $SLOTS; do
-		INSTALLED=$( \
-			imx28-blupdate extract --device "$RAUC_SLOT_DEVICE" --$slot - \
-			| sha256sum | awk '{print $1}' || true \
-		)
-		if [ "$INSTALLED" = "$RAUC_IMAGE_DIGEST" ]; then
-			echo "Bootloader in slot $slot is already up to date! Skipping."
-			continue
-		fi
-
-		echo "Updating bootloader in slot $slot"
-
-		imx28-blupdate upgrade --device "$RAUC_SLOT_DEVICE" --$slot "$RAUC_IMAGE_NAME"
-		imx28-blupdate status --device "$RAUC_SLOT_DEVICE" --$slot
+	for slot in $(bootloader_slots); do
+		bootloader_upgrade "$slot"
 	done
 
 	;;
