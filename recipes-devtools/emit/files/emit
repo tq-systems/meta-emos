@@ -386,8 +386,17 @@ hooks=install
 			compatible=self.get_compatible_bundle(),
 			version=self.get_version(),
 			rootfs=fileinfo('em-image-{}-{}.tar'.format(self.args.image_name, self.args.machine)),
-			uboot=fileinfo('u-boot-{}.sb'.format(self.args.machine)),
+			uboot=fileinfo('bootloader-{}.bin'.format(self.args.machine)),
 		)
+
+	def get_bootloader_path(self):
+		"""Returns the path of the bootloader inside the core image"""
+		machine = self.args.machine
+
+		if machine in ['em300', 'em310']:
+			return './boot/u-boot.sb'
+		else:
+			raise Exception('Unsupported machine \'{}\''.format(machine))
 
 	def make_bundle(self):
 		"""
@@ -410,8 +419,8 @@ hooks=install
 							image_machine, self.args.machine))
 
 			# Add u-boot to bundle
-			with tar.extractfile('./boot/u-boot.sb'.format(self.args.machine)) as src:
-				with open(os.path.join(self.bundle_dir, 'u-boot-{}.sb'.format(self.args.machine)), 'wb') as dst:
+			with tar.extractfile(self.get_bootloader_path()) as src:
+				with open(os.path.join(self.bundle_dir, 'bootloader-{}.bin'.format(self.args.machine)), 'wb') as dst:
 					shutil.copyfileobj(src, dst)
 
 		# Add install hook to bundle
