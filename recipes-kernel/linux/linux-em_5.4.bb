@@ -3,4 +3,4 @@ include linux-em.inc
 PV = "5.4+git${SRCPV}"
 
 SRCBRANCH = "em-5.4.x"
-SRCREV = "fe7c7bfc6dfcc91a3691b0729e1b77be6de226b8"
+SRCREV = "a0bc09520b1bb3f5c46789774dd7d7056e658a75"
