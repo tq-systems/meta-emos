@@ -28,6 +28,7 @@ IMAGE_INSTALL += " \
 		eol-led \
 		status-led \
 		netdev-led \
+		em-power-handler \
 		emos-upgrade \
 		emcfg \
 		empkg \

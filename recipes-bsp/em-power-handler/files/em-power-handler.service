@@ -1,0 +1,11 @@
+[Unit]
+Description=EMOS USB/RS485 power fault handler
+After=systemd-udev-trigger.service systemd-udevd.service
+DefaultDependencies=no
+
+[Service]
+ExecStart=/sbin/em-power-handler
+Restart=always
+
+[Install]
+WantedBy=sysinit.target
