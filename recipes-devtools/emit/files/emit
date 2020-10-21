@@ -410,7 +410,7 @@ hooks=install
 							image_machine, self.args.machine))
 
 			# Add u-boot to bundle
-			with tar.extractfile('./boot/u-boot.sb-{}'.format(self.args.machine)) as src:
+			with tar.extractfile('./boot/u-boot.sb'.format(self.args.machine)) as src:
 				with open(os.path.join(self.bundle_dir, 'u-boot-{}.sb'.format(self.args.machine)), 'wb') as dst:
 					shutil.copyfileobj(src, dst)
 		# Add u-boot install hook to bundle
