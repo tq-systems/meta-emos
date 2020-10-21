@@ -42,9 +42,8 @@ do_install() {
 	install -d ${D}${sysconfdir}/sysctl.d
 	install -m 0644 sysctl.conf ${D}${sysconfdir}/sysctl.d/80-emos.conf
 
-	install -d ${D}${sysconfdir}/systemd/network
+	install -d ${D}${sysconfdir}/systemd
 	ln -s /run/em/etc/systemd/timesyncd.conf ${D}${sysconfdir}/systemd/
-	ln -s /run/em/etc/systemd/network/50-wired.network ${D}${sysconfdir}/systemd/network/
 
 	install -d ${D}${systemd_unitdir}/system/sysinit.target.wants/
 	install -m 0644 \
@@ -69,11 +68,10 @@ do_install() {
 	install -m 0755 ${WORKDIR}/em-keygen ${D}${bindir}/
 }
 
-RDEPENDS_${PN} += "jq u-boot-fslc-fw-utils openssl-bin faketime"
+RDEPENDS_${PN} += "jq u-boot-fslc-fw-utils openssl-bin faketime em-network-config"
 
 FILES_${PN} += " \
 	${sysconfdir}/tmpfiles.d/00-emos-log.conf \
-	${sysconfdir}/systemd/network/50-wired.network \
 	${systemd_unitdir}/system/ \
 	${systemd_unitdir}/system-generators/emcfg-generator \
 "

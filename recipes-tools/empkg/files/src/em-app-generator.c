@@ -28,7 +28,6 @@ const char *const CORE_APPS[] = {
 	"devel",
 	"device-settings",
 	"health-check",
-	"micrel-switch-tool",
 	"upnp",
 	"web-login",
 	NULL,
