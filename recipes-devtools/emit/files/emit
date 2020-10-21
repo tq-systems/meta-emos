@@ -400,8 +400,16 @@ hooks=install
 		# Add rootfs to bundle
 		shutil.move(self.build_image, self.bundle_dir)
 
-		# Add u-boot to bundle
 		with tarfile.open(self.args.core_image, mode='r:') as tar:
+			# Check machine name
+			with tar.extractfile('./etc/os-machine') as src:
+				image_machine = src.read().decode().strip()
+				if image_machine != self.args.machine:
+					raise Exception(
+						'Invalid core image: machine is \'{}\', expected \'{}\''.format(
+							image_machine, self.args.machine))
+
+			# Add u-boot to bundle
 			with tar.extractfile('./boot/u-boot.sb-{}'.format(self.args.machine)) as src:
 				with open(os.path.join(self.bundle_dir, 'u-boot-{}.sb'.format(self.args.machine)), 'wb') as dst:
 					shutil.copyfileobj(src, dst)
