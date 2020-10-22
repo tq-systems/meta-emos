@@ -19,7 +19,8 @@ IMAGE_INSTALL += " \
 		kernel-devicetree \
 		kernel-modules \
 		imx28-blupdate \
-		u-boot-fslc-fw-utils \
+		u-boot-em \
+		libubootenv-bin \
 		mmc-utils \
 		e2fsprogs \
 		e2fsprogs-tune2fs \
@@ -54,9 +55,6 @@ IMAGE_INSTALL += " \
 		nginx \
 		teridiand-config \
 		"
-
-IMAGE_INSTALL_append_em310 += " u-boot-fslc"
-IMAGE_INSTALL_append_em300 += " u-boot-fslc"
 
 BAD_RECOMMENDATIONS += " \
                       busybox-syslog \
