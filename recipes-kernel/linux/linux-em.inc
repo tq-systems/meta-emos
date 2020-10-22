@@ -22,5 +22,3 @@ S = "${WORKDIR}/git"
 KERNEL_EXTRA_ARGS += "LOADADDR=${UBOOT_ENTRYPOINT}"
 
 DEPENDS += "lzop-native bc-native"
-
-COMPATIBLE_MACHINE = "(em300|em310)"
