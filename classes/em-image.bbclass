@@ -23,6 +23,8 @@ IMAGE_INSTALL += " \
 		mmc-utils \
 		e2fsprogs \
 		e2fsprogs-tune2fs \
+		coreutils \
+		util-linux-lsblk \
 		less \
 		haveged \
 		eol-led \

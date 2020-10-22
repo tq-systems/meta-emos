@@ -395,6 +395,8 @@ hooks=install
 
 		if machine in ['em300', 'em310']:
 			return './boot/u-boot.sb'
+		elif machine in ['em4xx']:
+			return './boot/flash.bin'
 		else:
 			raise Exception('Unsupported machine \'{}\''.format(machine))
 
