@@ -72,7 +72,13 @@ dropbear_rsakey_dir_hook () {
 		echo "DROPBEAR_RSAKEY_DIR=/cfglog/var/lib/dropbear" >> ${IMAGE_ROOTFS}/etc/default/dropbear
 	fi
 }
-ROOTFS_POSTPROCESS_COMMAND += "dropbear_rsakey_dir_hook; "
+
+os_machine_hook () {
+	echo "${MACHINE}" > ${IMAGE_ROOTFS}/etc/os-machine
+}
+
+ROOTFS_POSTPROCESS_COMMAND += "dropbear_rsakey_dir_hook; os_machine_hook;"
+
 IMAGE_FEATURES += "read-only-rootfs allow-root-login"
 SYSTEMD_DEFAULT_TARGET = "emos.target"
 

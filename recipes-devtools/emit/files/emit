@@ -91,6 +91,15 @@ def merge_dicts(a, b):
 	return ret
 
 
+class AppData:
+	"""Common information derived from app info"""
+
+	def __init__(self, app_info):
+		self.url = app_info['url'].format(**app_info)
+		self.filename = urlparse(self.url).path.rpartition('/')[2]
+		self.arch = app_info['arch']
+		self.sha256 = app_info.get('sha256[{}]'.format(self.arch))
+
 class CommandCommon:
 	"""Common functions for all commands"""
 
@@ -98,29 +107,29 @@ class CommandCommon:
 		self.args = args
 
 		with open(BASE_SPEC, 'r') as f:
-			self.bundle_spec = yaml.load(f)
+			self.bundle_spec = yaml.safe_load(f)
 
 		for spec in self.args.bundle_spec:
 			with open(spec, 'r') as f:
-				bundle_spec = yaml.load(f)
+				bundle_spec = yaml.safe_load(f)
 				self.bundle_spec = merge_dicts(self.bundle_spec, bundle_spec)
 
 		self.defaults = self.bundle_spec['defaults']
+		self.defaults['arch'] = self.args.arch
+
 		self.apps = self.bundle_spec['apps']
 
-	def app_url(self, app, info):
-		"""Given an app name and its info structure, returns the URL and destination filename of an app."""
-
-		info = merge_dicts(self.defaults, info)
-		info = merge_dicts(info, {
+	def app_data(self, app, info):
+		"""
+		Returns the app data for an app.
+		"""
+		app_info = merge_dicts(self.defaults, info)
+		app_info = merge_dicts(app_info, {
 			'app': app,
-			'name': info.get('name', app),
-			'arch': self.args.arch,
+			'name': app_info.get('name', app),
 		})
-		url = info['url'].format(**info)
-		filename = urlparse(url).path.rpartition('/')[2]
 
-		return (url, filename)
+		return AppData(app_info)
 
 
 class CommandDownload(CommandCommon):
@@ -134,26 +143,26 @@ class CommandDownload(CommandCommon):
 		skipped.
 		"""
 
-		url, filename = self.app_url(app, info)
-		path = os.path.join(self.args.download_dir, filename)
+		app_data = self.app_data(app, info)
+		path = os.path.join(self.args.download_dir, app_data.filename)
 
 		if info.get('cache') != False:
-			if not info.get('sha256'):
-				raise Exception('App \'{}\' has no sha256 field'.format(app))
+			if app_data.sha256 is None:
+				raise Exception('App \'{}\' has no sha256 field for arch {}'.format(app, app_data.arch))
 
 			if os.access(path, os.R_OK):
 				try:
-					checkhash(path, info['sha256'])
+					checkhash(path, app_data.sha256)
 					print('App \'{}\' found in cache.'.format(app), file=sys.stderr, flush=True)
 					return
 				except:
 					pass
 
-		print('Downloading app \'{}\' from: {}'.format(app, url), file=sys.stderr, flush=True)
+		print('Downloading app \'{}\' from: {}'.format(app, app_data.url), file=sys.stderr, flush=True)
 
-		subprocess.run(['wget', '-O', path, url], check=True)
-		if info.get('cache') != False or type(info.get('sha256')) == str:
-			checkhash(path, info['sha256'])
+		subprocess.run(['wget', '-O', path, app_data.url], check=True)
+		if info.get('cache') != False or app_data.sha256 is not None:
+			checkhash(path, app_data.sha256)
 
 	def download_apps(self):
 		"""Download all apps listed in the base and bundle specs"""
@@ -196,8 +205,8 @@ class CommandBuild(CommandCommon):
 	def install_app(self, app, info):
 		"""Unpacks an app to the app install dir."""
 
-		filename = self.app_url(app, info)[1]
-		path = os.path.join(self.args.download_dir, filename)
+		app_data = self.app_data(app, info)
+		path = os.path.join(self.args.download_dir, app_data.filename)
 
 		with tarfile.open(path, mode='r:') as empkg:
 			with empkg.extractfile('manifest.json') as manifest_json:
@@ -391,9 +400,17 @@ hooks=install
 		# Add rootfs to bundle
 		shutil.move(self.build_image, self.bundle_dir)
 
-		# Add u-boot to bundle
 		with tarfile.open(self.args.core_image, mode='r:') as tar:
-			with tar.extractfile('./boot/u-boot.sb-{}'.format(self.args.machine)) as src:
+			# Check machine name
+			with tar.extractfile('./etc/os-machine') as src:
+				image_machine = src.read().decode().strip()
+				if image_machine != self.args.machine:
+					raise Exception(
+						'Invalid core image: machine is \'{}\', expected \'{}\''.format(
+							image_machine, self.args.machine))
+
+			# Add u-boot to bundle
+			with tar.extractfile('./boot/u-boot.sb'.format(self.args.machine)) as src:
 				with open(os.path.join(self.bundle_dir, 'u-boot-{}.sb'.format(self.args.machine)), 'wb') as dst:
 					shutil.copyfileobj(src, dst)
 		# Add u-boot install hook to bundle

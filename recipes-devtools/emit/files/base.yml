@@ -4,41 +4,41 @@ defaults:
 apps:
   button-handler:
     version: '2.0.1'
-    sha256: '6344e247fabd865129485dbf70433cd523d3bafe9324303e14463cb2658bcf8f'
+    sha256[armv5e]: '6344e247fabd865129485dbf70433cd523d3bafe9324303e14463cb2658bcf8f'
 
   data-transfer:
     version: '3.0.2'
-    sha256: '03ee49ca008c4b679407d2b3391888edf38af72955478a57bb74b027d3b433a7'
+    sha256[armv5e]: '03ee49ca008c4b679407d2b3391888edf38af72955478a57bb74b027d3b433a7'
 
   device-settings:
     version: '2.2.2'
-    sha256: 'ecf70c6daa4df662d1553d76d9c36b348cf2e294cbfa9583f899fc2ea961855b'
+    sha256[armv5e]: 'ecf70c6daa4df662d1553d76d9c36b348cf2e294cbfa9583f899fc2ea961855b'
 
   flash-scan:
     version: '2.0.1'
-    sha256: '0ab35950f51993f667fd7e71850a1cb67ebcffac8ee62962818ca3548fd364fc'
+    sha256[armv5e]: '0ab35950f51993f667fd7e71850a1cb67ebcffac8ee62962818ca3548fd364fc'
 
   health-check:
     version: '1.1.1'
-    sha256: 'e653eae0111dc8a6886674fcbd59bbb1ed339aea18ce7931653b67e51a3b3cb8'
+    sha256[armv5e]: 'e653eae0111dc8a6886674fcbd59bbb1ed339aea18ce7931653b67e51a3b3cb8'
 
   teridiand:
     version: '1.4.5'
-    sha256: 'e9c4ee78506b1bef345921b09fda18b9d0028f41b1cb366f57ee70c64e6893f1'
+    sha256[armv5e]: 'e9c4ee78506b1bef345921b09fda18b9d0028f41b1cb366f57ee70c64e6893f1'
 
   teridiand-fw:
     version: '1.0.1'
-    sha256: '7c7b00368e2d44725ee39c574ca574401a62d7448d5f519966e17aa3f38cd0d3'
+    sha256[armv5e]: '7c7b00368e2d44725ee39c574ca574401a62d7448d5f519966e17aa3f38cd0d3'
 
   #upnp:
   #  version: '1.1.2'
-  #  sha256: '67e78d5c64a89c041432a1f4b8a368aacd2e63bcb0822486b806b2e23ecb1e74'
+  #  sha256[armv5e]: '67e78d5c64a89c041432a1f4b8a368aacd2e63bcb0822486b806b2e23ecb1e74'
 
   web-application:
     name: web-application-tq
     version: '2.5.3'
-    sha256: 'f7ba404d3caa525b75139aae72ce47fc6fe4e201ed5768df6386a7fc8adb2df6'
+    sha256[armv5e]: 'f7ba404d3caa525b75139aae72ce47fc6fe4e201ed5768df6386a7fc8adb2df6'
 
   web-login:
     version: '2.3.3'
-    sha256: '40e7ae1a2db685c44dfd8ebb98766bb5aa25e1469c9ab00d3490e575201bf5e7'
+    sha256[armv5e]: '40e7ae1a2db685c44dfd8ebb98766bb5aa25e1469c9ab00d3490e575201bf5e7'
