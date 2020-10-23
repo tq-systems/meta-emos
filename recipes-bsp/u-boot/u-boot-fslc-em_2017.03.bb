@@ -28,6 +28,8 @@ DEPENDS += "dtc-native"
 PROVIDES += "u-boot u-boot-em"
 RPROVIDES_${PN} += "u-boot u-boot-em"
 
+UBOOT_INITIAL_ENV = "u-boot-initial-env"
+
 EXTRA_OEMAKE += ' \
 	HOSTCC="${BUILD_CC} ${BUILD_CPPFLAGS}" \
 	HOSTLDFLAGS="${BUILD_LDFLAGS}" \
