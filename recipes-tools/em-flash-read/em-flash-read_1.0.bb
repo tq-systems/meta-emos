@@ -17,6 +17,7 @@ do_install () {
 	install -m 0755 em-flash-read	${D}${bindir}
 
 	# em300 and em310 have the same eMMC and use the pSLC mode
+	# The EM4xx-CB supports eMMC 5.0 and uses the same standard registers
 	install -d ${D}${sysconfdir}
 	install -m 0644 em-flash_hw.conf	${D}${sysconfdir}/em-flash_hw.conf
 }
@@ -26,5 +27,5 @@ FILES_${PN} += " \
 	${bindir}/em-flash-read \
 "
 
-COMPATIBLE_MACHINE = "(em300|em310)"
+COMPATIBLE_MACHINE = "(em300|em310|em4xx)"
 PACKAGE_ARCH = "${MACHINE_ARCH}"

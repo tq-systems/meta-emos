@@ -25,4 +25,4 @@ do_install() {
 	install -m 0644 status-led.service	${D}${systemd_unitdir}/system
 }
 
-COMPATIBLE_MACHINE = "(em300|em310)"
+COMPATIBLE_MACHINE = "(em300|em310|em4xx)"

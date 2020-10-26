@@ -29,4 +29,4 @@ FILES_${PN} += " \
 	${libdir}/emos/network-config/ \
 "
 
-COMPATIBLE_MACHINE = "(em300|em310)"
+COMPATIBLE_MACHINE = "(em300|em310|em4xx)"

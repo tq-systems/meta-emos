@@ -19,5 +19,5 @@ do_install () {
 	install -m 0644 ${WORKDIR}/70-teridian.rules ${D}/lib/udev/rules.d/
 }
 
-COMPATIBLE_MACHINE = "(em300|em310)"
+COMPATIBLE_MACHINE = "(em300|em310|em4xx)"
 PACKAGE_ARCH = "${MACHINE_ARCH}"
