@@ -11,19 +11,24 @@ apps:
   access-token:
     #version: ''
     #sha256[armv5e]: ''
+    #sha256[aarch64]: ''
 
   devel:
+    arch: 'all'
     #version: ''
-    #sha256[armv5e]: ''
+    #sha256[all]: ''
 
   json:
     #version: ''
     #sha256[armv5e]: ''
+    #sha256[aarch64]: ''
 
   sensors:
     #version: ''
     #sha256[armv5e]: ''
+    #sha256[aarch64]: ''
 
   smart-meter:
+    arch: 'all'
     #version: ''
-    #sha256[armv5e]: ''
+    #sha256[all]: ''

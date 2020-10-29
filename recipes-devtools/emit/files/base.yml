@@ -5,40 +5,50 @@ apps:
   button-handler:
     #version: ''
     #sha256[armv5e]: ''
+    #sha256[aarch64]: ''
 
   data-transfer:
     #version: ''
     #sha256[armv5e]: ''
+    #sha256[aarch64]: ''
 
   device-settings:
     #version: ''
     #sha256[armv5e]: ''
+    #sha256[aarch64]: ''
 
   flash-scan:
     #version: ''
     #sha256[armv5e]: ''
+    #sha256[aarch64]: ''
 
   health-check:
     #version: ''
     #sha256[armv5e]: ''
+    #sha256[aarch64]: ''
 
   teridiand:
     #version: ''
     #sha256[armv5e]: ''
+    #sha256[aarch64]: ''
 
   teridiand-fw:
+    arch: 'all'
     #version: ''
-    #sha256[armv5e]: ''
+    #sha256[all]: ''
 
   upnp:
     #version: ''
     #sha256[armv5e]: ''
+    #sha256[aarch64]: ''
 
   web-application:
+    arch: 'all'
     name: web-application-tq
     #version: ''
-    #sha256[armv5e]: ''
+    #sha256[all]: ''
 
   web-login:
     #version: ''
     #sha256[armv5e]: ''
+    #sha256[aarch64]: ''
