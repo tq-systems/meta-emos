@@ -5,13 +5,15 @@ DESCRIPTION = "EMOS RAUC wrapper"
 SECTION = "core"
 
 LICENSE = "TQSSLA_V1.0.2"
-LIC_FILES_CHKSUM = "file://emos-upgrade;beginline=3;endline=5;md5=81086d9e1356cd540984044d078650e8"
+LIC_FILES_CHKSUM = "file://${WORKDIR}/LICENSE;md5=5a77156d011829e57ffe26e62f07ff2d"
+SRC_DISTRIBUTE_LICENSES += "TQSSLA_V1.0.2"
 
 PR = "r1"
 
 RDEPENDS_${PN} = "rauc"
 
 SRC_URI = " \
+        file://LICENSE \
         file://emos-upgrade \
         file://emos-upgrade-finalize \
         file://emos-upgrade-finalize.service \
