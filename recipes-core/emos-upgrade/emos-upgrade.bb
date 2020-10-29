@@ -1,4 +1,4 @@
-# Copyright (C) 2018, TQ Systems
+# Copyright (C) 2018, TQ-Systems GmbH
 # Author: Matthias Schiffer <matthias.schiffer@tq-group.com>
 
 DESCRIPTION = "EMOS RAUC wrapper"

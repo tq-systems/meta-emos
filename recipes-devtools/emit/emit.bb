@@ -9,6 +9,9 @@ SRC_DISTRIBUTE_LICENSES += "TQSSLA_V1.0.2"
 SRC_URI = "\
 	file://emit \
 	file://hook.sh \
+	file://bootloader-em300.sh \
+	file://bootloader-em310.sh \
+	file://bootloader-em4xx.sh \
 	file://base.yml \
 "
 
@@ -17,6 +20,10 @@ do_install() {
 
 	install -m755 ${WORKDIR}/emit ${D}${bindir}/
 	install -m644 ${WORKDIR}/hook.sh ${D}${datadir}/emit/
+	for machine in em300 em310 em4xx; do
+		install -m644 ${WORKDIR}/bootloader-$machine.sh ${D}${datadir}/emit/
+	done
+
 	install -m644 ${WORKDIR}/base.yml ${D}${datadir}/emit/
 }
 
