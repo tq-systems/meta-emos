@@ -9,21 +9,21 @@ product_info:
 
 apps:
   access-token:
-    version: '1.0.7'
-    sha256[armv5e]: 'df3f731e4a140827fadae7a2f2739b8afbe296f95bc10c64b3e2edb5e1443036'
+    #version: ''
+    #sha256[armv5e]: ''
 
   devel:
-    version: '1.0.6'
-    sha256[armv5e]: '46e376a3078a256b933863c8de1d49a1b142439a97ca5f70482a32d2f577ba1b'
+    #version: ''
+    #sha256[armv5e]: ''
 
   json:
-    version: '2.0.4'
-    sha256[armv5e]: '76607b95ad93a36e2da9ac27d7db68ecc81ef8dc6c4a183b04034b3567a8ce01'
+    #version: ''
+    #sha256[armv5e]: ''
 
   sensors:
-    version: '1.1.0'
-    sha256[armv5e]: '1796e4fe484cbafc7bea842e32ab54f290f09e7f08b27284ab7e64143ddc5093'
+    #version: ''
+    #sha256[armv5e]: ''
 
   smart-meter:
-    version: '2.1.4'
-    sha256[armv5e]: '7325c4326d97b70cfc43bce53bf727fe58827fbea3245685fc50119d0ac7ae55'
+    #version: ''
+    #sha256[armv5e]: ''
