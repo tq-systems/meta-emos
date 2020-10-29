@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# Copyright (C) 2020, TQ Systems
+# Copyright (C) 2020, TQ-Systems GmbH
 #
 # slot-install handling is:
 #
