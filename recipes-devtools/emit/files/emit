@@ -160,7 +160,7 @@ class CommandDownload(CommandCommon):
 
 		print('Downloading app \'{}\' from: {}'.format(app, app_data.url), file=sys.stderr, flush=True)
 
-		subprocess.run(['wget', '-O', path, app_data.url], check=True)
+		subprocess.run(['wget', '-nv', '-O', path, app_data.url], check=True)
 		if info.get('cache') != False or app_data.sha256 is not None:
 			checkhash(path, app_data.sha256)
 
@@ -169,7 +169,11 @@ class CommandDownload(CommandCommon):
 
 		for app, info in self.apps.items():
 			if info != None:
-				self.download_app(app, info)
+				try:
+					self.download_app(app, info)
+				except Exception as e:
+					print('Error downloading \'{}\''.format(app), file=sys.stderr, flush=True)
+					raise e
 
 	def run(self):
 		os.makedirs(self.args.download_dir, exist_ok=True)
@@ -226,7 +230,11 @@ class CommandBuild(CommandCommon):
 
 		for app, info in self.apps.items():
 			if info != None:
-				self.install_app(app, info)
+				try:
+					self.install_app(app, info)
+				except Exception as e:
+					print('Error installing \'{}\''.format(app), file=sys.stderr, flush=True)
+					raise e
 
 	def get_description(self):
 		return 'EM bundle {}'.format(self.args.image_name)
