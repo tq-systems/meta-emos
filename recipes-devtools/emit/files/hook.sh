@@ -12,6 +12,10 @@ set -eo pipefail
 
 
 check_version() {
+	if [ -e "$BASEDIR"/allow-downgrade ]; then
+		return 0
+	fi
+
 	local system_version="$1" bundle_version="$2"
 
 	# Get prefix composed of digits and periods, we don't care about snapshot suffixes etc.
