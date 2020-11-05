@@ -12,7 +12,7 @@ SRC_URI = " \
 	file://fw_env.config \
 "
 
-SRCREV = "64062f8066280fc6537429948252091cad11b172"
+SRCREV = "8c70d072c8377dad0586c5218c5fca7bb705d178"
 SRCBRANCH = "EM4xx-v2019.04-tqmaxx"
 
 PV = "v2019.04+git${SRCPV}"
