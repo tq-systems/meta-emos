@@ -28,7 +28,11 @@ check_version() {
 
 	# Return true when the system version is the lower on of the two versions
 	# - so this is an upgrade, or both version strings are equal
-	[ "$system_version" = "$lower_version" ]
+	if [ "$system_version" = "$lower_version" ]; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 
