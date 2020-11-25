@@ -1,0 +1,68 @@
+#!/bin/sh
+
+set -eo pipefail
+
+FILE_RTC_TIME="/sys/class/rtc/rtc0/since_epoch"
+DIR_RUN_SYSTEM="/run/em/system"
+FILE_INVALID_TIME="$DIR_RUN_SYSTEM/time-invalid"
+
+
+log_journal() {
+	local loglevel="$1"
+	local message="$2"
+
+	echo "$message" | systemd-cat -t "em-timesync" -p "$loglevel"
+}
+
+restart_apps() {
+	systemctl try-restart 'em-app-*' || log_journal "err" "Could not restart apps"
+}
+
+remove_invalid_time() {
+	if [ -f "$FILE_INVALID_TIME" ]; then
+		log_journal "info" "System time and RTC time are now synchronized"
+		rm "$FILE_INVALID_TIME" || log_journal "err" "Could not remove $FILE_INVALID_TIME"
+		restart_apps
+	fi
+}
+
+set_invalid_time() {
+	if [ ! -f "$FILE_INVALID_TIME" ]; then
+		log_journal "err" "System time and RTC time are not synchronous"
+		mkdir -p "$DIR_RUN_SYSTEM"
+		touch "$FILE_INVALID_TIME" || log_journal "err" "Could not write $FILE_INVALID_TIME"
+		restart_apps
+	fi
+}
+
+sync_system_time() {
+	# set system time from rtc
+	log_journal "notice" "Found a drifted system time, it will be adjusted to RTC time"
+	hwclock -s || log_journal "err" "Could not adjust system time"
+}
+
+
+# Get timestamps, cut nano seconds (last 6 chars)
+TIME_SYS="$(date +%s)"
+TIME_RTC="$(cat "$FILE_RTC_TIME")"
+
+# Get absolute difference between system and rtc time
+DIFF="$((TIME_SYS - TIME_RTC))"
+DIFF_ABS="${DIFF#-}"
+
+# Limits of absolute time difference between RTC and system time (in seconds)
+#      time difference  < 5  --> synchronous
+# 5 <= time difference  < 60 --> drifted
+#      time difference >= 60 --> invalid
+LIMIT_SYNC="5"
+LIMIT_DRIFT="60"
+
+if [ "$DIFF_ABS" -lt "$LIMIT_SYNC" ]; then
+	remove_invalid_time
+else
+	if [ "$DIFF_ABS" -lt "$LIMIT_DRIFT" ]; then
+		sync_system_time
+	else
+		set_invalid_time
+	fi
+fi
