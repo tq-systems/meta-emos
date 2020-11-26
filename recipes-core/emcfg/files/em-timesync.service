@@ -1,0 +1,11 @@
+[Unit]
+Description=Check system/RTC time synchronization
+DefaultDependencies=no
+Before=sysinit.target
+
+[Service]
+ExecStart=/sbin/em-timesync
+Type=oneshot
+
+[Install]
+WantedBy=sysinit.target
