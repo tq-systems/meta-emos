@@ -1,0 +1,9 @@
+[Unit]
+Description=Trigger system/RTC time synchronization
+DefaultDependencies=no
+
+[Timer]
+OnUnitActiveSec=1min
+
+[Install]
+WantedBy=sysinit.target
