@@ -23,6 +23,7 @@ SRC_URI = " \
 	file://80-button-handler.rules \
 	file://em-keygen \
 	file://openssl-em.cnf \
+	file://journald-debug.conf \
 "
 
 SYSTEMD_SERVICE_${PN} = " \
@@ -66,6 +67,9 @@ do_install() {
 
 	install -d ${D}${bindir}
 	install -m 0755 ${WORKDIR}/em-keygen ${D}${bindir}/
+
+	install -d ${D}${sysconfdir}/systemd/journald.conf.d
+	install -m 0644 ${WORKDIR}/journald-debug.conf ${D}${sysconfdir}/systemd/journald.conf.d/
 }
 
 RDEPENDS_${PN} += "jq libubootenv-bin openssl-bin faketime em-network-config"
