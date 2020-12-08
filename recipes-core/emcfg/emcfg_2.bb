@@ -18,6 +18,9 @@ SRC_URI = " \
 	file://etc-shadow.mount \
 	file://em-app-flash-scan.timer \
 	file://em-log-fsck-errors.service \
+	file://em-timesync \
+	file://em-timesync.service \
+	file://em-timesync.timer \
 	file://emos.target \
 	file://emcfg-generator \
 	file://80-button-handler.rules \
@@ -29,13 +32,21 @@ SRC_URI = " \
 SYSTEMD_SERVICE_${PN} = " \
 	em-app-flash-scan.timer \
 	em-log-fsck-errors.service \
+	em-timesync.service \
+	em-timesync.timer \
 "
 
 S = "${WORKDIR}"
 
 do_install() {
 	install -d ${D}${base_sbindir}
-	install -m 0755 emcfg em-config-reset em-init em-update-password ${D}${base_sbindir}/
+	install -m 0755 \
+		emcfg \
+		em-config-reset \
+		em-init \
+		em-update-password \
+		em-timesync \
+		${D}${base_sbindir}/
 
 	install -d ${D}${sysconfdir}/tmpfiles.d
 	install -m 0644 00-emos-log.conf ${D}${sysconfdir}/tmpfiles.d/
@@ -52,9 +63,15 @@ do_install() {
 		etc-shadow.mount \
 		em-app-flash-scan.timer \
 		em-log-fsck-errors.service \
+		em-timesync.service \
+		em-timesync.timer \
 		emos.target \
 		${D}${systemd_unitdir}/system/
-	ln -s ../emcfg.service ../etc-shadow.mount ../em-log-fsck-errors.service ${D}${systemd_unitdir}/system/sysinit.target.wants/
+	ln -s \
+		../emcfg.service \
+		../etc-shadow.mount \
+		../em-log-fsck-errors.service \
+		${D}${systemd_unitdir}/system/sysinit.target.wants/
 
 	install -d ${D}${systemd_unitdir}/system-generators
 	install -m 0755 emcfg-generator ${D}${systemd_unitdir}/system-generators/
