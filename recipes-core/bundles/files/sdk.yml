@@ -9,26 +9,26 @@ product_info:
 
 apps:
   access-token:
-    #version: ''
-    #sha256[armv5e]: ''
-    #sha256[aarch64]: ''
+    version: '1.1.0'
+    sha256[armv5e]: '682483a3fc7d2972d2d7b86403d9173b1c3273049b93df0c2c35d8d9885589eb'
+    sha256[aarch64]: 'f7e3c2a3871f055566d1aebbb26236ebf97c0f16d93b26ba2ab42b5bff431e25'
 
   devel:
     arch: 'all'
-    #version: ''
-    #sha256[all]: ''
+    version: '1.1.0'
+    sha256[all]: 'ce6d25000632544a812a0787a09cd4a822ef415035d0aed081c551e96177ed63'
 
   json:
-    #version: ''
-    #sha256[armv5e]: ''
-    #sha256[aarch64]: ''
+    version: '2.3.0'
+    sha256[armv5e]: '78f1e030eed0dd520460fe08d7052f962f35dfaa017b362bdfb7f09c703278f5'
+    sha256[aarch64]: '6a4835a8b9431aa09cd0139add0a15653d925d85f08a509f3ec809406d9349eb'
 
   sensors:
-    #version: ''
-    #sha256[armv5e]: ''
-    #sha256[aarch64]: ''
+    version: '1.3.0'
+    sha256[armv5e]: 'c52beed7fe1c16b8e84d6ff194a750a60c332b234b7f3cc68b31f692e528529f'
+    sha256[aarch64]: 'd0d45ec9a58faf9bb58fa993b820fcb485fa7366068147889adb104a14e64d3e'
 
   smart-meter:
     arch: 'all'
-    #version: ''
-    #sha256[all]: ''
+    version: '2.3.0'
+    sha256[all]: '415eeaa0fbdf9d63b77b66e2c6665a0b7702df64a67ff2c45593ae3960d236af'
