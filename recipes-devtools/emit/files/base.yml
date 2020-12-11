@@ -3,52 +3,52 @@ defaults:
 
 apps:
   button-handler:
-    #version: ''
-    #sha256[armv5e]: ''
-    #sha256[aarch64]: ''
+    version: '2.1.0'
+    sha256[armv5e]: 'e1a46069a258ac8cf6b62779d7318d40746492f4e8bd488dfc41f46e628d01f2'
+    sha256[aarch64]: '249c057184c8794bdb251d73e3bbed360e8e88d0171a198689527be4ce52e2f5'
 
   data-transfer:
-    #version: ''
-    #sha256[armv5e]: ''
-    #sha256[aarch64]: ''
+    version: '3.3.0'
+    sha256[armv5e]: 'd16ba60166c5cfcde25e6724826b49bb195cdc3664792008c3feed1d99f1b1fa'
+    sha256[aarch64]: '4749f2686b1400920a7cbbdebadfc35dc0f318adc62b0d696fe0c6c37a639d7d'
 
   device-settings:
-    #version: ''
-    #sha256[armv5e]: ''
-    #sha256[aarch64]: ''
+    version: '2.4.0'
+    sha256[armv5e]: '34cba8e7042f63ed90d2e44059f92f9125f15522e106dbf13f3727bb0357a537'
+    sha256[aarch64]: '0af4bef2f8de917bc646e0e7a42bbf41f9c3e870dcd747cbd10032736f5a9972'
 
   flash-scan:
-    #version: ''
-    #sha256[armv5e]: ''
-    #sha256[aarch64]: ''
+    version: '2.1.0'
+    sha256[armv5e]: '2615725afcca3ae416fe857bdaa164352237693a620afec69b3b94a778d152ac'
+    sha256[aarch64]: '695820824f1ccc0fc76c224ef301eaa5fc014d0ed29b8e9fed263a9cbe1ff38b'
 
   health-check:
-    #version: ''
-    #sha256[armv5e]: ''
-    #sha256[aarch64]: ''
+    version: '1.5.0'
+    sha256[armv5e]: 'c20980807852f0109cf78e2288fc6395826195dffd5a7ea3b5b87faef457fa44'
+    sha256[aarch64]: '924fe3282dd385ce3f4bc6afc2e6362f7e4392ed4f38904e00f9c5192033dac1'
 
   teridiand:
-    #version: ''
-    #sha256[armv5e]: ''
-    #sha256[aarch64]: ''
+    version: '1.6.0'
+    sha256[armv5e]: '9505016e8d65ab2fb34864fd3bbe379baab2c01cb3c0c954d464a6229dcb1a17'
+    sha256[aarch64]: '9b832038a2fdc61aec98ab459b857090c4d9a281d8985f2b9d68da64f1705a05'
 
   teridiand-fw:
     arch: 'all'
-    #version: ''
-    #sha256[all]: ''
+    version: '1.1.0'
+    sha256[all]: '40dcee260e60914b19c438a2e734e03d0875aa74c8acc9685fca18ddc1a72bc1'
 
   upnp:
-    #version: ''
-    #sha256[armv5e]: ''
-    #sha256[aarch64]: ''
+    version: '1.2.0'
+    sha256[armv5e]: '84b06829c77c1d8b0a4988477da64f34e3a5d449a64fd75026c511b31e0a0c04'
+    sha256[aarch64]: '870846e1d3c12723887840053e1b7c97ee1eef78ab5b162d6350e072bfc04c8e'
 
   web-application:
     arch: 'all'
     name: web-application-tq
-    #version: ''
-    #sha256[all]: ''
+    version: '2.8.0'
+    sha256[all]: '56595fbde6f5713e1973069fcd06796f01fdb51a4e8a2c197e42b6ba57cd48c9'
 
   web-login:
-    #version: ''
-    #sha256[armv5e]: ''
-    #sha256[aarch64]: ''
+    version: '2.4.0'
+    sha256[armv5e]: 'e7334a9de0b4537585ee75696fb5ae2a5b2bd8967941891c4930be92fccf414c'
+    sha256[aarch64]: '5cb23f8309ae08620b981a65b1b94863a1f19bdefe946a926d7857afb83c8b28'
