@@ -44,7 +44,7 @@ sync_system_time() {
 
 # Get timestamps, cut nano seconds (last 6 chars)
 TIME_SYS="$(date +%s)"
-TIME_RTC="$(cat "$FILE_RTC_TIME")"
+TIME_RTC="$(cat "$FILE_RTC_TIME" 2>/dev/null || echo '-1')"
 
 # Get absolute difference between system and rtc time
 DIFF="$((TIME_SYS - TIME_RTC))"
@@ -57,12 +57,10 @@ DIFF_ABS="${DIFF#-}"
 LIMIT_SYNC="5"
 LIMIT_DRIFT="60"
 
-if [ "$DIFF_ABS" -lt "$LIMIT_SYNC" ]; then
+if [ "$TIME_RTC" -ne -1 ] && [ "$DIFF_ABS" -lt "$LIMIT_SYNC" ]; then
 	remove_invalid_time
+elif [ "$TIME_RTC" -ne -1 ] && [ "$DIFF_ABS" -lt "$LIMIT_DRIFT" ]; then
+	sync_system_time
 else
-	if [ "$DIFF_ABS" -lt "$LIMIT_DRIFT" ]; then
-		sync_system_time
-	else
-		set_invalid_time
-	fi
+	set_invalid_time
 fi
