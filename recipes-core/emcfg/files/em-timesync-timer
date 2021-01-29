@@ -1,0 +1,8 @@
+#!/bin/sh
+
+SLEEP_SEC=60
+
+while true; do
+	em-timesync
+	sleep $SLEEP_SEC
+done

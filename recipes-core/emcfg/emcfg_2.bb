@@ -19,8 +19,8 @@ SRC_URI = " \
 	file://em-app-flash-scan.timer \
 	file://em-log-fsck-errors.service \
 	file://em-timesync \
-	file://em-timesync.service \
-	file://em-timesync.timer \
+	file://em-timesync-timer \
+	file://em-timesync-timer.service \
 	file://emos.target \
 	file://emcfg-generator \
 	file://80-button-handler.rules \
@@ -32,8 +32,7 @@ SRC_URI = " \
 SYSTEMD_SERVICE_${PN} = " \
 	em-app-flash-scan.timer \
 	em-log-fsck-errors.service \
-	em-timesync.service \
-	em-timesync.timer \
+	em-timesync-timer.service \
 "
 
 S = "${WORKDIR}"
@@ -46,6 +45,7 @@ do_install() {
 		em-init \
 		em-update-password \
 		em-timesync \
+		em-timesync-timer \
 		${D}${base_sbindir}/
 
 	install -d ${D}${sysconfdir}/tmpfiles.d
@@ -63,8 +63,7 @@ do_install() {
 		etc-shadow.mount \
 		em-app-flash-scan.timer \
 		em-log-fsck-errors.service \
-		em-timesync.service \
-		em-timesync.timer \
+		em-timesync-timer.service \
 		emos.target \
 		${D}${systemd_unitdir}/system/
 	ln -s \
