@@ -1,6 +1,6 @@
 /*
  * empkg - em-app-generator.c
- * Copyright © 2019 TQ-Systems GmbH <info@tq-group.com>
+ * Copyright © 2020 TQ-Systems GmbH <info@tq-group.com>
  * All rights reserved. For further information see LICENSE.
  * Author: Matthias Schiffer
  */
@@ -21,7 +21,8 @@
 #define APP_BEFORE_TARGET "em-app-before.target"
 
 #define CORE_TARGET_WANTS "multi-user.target.wants"
-#define APP_TARGET_WANTS "em-app.target.wants"
+#define APP_TIME_TARGET_WANTS "em-app-time.target.wants"
+#define APP_NO_TIME_TARGET_WANTS "em-app-no-time.target.wants"
 
 const char *const CORE_APPS[] = {
 	"button-handler",
@@ -30,6 +31,21 @@ const char *const CORE_APPS[] = {
 	"health-check",
 	"upnp",
 	"web-login",
+	NULL,
+};
+
+const char *const TIME_APPS[] = {
+	"cloud-sync",
+	"datalogger",
+	"eventlogger",
+	"evse-etrel",
+	"evse-keba",
+	"kostal-solar-electric",
+	"livelogger",
+	"modbus-daemon",
+	"sensors",
+	"tariffs",
+	"teridiand",
 	NULL,
 };
 
@@ -43,6 +59,15 @@ bool is_core_app(const char *app) {
 	return false;
 }
 
+bool is_time_app(const char *app) {
+	size_t i;
+	for (i = 0; TIME_APPS[i]; i++) {
+		if (strcmp(app, TIME_APPS[i]) == 0)
+			return true;
+	}
+
+	return false;
+}
 
 bool is_autostart(const char *app) {
 	const char *manifest_pattern = "/apps/installed/%s/manifest.json";
@@ -140,7 +165,12 @@ void handle_app(const char *app) {
 		return;
 	}
 
-	symlink_wants(app, APP_TARGET_WANTS);
+	if (is_time_app(app)) {
+		symlink_wants(app, APP_TIME_TARGET_WANTS);
+	} else {
+		symlink_wants(app, APP_NO_TIME_TARGET_WANTS);
+	}
+
 	add_dependencies(app);
 }
 
@@ -163,7 +193,11 @@ int main(int argc, char *argv[]) {
 		perror("mkdir");
 		return 1;
 	}
-	if (mkdir(APP_TARGET_WANTS, 0777) && errno != EEXIST) {
+	if (mkdir(APP_TIME_TARGET_WANTS, 0777) && errno != EEXIST) {
+		perror("mkdir");
+		return 1;
+	}
+	if (mkdir(APP_NO_TIME_TARGET_WANTS, 0777) && errno != EEXIST) {
 		perror("mkdir");
 		return 1;
 	}
