@@ -1,4 +1,4 @@
 [Unit]
 Description=EM apps
-Requires=em-app-before.target
+Requires=em-app-before.target em-app-time.target em-app-no-time.target
 After=em-app-before.target

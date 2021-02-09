@@ -15,7 +15,8 @@ log_journal() {
 }
 
 restart_apps() {
-	systemctl try-restart 'em-app-*' || log_journal "err" "Could not restart apps"
+	systemctl try-restart -- $(systemctl show -p Wants em-app-time.target | cut -d= -f2) \
+		|| log_journal "err" "Could not restart apps"
 }
 
 remove_invalid_time() {
