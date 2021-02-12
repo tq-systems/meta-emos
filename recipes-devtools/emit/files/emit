@@ -34,9 +34,11 @@ parser_build = subparsers.add_parser('build')
 parser_build.add_argument('--build-dir', default='tmp', help='Directory for temporary build artifacts')
 parser_build.add_argument('--bundle-version', help='Bundle version number')
 parser_build.add_argument('--machine', required=True, help='Machine name for compatible string and U-boot version')
+parser_build.add_argument('--device-type', required=True, help='Device type for GUI reference')
 parser_build.add_argument('--rauc-key', required=True, help='Private key for bundle signature')
 parser_build.add_argument('--rauc-cert', required=True, help='Certificate for bundle signature')
-parser_build.add_argument('--rauc-keyring', required=True, help='Certificate authority to be included in the image. Bundles are verified against this CA on system upgrades.')
+parser_build.add_argument('--rauc-keyring', required=True,
+help='Certificate authority to be included in the image. Bundles are verified against this CA on system upgrades.')
 parser_build.add_argument('--core-image', required=True, help='Core image used to generate bundle')
 parser_build.add_argument('--image-name', required=True,
 	help='Image name of the generated bundle. This is included in the compatible string and various filenames by default.',
@@ -283,11 +285,25 @@ class CommandBuild(CommandCommon):
 		Returns a compatible string for the RAUC config.
 
 		The compatible string has the format $MACHINE/$COMPATIBLE/1/$VERSION, where $MACHINE/$COMPATIBLE is
-                generated as described in get_compatible_bundle(), 1 the version of the compatible string format, and
-                $VERSION is the bundle version.
+		generated as described in get_compatible_bundle(), 1 the version of the compatible string format, and
+		$VERSION is the bundle version.
 		"""
 
 		return '{}/1/{}'.format(self.get_compatible_bundle(), self.get_version())
+
+	def get_device_type(self):
+		"""
+		Returns the device type to be added to the product info.
+
+		The device type is assigned directly via the machine and specified in the GUI and in the bundle file name.
+		"""
+
+		if self.args.device_type != None:
+			ret = self.args.device_type
+		else:
+			raise Exception('Empty device type')
+
+		return ret
 
 	def write_product_info(self):
 		"""Writes the product info from the bundle spec to /etc/product-info.json in the image root"""
@@ -302,6 +318,7 @@ class CommandBuild(CommandCommon):
 				'manufacturer_url': info['manufacturer_url'],
 				'code': info['code'],
 				'name': info['name'],
+				'devicetype': self.get_device_type(),
 				'software_version': self.get_version(),
 			}, f, sort_keys=True)
 
