@@ -9,4 +9,4 @@ DEPENDS = "jansson"
 S = "${WORKDIR}/git"
 
 SRC_URI = "git://github.com/tq-systems/libdeviceinfo-em.git;protocol=https"
-SRCREV = "7edfd959e88cac67184056d67ae6f38282d462df"
+SRCREV = "d9f1f152ea6646f30067dac01b3178648de275b0"
