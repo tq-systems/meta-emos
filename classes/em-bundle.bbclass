@@ -6,10 +6,12 @@ EM_BUNDLE_SPEC_URI ?= "file://${EM_BUNDLE_SPEC}"
 
 EM_BUNDLE_VERSION ?= "${PV}"
 
-BUNDLE_BASENAME ??= "${PN}"
-BUNDLE_NAME ??= "${BUNDLE_BASENAME}-${MACHINE}-${EM_BUNDLE_VERSION}"
+TQ_DEVICE_TYPE ??= ""
+
+BUNDLE_BASENAME ??= "${EM_IMAGE_NAME}"
+BUNDLE_NAME ??= "${BUNDLE_BASENAME}-${TQ_DEVICE_TYPE}-${EM_BUNDLE_VERSION}"
 BUNDLE_NAME[vardepsexclude] = "DATETIME"
-BUNDLE_LINK_NAME ??= "${BUNDLE_BASENAME}-${MACHINE}"
+BUNDLE_LINK_NAME ??= "${BUNDLE_BASENAME}-${TQ_DEVICE_TYPE}"
 
 
 do_patch[noexec] = "1"
@@ -68,17 +70,18 @@ do_fetch[postfuncs] += "emit_fetch_post"
 
 do_bundle() {
     ${EMIT} \
-        --bundle-spec ${WORKDIR}/${EM_BUNDLE_SPEC} \
+        --bundle-spec '${WORKDIR}/${EM_BUNDLE_SPEC}' \
         build \
-        --build-dir ${B}/tmp \
-        --bundle-version ${EM_BUNDLE_VERSION} \
-        --machine ${MACHINE} \
-        --rauc-key ${RAUC_KEY_FILE} \
-        --rauc-cert ${RAUC_CERT_FILE} \
-        --rauc-keyring ${RAUC_KEYRING_FILE} \
-        --core-image ${DEPLOY_DIR_IMAGE}/${EM_CORE_IMAGE}-${MACHINE}.tar \
-        --output-bundle ${B}/bundle.raucb \
-        --image-name ${EM_IMAGE_NAME}
+        --build-dir '${B}/tmp' \
+        --bundle-version '${EM_BUNDLE_VERSION}' \
+        --machine '${MACHINE}' \
+        --device-type '${TQ_DEVICE_TYPE}' \
+        --rauc-key '${RAUC_KEY_FILE}' \
+        --rauc-cert '${RAUC_CERT_FILE}' \
+        --rauc-keyring '${RAUC_KEYRING_FILE}' \
+        --core-image '${DEPLOY_DIR_IMAGE}/${EM_CORE_IMAGE}-${MACHINE}.tar' \
+        --output-bundle '${B}/bundle.raucb' \
+        --image-name '${EM_IMAGE_NAME}'
 }
 do_bundle[depends] += "${EM_CORE_IMAGE}:do_image_complete"
 do_bundle[dirs] = "${B}"
