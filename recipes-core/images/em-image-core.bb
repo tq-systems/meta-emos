@@ -12,6 +12,7 @@ TOOLCHAIN_HOST_TASK_append = " \
 TOOLCHAIN_TARGET_TASK_append = " \
 	libdaemon-dev \
 	mosquitto-dev \
+	paho-mqtt-c-dev \
 	protobuf-dev \
 	protobuf-c-dev \
 	jansson-dev \
