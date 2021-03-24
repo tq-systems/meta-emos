@@ -44,6 +44,7 @@ IMAGE_INSTALL += " \
 		libavahi-client \
 		libdaemon \
 		libmosquitto1 \
+		paho-mqtt-c \
 		protobuf \
 		protobuf-c \
 		jansson \
