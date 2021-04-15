@@ -37,11 +37,6 @@ apps:
     version: '1.1.0'
     sha256[all]: '40dcee260e60914b19c438a2e734e03d0875aa74c8acc9685fca18ddc1a72bc1'
 
-  upnp:
-    version: '1.2.0'
-    sha256[armv5e]: '84b06829c77c1d8b0a4988477da64f34e3a5d449a64fd75026c511b31e0a0c04'
-    sha256[aarch64]: '870846e1d3c12723887840053e1b7c97ee1eef78ab5b162d6350e072bfc04c8e'
-
   web-application:
     arch: 'all'
     name: web-application-tq
