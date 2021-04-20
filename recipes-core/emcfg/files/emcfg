@@ -67,7 +67,6 @@ ClientIdentifier=mac
 LinkLocalAddressing=yes",
 
 if .mode == "static" then
-
 	"DHCP=no",
 	"Address=\(.address)/\(.prefixlen)",
 
@@ -79,9 +78,15 @@ if .mode == "static" then
 	(.dns // [] | map("DNS=\(.)") | .[])
 
 else
-
 	"DHCP=ipv4"
+end,
 
+if .hidden.address and .hidden.prefixlen then
+	"\n[Address]",
+	"Label=br0:0",
+	"Address=\(.hidden.address)/\(.hidden.prefixlen)"
+else
+	empty
 end
 	' < $CFG/network.json > $RUNSDNET/br0.network
 }
