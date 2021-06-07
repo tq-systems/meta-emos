@@ -1,3 +1,12 @@
+## [3.0.0-rc5] - 2021-06-07
+### Added
+- Add paho-mqtt-c to core-image and toolchain
+- linux-imx-em: add ftdi_sio USB UART driver
+### Changed
+- linux-imx-em: further adaptions for em4xx hardware and update to latest version
+- u-boot-imx-em: further adaptions for em4xx hardware and update to latest version
+- Remove upnp-app from base.yml and add it to sdk.yml
+
 ## [3.0.0-rc4] - 2021-02-22
 ### Changed
 - emcfg: add default rate limit to journald-debug.conf
