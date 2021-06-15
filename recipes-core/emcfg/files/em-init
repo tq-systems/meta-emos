@@ -60,20 +60,16 @@ factory_reset() {
 	if $reset_data; then
 		mkfs.ext4 -Fvj $DEV_DATA
 
-		mount -t tmpfs apps /apps
-		mkdir /apps/installed
-		mount --bind /opt/apps /apps/installed
+		# Set flag for resetting the energy meter readings
+		mount -o $MOUNT_OPTS_RW $DEV_CFGLOG /cfglog || fatal '/cfglog mount failed.'
 
-		local TBIN=/apps/installed/teridiand/bin
+		DIR_CFGLOG_TERIDIAN="/cfglog/apps/teridiand"
+		FLAG_RESET_METER="$DIR_CFGLOG_TERIDIAN/reset-meter"
 
-		# Reset teridian registers
-		if [ -x $TBIN/tboot ]; then
-			$TBIN/tboot
-			$TBIN/tcmd SPI_CMD_CLEAR_REGISTERS
-		fi
+		mkdir -p "$DIR_CFGLOG_TERIDIAN"
+		touch $FLAG_RESET_METER && sync $FLAG_RESET_METER
 
-		umount /apps/installed
-		umount /apps
+		umount /cfglog
 	fi
 }
 
