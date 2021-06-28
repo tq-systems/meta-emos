@@ -13,9 +13,9 @@ apps:
     sha256[aarch64]: '4749f2686b1400920a7cbbdebadfc35dc0f318adc62b0d696fe0c6c37a639d7d'
 
   device-settings:
-    version: '2.4.0'
-    sha256[armv5e]: '34cba8e7042f63ed90d2e44059f92f9125f15522e106dbf13f3727bb0357a537'
-    sha256[aarch64]: '0af4bef2f8de917bc646e0e7a42bbf41f9c3e870dcd747cbd10032736f5a9972'
+    version: '2.5.1'
+    sha256[armv5e]: 'a4315474da6f4e19b50239f9b591bdc526830ef4940ade595c1d5bb758a2c15d'
+    sha256[aarch64]: '3c42bd93f45fd6856570bd7b4daebed02ed9e0d6bc82d5ac517ecbccafdce168'
 
   flash-scan:
     version: '2.1.0'
@@ -23,25 +23,30 @@ apps:
     sha256[aarch64]: '695820824f1ccc0fc76c224ef301eaa5fc014d0ed29b8e9fed263a9cbe1ff38b'
 
   health-check:
-    version: '1.5.0'
-    sha256[armv5e]: 'c20980807852f0109cf78e2288fc6395826195dffd5a7ea3b5b87faef457fa44'
-    sha256[aarch64]: '924fe3282dd385ce3f4bc6afc2e6362f7e4392ed4f38904e00f9c5192033dac1'
+    version: '1.5.4'
+    sha256[armv5e]: 'f834c5626cfcde5ddd52cc0e74dc2c342e3728bd18524d583911dbebeda0f393'
+    sha256[aarch64]: '913eaf1311cc40a46ec31b0b3995dd0a7a816e0ec8795b04eb98203ae84c4223'
 
   teridiand:
-    version: '1.6.0'
-    sha256[armv5e]: '9505016e8d65ab2fb34864fd3bbe379baab2c01cb3c0c954d464a6229dcb1a17'
-    sha256[aarch64]: '9b832038a2fdc61aec98ab459b857090c4d9a281d8985f2b9d68da64f1705a05'
+    version: '1.6.4'
+    sha256[armv5e]: '4be6742d4e67c69864c437c443dbd5aaf50f5b30b413f7b932d7d303fc13f3be'
+    sha256[aarch64]: 'a00cf39f0f83616e7c8a23651d599feaa5cd86d1fc2e8e27e79420b8a1ce1a44'
 
   teridiand-fw:
     arch: 'all'
     version: '1.1.0'
     sha256[all]: '40dcee260e60914b19c438a2e734e03d0875aa74c8acc9685fca18ddc1a72bc1'
 
+  updater:
+    version: '1.0.0'
+    sha256[armv5e]: 'c3b94acbf2f9e14c76d43ccde739dcea97fc6a61cf568d3b9b5b89b31c9e5cd4'
+    sha256[aarch64]: 'a43cdf98ad281862b7c0ba58a017a5e3522c66a4645aaec093a1e2e2994736a1'
+
   web-application:
     arch: 'all'
     name: web-application-tq
-    version: '2.8.0'
-    sha256[all]: '56595fbde6f5713e1973069fcd06796f01fdb51a4e8a2c197e42b6ba57cd48c9'
+    version: '2.8.4'
+    sha256[all]: '12cfb35f3846088286164d173e5e96ca66114b7e958811793905e8315dde3863'
 
   web-login:
     version: '2.4.0'
