@@ -1,3 +1,10 @@
+## [3.0.0] - 2021-06-29
+### Changed
+- Update app definitions for sdk bundle
+
+## [3.0.0-rc6] - 2021-06-15
+- Move reset of teridian meter registers to teridiand app, because SPI in EM4xx hardware is initialized with systemd
+
 ## [3.0.0-rc5] - 2021-06-07
 ### Added
 - Add paho-mqtt-c to core-image and toolchain
