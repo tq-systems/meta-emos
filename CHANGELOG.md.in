@@ -1,1 +1,3 @@
 ## [{{ version }}]
+### Changed
+- Add prefix 'sw' for bundle version
