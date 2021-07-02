@@ -1,3 +1,19 @@
+## [3.0.0] - 2021-06-29
+### Changed
+- Update app definitions for sdk bundle
+
+## [3.0.0-rc6] - 2021-06-15
+- Move reset of teridian meter registers to teridiand app, because SPI in EM4xx hardware is initialized with systemd
+
+## [3.0.0-rc5] - 2021-06-07
+### Added
+- Add paho-mqtt-c to core-image and toolchain
+- linux-imx-em: add ftdi_sio USB UART driver
+### Changed
+- linux-imx-em: further adaptions for em4xx hardware and update to latest version
+- u-boot-imx-em: further adaptions for em4xx hardware and update to latest version
+- Remove upnp-app from base.yml and add it to sdk.yml
+
 ## [3.0.0-rc4] - 2021-02-22
 ### Changed
 - emcfg: add default rate limit to journald-debug.conf
