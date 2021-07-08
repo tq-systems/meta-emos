@@ -1,14 +1,15 @@
 #!/bin/sh
 
 #
-# Copyright (C) 2018-2020, TQ-Systems GmbH
+# Copyright (C) 2018-2021, TQ-Systems GmbH
 #
 
 set -e
 
 FILE_LOCK="/update/lock"
 FILE_UPDATE_STATUS="/update/status"
-
+FILE_UPDATE_SLOT="/update/slot"
+FILE_ERROR="/update/error"
 
 exec 9>"$FILE_LOCK"
 flock 9
@@ -49,8 +50,25 @@ get_status() {
 	cat "$FILE_UPDATE_STATUS" 2>/dev/null || true
 }
 
+check_slot_after_reboot() {
+	if [ -e "$FILE_UPDATE_SLOT" ]; then
+		if [ "$(get_slot_active)" = "$(cat "$FILE_UPDATE_SLOT")" ]; then
+			# true, if rootfs slot updated successful
+			return 0
+		else
+			# false, if failed to boot into new rootfs slot
+			return 1
+		fi
+	else
+		echo >&2 "emos-upgrade-status: Cannot read updated slot in file $FILE_UPDATE_SLOT"
+	fi
+
+	return 0
+}
+
 check_transition() {
-	local old_status="$(get_status)"
+	local old_status
+	old_status="$(get_status)"
 
 	if [ "$old_status" != "$1" ]; then
 		echo >&2 "emos-upgrade-status: invalid transition from '$old_status' to '$2'. Is there another upgrade running?"
@@ -59,14 +77,21 @@ check_transition() {
 }
 
 set_status() {
-	[ $# -eq 1 -a ! -z "$1" ] || return 1
+	[ $# -eq 1 ] && [ -n "$1" ] || return 1
 
 	case "$1" in
 	"update_1_started")
 		check_transition '' "$1"
+		# remove old errors when starting
+		rm -f "$FILE_ERROR"
+		# save update slot for check_slot_after_reboot()
+		get_slot_other > "$FILE_UPDATE_SLOT"
 		;;
 	"update_1_finished")
 		check_transition 'update_1_started' "$1"
+		;;
+	"update_1_checked")
+		check_transition 'update_1_finished' "$1"
 		;;
 	*)
 		echo >&2 'emos-upgrade-status: Cannot set unknown status.'
@@ -76,8 +101,21 @@ set_status() {
 	echo "$1" > "$FILE_UPDATE_STATUS"
 }
 
+set_error() {
+	[ $# -eq 1 ] && [ -n "$1" ] || return 1
+
+	case "$1" in
+	"check_slot_failed")
+		echo "$1" > "$FILE_ERROR"
+		;;
+	*)
+		echo >&2 "emos-upgrade-status: Cannot set unknown error $1."
+		return 1
+	esac
+}
+
 reset_status() {
-	rm -f "$FILE_UPDATE_STATUS" /update/slot
+	rm -f "$FILE_UPDATE_STATUS" "$FILE_UPDATE_SLOT"
 }
 
 CMD="$1"; shift
@@ -97,6 +135,12 @@ get_slot_other)
 	;;
 get_slot_device)
 	get_slot_device "$@"
+	;;
+check_slot)
+	check_slot_after_reboot
+	;;
+set_error)
+	set_error "$@"
 	;;
 reset)
 	reset_status
