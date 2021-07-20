@@ -1,23 +1,45 @@
 #!/bin/sh
 
 #
-# Copyright (C) 2018-2020, TQ-Systems GmbH
+# Copyright (C) 2018-2021, TQ-Systems GmbH
 #
 
 set -e
 
-on_exit() {
+cleanup() {
 	logger -t emos-upgrade-finalize 'resetting upgrade status'
 	rm -f /update/*.raucb
 	emos-upgrade-status reset
 }
 
-trap on_exit EXIT
+clear_other_rootfs_partition() {
+	local other_slot other_device
 
+	other_slot="$(emos-upgrade-status get_slot_other)"
+	other_device="$(emos-upgrade-status get_slot_device "$other_slot")"
 
-OTHER_SLOT="$(emos-upgrade-status get_slot_other)"
-OTHER_DEVICE="$(emos-upgrade-status get_slot_device "$OTHER_SLOT")"
+	logger -t emos-upgrade-finalize "clearing partition '$other_device'"
+	rauc status mark-bad other
+	cat /dev/zero >"$other_device" 2>/dev/null || true
+}
 
-logger -t emos-upgrade-finalize "clearing partition '$OTHER_DEVICE'"
-rauc status mark-bad other
-cat /dev/zero >"$OTHER_DEVICE" 2>/dev/null || true
+check_update_success() {
+	case "$(emos-upgrade-status get_status)" in
+		"update_1_finished")
+			if emos-upgrade-status check_slot; then
+				logger -t emos-upgrade-finalize "Booted successfully into new rootfs slot"
+			else
+				logger -t emos-upgrade-finalize "Failed to boot into new rootfs slot"
+				emos-upgrade-status set_error check_slot_failed
+			fi
+
+			emos-upgrade-status set_status update_1_checked
+			;;
+		*)
+			return 0
+	esac
+}
+
+check_update_success
+trap cleanup EXIT
+clear_other_rootfs_partition
