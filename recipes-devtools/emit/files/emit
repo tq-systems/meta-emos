@@ -101,6 +101,7 @@ class AppData:
 		self.filename = urlparse(self.url).path.rpartition('/')[2]
 		self.arch = app_info['arch']
 		self.sha256 = app_info.get('sha256[{}]'.format(self.arch))
+		self.disabled = app_info.get('disabled')
 
 class CommandCommon:
 	"""Common functions for all commands"""
@@ -225,7 +226,12 @@ class CommandBuild(CommandCommon):
 				with tarfile.open(fileobj=data_tar, mode='r:xz') as data:
 					data.extractall(dirname)
 
-			empkg.extract('manifest.json', dirname)
+			if app_data.disabled != None:
+				manifest['disabled'] = app_data.disabled
+				with open(os.path.join(dirname, 'manifest.json'), 'w') as f:
+					json.dump(manifest, f, sort_keys=True)
+			else:
+				empkg.extract('manifest.json', dirname)
 
 	def install_apps(self):
 		"""Unpacks all apps to the app install dir."""
