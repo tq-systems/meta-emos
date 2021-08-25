@@ -63,6 +63,12 @@ is_enabled() {
 	is_valid_name "$1" && [ -L "$APPDIR/enabled/$1" ]
 }
 
+# Checks whether an app is marked as disabled in its manifest
+is_disabled() {
+	local app="$1"
+	is_installed "$app" && app_info "$app" | jq -e '.disabled == true' >/dev/null
+}
+
 has_systemd() {
 	is_installed "$1" && [ -e "$APPDIR/installed/$1/em-app-$1.service" ]
 }
@@ -94,7 +100,7 @@ ensure_installed_or_enabled() {
 # Is called with the expected number of args and $#, exits with an error
 # message if the number of args is incorrect
 ensure_args() {
-	[ $1 -eq $2 ] || {
+	[ "$1" -eq "$2" ] || {
 		usage
 		exit 1
 	}
@@ -213,6 +219,7 @@ app_register() {
 # Enables an app
 app_enable() {
 	local app="$1"
+
 	ensure_installed "$app"
 
 	app_config "$app"
@@ -228,6 +235,7 @@ app_enable() {
 		if is_autostart "$app"; then
 			systemctl restart "em-app-${app}.service" || true
 		else
+			# Only restart service if active
 			systemctl try-restart "em-app-${app}.service" || true
 		fi
 	fi
@@ -345,7 +353,10 @@ pkg_install() {
 	rm -rf "$APPTMP"
 
 	if $OPT_ENABLE; then
-		app_enable "$app"
+		if ! is_disabled "$app"; then
+			# app_enable contains a app_dbus call
+			app_enable "$app" || true
+		fi
 	else
 		app_dbus "$app"
 	fi
@@ -443,7 +454,9 @@ $new_apps"
 	# Delay enabling apps until all new apps have been registered,
 	# so potential dependencies between new apps are satisfied
 	echo -n "$new_apps" | while read -r app; do
-		app_enable "$app" || true
+		if ! is_disabled "$app"; then
+			app_enable "$app" || true
+		fi
 	done
 
 	if $OPT_EOL; then
