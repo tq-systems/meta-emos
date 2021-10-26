@@ -1,4 +1,1 @@
 ## [{{ version }}]
-### Changed
-- Add prefix 'sw' for bundle version
-- Support new measuring board by updating teridiand and teridiand-fw

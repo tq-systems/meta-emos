@@ -1,3 +1,14 @@
+## [3.1.0-rc2] - 2021-10-26
+### Changed
+- emit: support new measuring board by updating teridiand and teridiand-fw
+
+## [3.1.0-rc1] - 2021-09-13
+### Added
+- empkg: Add evaluation of the disabled flag in app manifest
+### Changed
+- Add prefix 'sw' for bundle version
+- emos-upgrade: extend error and status handling
+
 ## [3.0.0] - 2021-06-29
 ### Changed
 - Update app definitions for sdk bundle
