@@ -28,14 +28,14 @@ apps:
     sha256[aarch64]: '924fe3282dd385ce3f4bc6afc2e6362f7e4392ed4f38904e00f9c5192033dac1'
 
   teridiand:
-    version: '1.6.0'
-    sha256[armv5e]: '9505016e8d65ab2fb34864fd3bbe379baab2c01cb3c0c954d464a6229dcb1a17'
-    sha256[aarch64]: '9b832038a2fdc61aec98ab459b857090c4d9a281d8985f2b9d68da64f1705a05'
+    version: '1.6.5'
+    sha256[armv5e]: '748b7781b3f23c39a50a3f325505394bc0b412e965ad706a826363052d1efdd2'
+    sha256[aarch64]: '7a54b401b1f519da8cbca0493ecdfeabeb93b5fc44b6e6173f3e1e368378eacb'
 
   teridiand-fw:
     arch: 'all'
-    version: '1.1.0'
-    sha256[all]: '40dcee260e60914b19c438a2e734e03d0875aa74c8acc9685fca18ddc1a72bc1'
+    version: '1.2.0'
+    sha256[all]: '222378320d8fcd326a9f7391387d1730bc340b81a24fa2f330c3f1045c3d0649'
 
   web-application:
     arch: 'all'
