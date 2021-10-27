@@ -1,3 +1,11 @@
+## [3.1.0-rc4] - 2021-10-27
+### Changed
+- teridiand-fw is downgraded again because the new measuring board is not yet produced
+
+## [3.1.0-rc3] - 2021-10-26
+### Changed
+- Nothing has changed between v3.1.0-rc2 and v3.1.0-rc3, created for keeping tags of em-build in sync
+
 ## [3.1.0-rc2] - 2021-10-26
 ### Changed
 - emit: support new measuring board by updating teridiand and teridiand-fw
