@@ -1,1 +1,3 @@
 ## [{{ version }}]
+### Changed
+- teridiand-fw is downgraded again because the new measuring board is not yet produced
