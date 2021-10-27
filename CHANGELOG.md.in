@@ -2,3 +2,4 @@
 ### Changed
 - Add prefix 'sw' for bundle version
 - Support new measuring board by updating teridiand and teridiand-fw
+- teridiand-fw is downgraded again because the new measuring board is not yet produced

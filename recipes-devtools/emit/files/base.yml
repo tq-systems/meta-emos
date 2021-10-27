@@ -34,8 +34,8 @@ apps:
 
   teridiand-fw:
     arch: 'all'
-    version: '1.2.0'
-    sha256[all]: '222378320d8fcd326a9f7391387d1730bc340b81a24fa2f330c3f1045c3d0649'
+    version: '1.1.0'
+    sha256[all]: '40dcee260e60914b19c438a2e734e03d0875aa74c8acc9685fca18ddc1a72bc1'
 
   web-application:
     arch: 'all'
