@@ -83,8 +83,8 @@ end,
 
 if .hidden.address and .hidden.prefixlen then
 	"\n[Address]",
-	"Label=br0:0",
-	"Address=\(.hidden.address)/\(.hidden.prefixlen)"
+	"Address=\(.hidden.address)/\(.hidden.prefixlen)",
+	"PreferredLifetime=0"
 else
 	empty
 end
