@@ -29,6 +29,10 @@ SRC_URI = " \
 	file://journald-debug.conf \
 "
 
+SRC_URI_append_em4xx = " \
+	file://80-ttyAPP.rules \
+"
+
 SYSTEMD_SERVICE_${PN} = " \
 	em-app-flash-scan.timer \
 	em-log-fsck-errors.service \
@@ -88,12 +92,22 @@ do_install() {
 	install -m 0644 ${WORKDIR}/journald-debug.conf ${D}${sysconfdir}/systemd/journald.conf.d/
 }
 
+do_install_append_em4xx() {
+	install -d ${D}${base_libdir}/udev/rules.d
+	install -m 0644 ${WORKDIR}/80-ttyAPP.rules ${D}${base_libdir}/udev/rules.d/
+}
+
 RDEPENDS_${PN} += "jq libubootenv-bin openssl-bin faketime em-network-config"
+RDEPENDS_${PN}_append_em4xx = " udev"
 
 FILES_${PN} += " \
 	${sysconfdir}/tmpfiles.d/00-emos-log.conf \
 	${systemd_unitdir}/system/ \
 	${systemd_unitdir}/system-generators/emcfg-generator \
+"
+
+FILES_${PN}_append_em4xx := "\
+	${base_libdir}/udev/rules.d/80-ttyAPP.rules \
 "
 
 ALTERNATIVE_${PN} += "init"
