@@ -1,4 +1,4 @@
-## [ next ]
+## [ 3.2.0-rc1 ] - 2021-12-20
 ### Added
 - emcfg: add udev rule for rs485 symlinks in dev for em4xx
 - emcfg: add handling of hidden ip address
