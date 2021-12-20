@@ -3,6 +3,6 @@ include linux-em.inc
 PV = "5.4+git${SRCPV}"
 
 SRCBRANCH = "em-5.4.x"
-SRCREV = "a0bc09520b1bb3f5c46789774dd7d7056e658a75"
+SRCREV = "afbef09b9dfe421a4ceb74233f3239fde4da56fb"
 
 COMPATIBLE_MACHINE = "(em300|em310)"
