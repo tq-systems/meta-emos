@@ -1,3 +1,7 @@
+## [ 3.2.0-rc3 ] - 2022-02-01
+### Added
+- u-boot: protect prompt and tq,revision to dt
+
 ## [ 3.2.0-rc2 ] - 2022-01-13
 ### Added
 - nginx: define rate limit for web-login
