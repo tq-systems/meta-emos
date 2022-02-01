@@ -6,6 +6,7 @@
 ### Added
 - emcfg: add udev rule for rs485 symlinks in dev for em4xx
 - emcfg: add handling of hidden ip address
+- u-boot: protect prompt and tq,revision to dt
 
 ## [3.1.0-rc4] - 2021-10-27
 ### Changed
