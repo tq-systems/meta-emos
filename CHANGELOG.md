@@ -1,3 +1,7 @@
+## [ 3.2.0-rc4 ] - 2022-02-15
+### Added
+- u-boot: mmc hwpartition cmd update
+
 ## [ 3.2.0-rc3 ] - 2022-02-01
 ### Added
 - u-boot: protect prompt and tq,revision to dt
