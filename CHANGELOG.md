@@ -1,3 +1,7 @@
+## [ 3.2.0-rc5 ] - 2022-02-16
+### Changed
+- conf/distro/emos.conf: release version
+
 ## [ 3.2.0-rc4 ] - 2022-02-15
 ### Added
 - u-boot: mmc hwpartition cmd update
