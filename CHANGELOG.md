@@ -1,3 +1,7 @@
+## [ next ]
+### Changed
+- linux: avoid log spam from RTC driver after power cycle
+
 ## [ 3.2.0-rc5 ] - 2022-02-16
 ### Changed
 - conf/distro/emos.conf: release version
