@@ -1,4 +1,4 @@
-## [ next ]
+## [ 3.2.0-rc6 ] - 2022-02-21
 ### Changed
 - linux: avoid log spam from RTC driver after power cycle
 
