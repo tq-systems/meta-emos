@@ -5,6 +5,7 @@
 - u-boot: protect prompt and tq,revision to dt
 - u-boot: support mmc hwpartition cmd
 - linux: avoid log spam from RTC driver after power cycle
+- emit: add creation year to product-info.json
 
 ## [3.1.0-rc4] - 2021-10-27
 ### Changed
