@@ -1,3 +1,7 @@
+## [ 3.2.0-rc8 ] - 2022-03-22
+### Changed
+- libdeviceinfo: update to v1.5.0
+
 ## [ 3.2.0-rc7 ] - 2022-03-21
 ### Added
 - emit: add creation year to product-info.json
