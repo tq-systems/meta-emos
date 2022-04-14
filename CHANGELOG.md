@@ -1,4 +1,4 @@
-## [ next ]
+## [ 3.3.0-rc1 ] - 2022-04-14
 ### Changed
 - backport nginx 1.21.1 for CVE-2021-23017
 - emit: set bundle-formats in rauc's system.conf
