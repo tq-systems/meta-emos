@@ -1,11 +1,40 @@
 ## [ next ]
+### Changed
+- backport nginx 1.21.1 for CVE-2021-23017
+- emit: set bundle-formats in rauc's system.conf
+
+## [ 3.2.0-rc8 ] - 2022-03-22
+### Changed
+- libdeviceinfo: update to v1.5.0
+
+## [ 3.2.0-rc7 ] - 2022-03-21
+### Changed
+- emit: add creation year to product-info.json
+
+## [ 3.2.0-rc6 ] - 2022-02-21
+### Changed
+- linux: avoid log spam from RTC driver after power cycle
+
+## [ 3.2.0-rc5 ] - 2022-02-16
+### Changed
+- conf/distro/emos.conf: set release version
+
+## [ 3.2.0-rc4 ] - 2022-02-15
+### Added
+- u-boot: mmc hwpartition cmd update
+
+## [ 3.2.0-rc3 ] - 2022-02-01
+### Added
+- u-boot: protect prompt and tq,revision to dt
+
+## [ 3.2.0-rc2 ] - 2022-01-13
+### Added
+- nginx: define rate limit for web-login
+
+## [ 3.2.0-rc1 ] - 2021-12-20
 ### Added
 - emcfg: add udev rule for rs485 symlinks in dev for em4xx
 - emcfg: add handling of hidden ip address
-- u-boot: protect prompt and tq,revision to dt
-- u-boot: support mmc hwpartition cmd
-- linux: avoid log spam from RTC driver after power cycle
-- emit: add creation year to product-info.json
 
 ## [3.1.0-rc4] - 2021-10-27
 ### Changed
