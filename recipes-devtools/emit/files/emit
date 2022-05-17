@@ -327,7 +327,7 @@ class CommandBuild(CommandCommon):
 				'name': info['name'],
 				'devicetype': self.get_device_type(),
 				'software_version': self.get_version(),
-				'creation_year': datetime.today().year,
+				'creation_year': str(datetime.today().year),
 			}, f, sort_keys=True)
 
 	def get_rauc_config(self):
