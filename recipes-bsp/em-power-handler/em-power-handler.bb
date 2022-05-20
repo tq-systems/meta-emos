@@ -1,9 +1,11 @@
-LICENSE = "MIT"
-LIC_FILES_CHKSUM = "file://${WORKDIR}/em-power-handler;beginline=3;endline=6;md5=785f0a63d6f38dba55a52d43fef3ad61"
+LICENSE = "TQSSLA_V1.0.2"
+LIC_FILES_CHKSUM = "file://${WORKDIR}/LICENSE;md5=5a77156d011829e57ffe26e62f07ff2d"
+SRC_DISTRIBUTE_LICENSES += "TQSSLA_V1.0.2"
 
 inherit systemd
 
 SRC_URI = " \
+	file://LICENSE \
 	file://em-power-handler.service \
 	file://em-power-handler \
 "
