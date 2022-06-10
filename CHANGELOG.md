@@ -5,6 +5,7 @@
 ### Changed
 - backport nginx 1.21.1 for CVE-2021-23017
 - emit: set bundle-formats in rauc's system.conf
+- linux: handle bug on rtc where ext_test could be set
 
 ### Removed
 - remove nginx version number from response header
