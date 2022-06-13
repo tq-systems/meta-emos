@@ -1,7 +1,18 @@
+## [ 3.3.0-rc2 ] - 2022-06-13
+### Added
+- add tqssla for em-power-handler
+
+### Changed
+- linux: handle bug on rtc where ext_test could be set
+
 ## [ 3.3.0-rc1 ] - 2022-04-14
 ### Changed
 - backport nginx 1.21.1 for CVE-2021-23017
 - emit: set bundle-formats in rauc's system.conf
+
+### Removed
+- remove nginx version number from response header
+- remove static links for license infos
 
 ## [ 3.2.0-rc8 ] - 2022-03-22
 ### Changed
