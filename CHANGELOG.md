@@ -1,6 +1,7 @@
 ## [ next ]
 ### Added
 - add tqssla for em-power-handler
+- emit: specific entries for product_info depending on manufacurer
 
 ### Changed
 - backport nginx 1.21.1 for CVE-2021-23017
