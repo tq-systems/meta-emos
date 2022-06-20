@@ -445,7 +445,7 @@ hooks=install
 		"""Returns the path of the bootloader inside the core image"""
 		machine = self.args.machine
 
-		if machine in ['em300', 'em310']:
+		if machine in ['em310']:
 			return './boot/u-boot.sb'
 		elif machine in ['em4xx', 'imx8mn-egw']:
 			return './boot/flash.bin'
