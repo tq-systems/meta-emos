@@ -60,4 +60,5 @@ do_compile_prepend_mx8m() {
 }
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
-COMPATIBLE_MACHINE = "em4xx"
+COMPATIBLE_MACHINE = "^$"
+COMPATIBLE_MACHINE_em = "mx8mn"

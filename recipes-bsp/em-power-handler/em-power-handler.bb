@@ -21,4 +21,4 @@ do_install () {
 	install -m 644 ${WORKDIR}/em-power-handler.service ${D}${systemd_system_unitdir}/
 }
 
-COMPATIBLE_MACHINE = "(em300|em310|em4xx)"
+COMPATIBLE_MACHINE = "em"

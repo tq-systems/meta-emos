@@ -27,5 +27,5 @@ FILES_${PN} += " \
 	${bindir}/em-flash-read \
 "
 
-COMPATIBLE_MACHINE = "(em300|em310|em4xx)"
+COMPATIBLE_MACHINE = "em"
 PACKAGE_ARCH = "${MACHINE_ARCH}"
