@@ -27,10 +27,6 @@ IMAGE_INSTALL += " \
 		util-linux-lsblk \
 		less \
 		haveged \
-		eol-led \
-		status-led \
-		netdev-led \
-		em-power-handler \
 		emos-upgrade \
 		emcfg \
 		empkg \
@@ -55,7 +51,6 @@ IMAGE_INSTALL += " \
 		libdeviceinfo \
 		mosquitto \
 		nginx \
-		teridiand-config \
 		"
 
 BAD_RECOMMENDATIONS += " \
