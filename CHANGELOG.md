@@ -1,3 +1,7 @@
+## [ 3.3.0-rc3 ] - 2022-07-21
+### Added
+- linux: rtc: set defaults register values
+
 ## [ 3.3.0-rc2 ] - 2022-06-13
 ### Added
 - add tqssla for em-power-handler
