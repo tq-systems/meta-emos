@@ -316,6 +316,8 @@ class CommandBuild(CommandCommon):
 		"""Writes the product info from the bundle spec to /etc/product-info.json in the image root"""
 
 		info = self.bundle_spec['product_info']
+		machine = self.args.machine
+		name, code = self.get_name_and_code(info, machine)
 
 		etcdir = os.path.join(self.root_dir, 'etc')
 		os.makedirs(etcdir, exist_ok=True)
@@ -323,12 +325,28 @@ class CommandBuild(CommandCommon):
 			json.dump({
 				'manufacturer': info['manufacturer'],
 				'manufacturer_url': info['manufacturer_url'],
-				'code': info['code'],
-				'name': info['name'],
+				'code': code,
+				'name': name,
 				'devicetype': self.get_device_type(),
 				'software_version': self.get_version(),
 				'creation_year': str(datetime.today().year),
 			}, f, sort_keys=True)
+	
+	def get_name_and_code(self, info, machine):
+		"""Returns the code and name for specific manufacturer and hardware"""
+		name_key = "name_" + machine
+		if name_key in info:
+			name = info[name_key]
+		else:
+			name = info['name']
+
+		code_key = "code_" + machine
+		if code_key in info:
+			code = info[code_key]
+		else:
+			code = info['code']
+
+		return name, code
 
 	def get_rauc_config(self):
 		"""Returns the RAUC config to be written to /etc/rauc/system.conf in the image root"""

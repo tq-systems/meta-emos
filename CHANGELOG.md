@@ -1,6 +1,7 @@
 ## [ 3.3.0-rc2 ] - 2022-06-13
 ### Added
 - add tqssla for em-power-handler
+- emit: specific entries for product_info depending on manufacurer
 
 ### Changed
 - linux: handle bug on rtc where ext_test could be set

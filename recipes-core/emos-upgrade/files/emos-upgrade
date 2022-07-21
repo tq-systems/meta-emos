@@ -51,7 +51,8 @@ cmd_install() {
 
 	if $OPT_REBOOT; then
 		sleep 3
-		reboot
+		# use 'systemctl reboot', cause 'reboot' returns non zero exit code to other scripts
+		systemctl reboot
 	fi
 }
 
