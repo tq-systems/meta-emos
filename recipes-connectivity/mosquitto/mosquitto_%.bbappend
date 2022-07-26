@@ -6,9 +6,10 @@ SRC_URI:append:emos = " \
 "
 
 LICENSE = "EDL-1.0"
-LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=62ddc846179e908dc0c8efec4a42ef20 \
-		file://edl-v10;md5=c09f121939f063aeb5235972be8c722c \
-		file://notice.html;md5=a00d6f9ab542be7babc2d8b80d5d2a4c \
+LIC_FILES_CHKSUM = " \
+		file://LICENSE.txt;md5=ca9a8f366c6babf593e374d0d7d58749 \
+		file://edl-v10;md5=9f6accb1afcb570f8be65039e2fcd49e \
+		file://NOTICE.md;md5=a7a91b4754c6f7995020d1b49bc829c6 \
 "
 
 do_install:append:emos() {
