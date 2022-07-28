@@ -27,14 +27,11 @@ IMAGE_INSTALL += " \
 		util-linux-lsblk \
 		less \
 		haveged \
-		eol-led \
-		status-led \
-		netdev-led \
-		em-power-handler \
 		emos-upgrade \
 		emcfg \
 		empkg \
 		em-flash-read \
+		iproute2 \
 		tzdata tzdata-americas tzdata-asia \
 		tzdata-europe tzdata-africa tzdata-antarctica \
 		tzdata-arctic tzdata-atlantic tzdata-australia \
@@ -55,7 +52,6 @@ IMAGE_INSTALL += " \
 		libdeviceinfo \
 		mosquitto \
 		nginx \
-		teridiand-config \
 		"
 
 BAD_RECOMMENDATIONS += " \

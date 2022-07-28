@@ -2,7 +2,7 @@ EM_CORE_IMAGE ?= "em-image-core"
 
 EM_IMAGE_NAME ??= "invalid"
 EM_BUNDLE_SPEC ?= "${EM_IMAGE_NAME}.yml"
-EM_BUNDLE_SPEC_URI ?= "file://${EM_BUNDLE_SPEC}"
+EM_BUNDLE_SPEC_URI ?= "${@ ' '.join(['file://' + name for name in d.getVar('EM_BUNDLE_SPEC').split()])}"
 
 EM_BUNDLE_VERSION ?= "${PV}"
 
@@ -50,27 +50,32 @@ python emit_fetch_post() {
     download_dir = d.getVar('EMIT_DOWNLOAD_DIR')
     os.makedirs(download_dir, exist_ok=True)
 
-    fetcher = bb.fetch2.Fetch([d.getVar('EM_BUNDLE_SPEC_URI')], d)
-    url = fetcher.urls[0]
-    bundle_spec = fetcher.localpath(url)
+    for uri in d.getVar('EM_BUNDLE_SPEC_URI').split():
+        fetcher = bb.fetch2.Fetch([uri], d)
+        url = fetcher.urls[0]
+        bundle_spec = fetcher.localpath(url)
 
-    lockfile = os.path.join(download_dir, 'emit.lock')
-    lf = bb.utils.lockfile(lockfile)
+        lockfile = os.path.join(download_dir, 'emit.lock')
+        lf = bb.utils.lockfile(lockfile)
 
-    try:
-        bb.fetch2.runfetchcmd('{} --bundle-spec {} download'.format(
-            d.getVar('EMIT'),
-            bundle_spec,
-        ), d)
-    finally:
-        bb.utils.unlockfile(lf)
+        try:
+            bb.fetch2.runfetchcmd('{} --bundle-spec {} download'.format(
+                d.getVar('EMIT'),
+                bundle_spec,
+            ), d)
+        finally:
+            bb.utils.unlockfile(lf)
 }
 do_fetch[depends] += "emit-native:do_populate_sysroot"
 do_fetch[postfuncs] += "emit_fetch_post"
 
 do_bundle() {
+    local specs=''
+    for spec in ${EM_BUNDLE_SPEC}; do
+        specs="${specs} --bundle-spec ${WORKDIR}/$spec"
+    done
     ${EMIT} \
-        --bundle-spec '${WORKDIR}/${EM_BUNDLE_SPEC}' \
+        $specs \
         build \
         --build-dir '${B}/tmp' \
         --bundle-version '${EM_BUNDLE_VERSION}' \

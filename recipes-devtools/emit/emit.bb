@@ -5,13 +5,13 @@ LICENSE = "TQSSLA_V1.0.2"
 LIC_FILES_CHKSUM = "file://${WORKDIR}/emit;beginline=2;endline=5;md5=0628c1a390d66a2f452e92e03fef067f"
 SRC_DISTRIBUTE_LICENSES += "TQSSLA_V1.0.2"
 
-
 SRC_URI = "\
 	file://emit \
 	file://hook.sh \
 	file://bootloader-em300.sh \
 	file://bootloader-em310.sh \
 	file://bootloader-em4xx.sh \
+	file://bootloader-imx8mn-egw.sh \
 	file://base.yml \
 "
 
@@ -20,7 +20,7 @@ do_install() {
 
 	install -m755 ${WORKDIR}/emit ${D}${bindir}/
 	install -m644 ${WORKDIR}/hook.sh ${D}${datadir}/emit/
-	for machine in em300 em310 em4xx; do
+	for machine in em300 em310 em4xx imx8mn-egw; do
 		install -m644 ${WORKDIR}/bootloader-$machine.sh ${D}${datadir}/emit/
 	done
 

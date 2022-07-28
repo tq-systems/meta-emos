@@ -2,6 +2,7 @@
 ### Added
 - add tqssla for em-power-handler
 - emit: specific entries for product_info depending on manufacurer
+- imx8mn-egw: added platform support (machine, u-boot, linux)
 
 ### Changed
 - backport nginx 1.21.1 for CVE-2021-23017
