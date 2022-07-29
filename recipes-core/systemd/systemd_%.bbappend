@@ -5,6 +5,14 @@ SRC_URI:append:emos = "\
 	\
 	file://read-only-rootfs.conf \
 "
+PACKAGECONFIG[userdb] = "-Duserdb=true"
+
+pkg_postinst:${PN}:libc-glibc:append:emos () {
+	# Add systemd to nsswitch.conf
+	sed -e '/passwd:/ s/$/ systemd/' \
+		-e '/group:/ s/$/ systemd/' \
+		-i $D${sysconfdir}/nsswitch.conf
+}
 
 PACKAGECONFIG:append:emos = " cgroupv2 sysusers"
 EXTRA_OEMESON:append:emos = " -Dpstore=false"
