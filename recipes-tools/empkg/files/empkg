@@ -1,7 +1,7 @@
 #!/bin/sh
+# shellcheck disable=SC3043,SC3040,SC3037
 
 set -eo pipefail
-
 
 BUILTIN_DIR="/opt/apps"
 APPDIR="/apps"
@@ -307,26 +307,28 @@ pkg_info() {
 # Installs or upgrades an app from a package file
 pkg_install() {
 	local pkg="$1"
-	local info="$(pkg_info "$pkg")"
+
+	local info app arch
+	info="$(pkg_info "$pkg")"
 	if [ -z "$info" ]; then
 		echo >&2 "Unable to install '$pkg': failed to read manifest"
 		return 1
 	fi
 
-	local app="$(echo "$info" | jq -r '.id')"
+	app="$(echo "$info" | jq -r '.id')"
 	if [ -z "$app" ]; then
 		echo >&2 "Unable to install '$pkg': invalid manifest"
 		return 1
 	fi
 
-	local arch="$(echo "$info" | jq -r '.arch')"
+	arch="$(echo "$info" | jq -r '.arch')"
 	if ! is_arch_supported "$arch"; then
 		echo >&2 "Unable to install '$pkg': unsupported platform '$arch'"
 		return 1
 	fi
 
-	local version_old
-	local version_new="$(echo "$info" | jq -r '.version')"
+	local version_old version_new
+	version_new="$(echo "$info" | jq -r '.version')"
 
 	local is_new=true
 	if is_installed "$app"; then
@@ -555,6 +557,7 @@ process_reload_request() {
 	fi
 }
 
+# shellcheck disable=SC3057
 while [ "${1:0:1}" = '-' ]; do
 	arg="$1"; shift
 	case "$arg" in
@@ -583,6 +586,7 @@ done
 
 get_lock() {
 	# Arbitrary lock fd that should be unused by the shell
+	# shellcheck disable=SC3023
 	exec 1000>/var/lock/empkg.lock
 	flock -n 1000 || error 'another instance of empkg is active.'
 }
