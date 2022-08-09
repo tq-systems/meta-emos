@@ -48,6 +48,7 @@ EMIT = "emit \
     --arch ${TUNE_PKGARCH} \
 "
 
+# python uses 4 spaces indentation
 python emit_fetch_post() {
     download_dir = d.getVar('EMIT_DOWNLOAD_DIR')
     os.makedirs(download_dir, exist_ok=True)

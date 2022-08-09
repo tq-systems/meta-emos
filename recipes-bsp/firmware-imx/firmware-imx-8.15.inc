@@ -6,7 +6,7 @@ LICENSE = "Proprietary"
 LIC_FILES_CHKSUM = "file://COPYING;md5=be5ff43682ed6c57dfcbeb97651c2829"
 
 SRC_URI = " \
-    ${FSL_MIRROR}/firmware-imx-${PV}.bin;fsl-eula=true \
+	${FSL_MIRROR}/firmware-imx-${PV}.bin;fsl-eula=true \
 "
 
 SRC_URI[md5sum] = "ef91390da6c8a6a48c8121a5dd667de8"

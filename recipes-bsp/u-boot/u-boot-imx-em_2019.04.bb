@@ -27,7 +27,7 @@ IMX_EXTRA_FIRMWARE:mx8m = "trusted-firmware-a firmware-imx-8m"
 
 DEPENDS += "${IMX_EXTRA_FIRMWARE}"
 do_compile[depends] += " \
-    ${@' '.join('%s:do_deploy' % r for r in '${IMX_EXTRA_FIRMWARE}'.split() )} \
+	${@' '.join('%s:do_deploy' % r for r in '${IMX_EXTRA_FIRMWARE}'.split() )} \
 "
 
 EXTRA_OEMAKE:append:mx8m = " ATF_LOAD_ADDR=0x960000"
@@ -38,25 +38,25 @@ RPROVIDES:${PN} += "u-boot u-boot-em"
 UBOOT_INITIAL_ENV = "u-boot-initial-env"
 
 do_compile:prepend:mx8m() {
-    for file in ${DDR_FIRMWARE_NAME}; do
-        cp "${DEPLOY_DIR_IMAGE}/$file" "${S}/"
-    done
+	for file in ${DDR_FIRMWARE_NAME}; do
+		cp "${DEPLOY_DIR_IMAGE}/$file" "${S}/"
+	done
 
-    if [ -n "${UBOOT_CONFIG}" ]; then
-        for config in ${UBOOT_MACHINE}; do
-            i=$(expr $i + 1);
-            for type in ${UBOOT_CONFIG}; do
-                j=$(expr $j + 1);
-                if [ $j -eq $i ]; then
-                    cp "${DEPLOY_DIR_IMAGE}/bl31.bin" "${B}/${config}/"
-                fi
-            done
-            unset  j
-        done
-        unset  i
-    else
-        cp "${DEPLOY_DIR_IMAGE}/bl31.bin" "${B}/"
-    fi
+	if [ -n "${UBOOT_CONFIG}" ]; then
+		for config in ${UBOOT_MACHINE}; do
+			i=$(expr $i + 1);
+			for type in ${UBOOT_CONFIG}; do
+				j=$(expr $j + 1);
+				if [ $j -eq $i ]; then
+					cp "${DEPLOY_DIR_IMAGE}/bl31.bin" "${B}/${config}/"
+				fi
+			done
+			unset j
+		done
+		unset i
+	else
+		cp "${DEPLOY_DIR_IMAGE}/bl31.bin" "${B}/"
+	fi
 }
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"

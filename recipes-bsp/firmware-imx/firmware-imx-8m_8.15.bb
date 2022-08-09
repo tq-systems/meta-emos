@@ -9,13 +9,13 @@ inherit deploy
 do_install[noexec] = "1"
 
 do_deploy() {
-    # Synopsys DDR
-    for ddr_firmware in ${DDR_FIRMWARE_NAME}; do
-        install -m 0644 ${S}/firmware/ddr/synopsys/${ddr_firmware} ${DEPLOYDIR}
-    done
-    # Cadence DP and HDMI
-    install -m 0644 ${S}/firmware/hdmi/cadence/signed_dp_imx8m.bin ${DEPLOYDIR}
-    install -m 0644 ${S}/firmware/hdmi/cadence/signed_hdmi_imx8m.bin ${DEPLOYDIR}
+	# Synopsys DDR
+	for ddr_firmware in ${DDR_FIRMWARE_NAME}; do
+		install -m 0644 ${S}/firmware/ddr/synopsys/${ddr_firmware} ${DEPLOYDIR}
+	done
+	# Cadence DP and HDMI
+	install -m 0644 ${S}/firmware/hdmi/cadence/signed_dp_imx8m.bin ${DEPLOYDIR}
+	install -m 0644 ${S}/firmware/hdmi/cadence/signed_hdmi_imx8m.bin ${DEPLOYDIR}
 }
 addtask deploy after do_install before do_build
 
