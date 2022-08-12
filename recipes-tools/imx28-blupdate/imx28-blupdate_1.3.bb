@@ -6,7 +6,7 @@ SRC_URI[sha256sum] = "1ae47619efd3b45272bfb7d65b17f0748d2b2e98a86c0994122d715761
 
 S = "${WORKDIR}/imx28-blupdate-v${PV}"
 
-LICENSE = "GPLv2"
+LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
 
 DEPENDS = "libgcrypt"
