@@ -1,5 +1,5 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-SRC_URI_append_emos += " \
+SRC_URI:append:emos = " \
 	file://0900-enable-periodic-fsck.patch \
 "

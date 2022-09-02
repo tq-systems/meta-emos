@@ -6,7 +6,7 @@
 #
 # Recipes inheriting this class can extend IMAGE_INSTALL
 # to add additional packages, or remove packages by adding
-# them to IMAGE_INSTALL_remove
+# them to IMAGE_INSTALL:remove
 
 
 inherit core-image

@@ -1,0 +1,6 @@
+COMPATIBLE_MACHINE:em4xx = "em4xx"
+SRCREV_tfa:em4xx = "a1f02f4f3daae7e21ee58b4c93ec3e46b8f28d15"
+TFA_PLATFORM:em4xx = "imx8mn"
+TFA_BUILD_TARGET:em4xx = "bl31"
+
+EXTRA_OEMAKE:append:em4xx = " IMX_BOOT_UART_BASE=0x30860000"

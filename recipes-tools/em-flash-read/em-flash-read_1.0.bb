@@ -22,7 +22,7 @@ do_install () {
 	install -m 0644 em-flash_hw.conf	${D}${sysconfdir}/em-flash_hw.conf
 }
 
-FILES_${PN} += " \
+FILES:${PN} += " \
 	${sysconfdir}/em-flash_hw.conf \
 	${bindir}/em-flash-read \
 "

@@ -1,1 +1,1 @@
-SYSTEMD_AUTO_ENABLE_emos = "disable"
+SYSTEMD_AUTO_ENABLE:emos = "disable"

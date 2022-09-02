@@ -1,6 +1,6 @@
-FILESEXTRAPATHS_prepend_emos := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend:emos := "${THISDIR}/files:"
 
-SRC_URI_append_emos = " \
+SRC_URI:append:emos = " \
     file://nginx-emos.conf \
     file://nginx-prepare.service \
     file://no_cache.conf \
@@ -9,9 +9,9 @@ SRC_URI_append_emos = " \
     file://nginx-log-setup \
 "
 
-RDEPENDS_${PN}_append_emos = " emcfg"
+RDEPENDS:${PN}:append:emos = " emcfg"
 
-do_install_append_emos() {
+do_install:append:emos() {
     install -d ${D}${sbindir}/
     install -m 0755 ${WORKDIR}/nginx-log-setup ${D}${sbindir}
 
@@ -27,7 +27,7 @@ do_install_append_emos() {
     sed -i '/\/log\//d' ${D}${sysconfdir}/tmpfiles.d/${BPN}.conf
 }
 
-FILES_${PN}_append_emos = "\
+FILES:${PN}:append:emos = "\
 	${systemd_unitdir}/system/nginx-prepare.service \
 	${systemd_unitdir}/system/nginx.service.d/ \
 "

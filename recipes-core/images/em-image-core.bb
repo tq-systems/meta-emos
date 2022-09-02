@@ -2,14 +2,14 @@ inherit em-image
 
 IMAGE_VERSION_SUFFIX = "-${DISTRO_VERSION}"
 
-TOOLCHAIN_HOST_TASK_append = " \
+TOOLCHAIN_HOST_TASK:append = " \
 	nativesdk-protobuf-dev \
 	nativesdk-protobuf-compiler \
 	nativesdk-protobuf-c-compiler \
 	nativesdk-emit \
 "
 
-TOOLCHAIN_TARGET_TASK_append = " \
+TOOLCHAIN_TARGET_TASK:append = " \
 	libdaemon-dev \
 	mosquitto-dev \
 	paho-mqtt-c-dev \

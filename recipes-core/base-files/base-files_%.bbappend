@@ -1,6 +1,6 @@
-FILESEXTRAPATHS_prepend := "${THISDIR}/files:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-do_install_append () {
+do_install:append () {
 	# Install mountpoints
 	install -d ${D}/apps
 	install -d ${D}/auth
@@ -15,4 +15,4 @@ do_install_append () {
 
 }
 
-FILES_${PN} += "/apps /auth /cfglog /data /update"
+FILES:${PN} += "/apps /auth /cfglog /data /update"

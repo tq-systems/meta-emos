@@ -20,7 +20,7 @@ SRC_URI = " \
 S = "${WORKDIR}/src"
 
 DEPENDS = "jansson"
-RDEPENDS_${PN} += "jq"
+RDEPENDS:${PN} += "jq"
 
 do_install() {
 	install -d ${D}${sbindir}
@@ -41,7 +41,7 @@ do_install() {
 	install -m 0755 ${S}/em-app-generator ${D}${systemd_unitdir}/system-generators/
 }
 
-FILES_${PN} += "\
+FILES:${PN} += "\
 	${systemd_system_unitdir}/em-app-before.target \
 	${systemd_system_unitdir}/em-app.target \
 	${systemd_system_unitdir}/em-app-time.target \

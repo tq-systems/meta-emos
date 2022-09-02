@@ -1,6 +1,0 @@
-COMPATIBLE_MACHINE_em = "mx8mn"
-SRCREV_tfa_em_mx8mn = "428518c638da05f980280227ce43fa1655c70be1"
-TFA_PLATFORM_em_mx8mn = "imx8mn"
-TFA_BUILD_TARGET_em_mx8mn = "bl31"
-
-EXTRA_OEMAKE_append_em_mx8mn = " IMX_BOOT_UART_BASE=0x30860000"

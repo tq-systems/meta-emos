@@ -5,9 +5,9 @@ HOMEPAGE = "http://www.issihosts.com/haveged/index.html"
 LICENSE = "GPLv3"
 LIC_FILES_CHKSUM="file://COPYING;md5=d32239bcb673463ab874e80d47fae504"
 
-# v1.9.9
+# v1.9.13
 SRCREV = "1283a65c541c4a83e152024a63faf7b267b9b1cd"
-SRC_URI = "git://github.com/jirka-h/haveged.git \
+SRC_URI = "git://github.com/jirka-h/haveged.git;protocol=https;branch=master \
 "
 S = "${WORKDIR}/git"
 
@@ -26,12 +26,12 @@ PACKAGECONFIG[systemd] = "--enable-init=service.fedora --enable-initdir=${system
 
 INITSCRIPT_PACKAGES = "${PN}"
 INITSCRIPT_NAME = "haveged"
-INITSCRIPT_PARAMS_${PN} = "defaults 9"
+INITSCRIPT_PARAMS:${PN} = "defaults 9"
 
 SYSTEMD_PACKAGES = "${PN}"
-SYSTEMD_SERVICE_${PN} = "haveged.service"
+SYSTEMD_SERVICE:${PN} = "haveged.service"
 
-do_install_append() {
+do_install:append() {
     # The exit status is 143 when the service is stopped
     if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
         sed -i '/ExecStart/a SuccessExitStatus=143' ${D}${systemd_system_unitdir}/haveged.service

@@ -26,7 +26,7 @@ S = "${WORKDIR}/git"
 DEPENDS += "dtc-native"
 
 PROVIDES += "u-boot u-boot-em"
-RPROVIDES_${PN} += "u-boot u-boot-em"
+RPROVIDES:${PN} += "u-boot u-boot-em"
 
 UBOOT_INITIAL_ENV = "u-boot-initial-env"
 

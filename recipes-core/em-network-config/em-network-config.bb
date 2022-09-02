@@ -24,7 +24,7 @@ do_install() {
 	install -m644 ${WORKDIR}/single-br0-ports.network ${D}${libdir}/emos/network-config/single/br0-ports.network
 }
 
-FILES_${PN} += " \
+FILES:${PN} += " \
 	${sysconfdir}/systemd/network/ \
 	${libdir}/emos/network-config/ \
 "

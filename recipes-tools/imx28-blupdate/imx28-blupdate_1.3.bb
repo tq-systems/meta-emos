@@ -13,7 +13,7 @@ DEPENDS = "libgcrypt"
 
 PR = "r1"
 
-CFLAGS_append = "-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
+CFLAGS:append = "-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
 
 do_install() {
 	install -d ${D}${bindir}

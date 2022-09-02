@@ -29,11 +29,11 @@ SRC_URI = " \
 	file://journald-debug.conf \
 "
 
-SRC_URI_append_em_mx8mn = " \
+SRC_URI:append:em:mx8mn = " \
 	file://80-ttyAPP.rules \
 "
 
-SYSTEMD_SERVICE_${PN} = " \
+SYSTEMD_SERVICE:${PN} = " \
 	em-app-flash-scan.timer \
 	em-log-fsck-errors.service \
 	em-timesync-timer.service \
@@ -92,25 +92,26 @@ do_install() {
 	install -m 0644 ${WORKDIR}/journald-debug.conf ${D}${sysconfdir}/systemd/journald.conf.d/
 }
 
-do_install_append_em_mx8mn() {
+do_install:append:em:mx8mn() {
 	install -d ${D}${base_libdir}/udev/rules.d
 	install -m 0644 ${WORKDIR}/80-ttyAPP.rules ${D}${base_libdir}/udev/rules.d/
 }
 
-RDEPENDS_${PN} += "jq libubootenv-bin openssl-bin faketime em-network-config"
-RDEPENDS_${PN}_append_em_mx8mn = " udev"
 
-FILES_${PN} += " \
+RDEPENDS:${PN} += "jq libubootenv-bin openssl-bin faketime em-network-config"
+RDEPENDS:${PN}:append:em:mx8mn = " udev"
+
+FILES:${PN} += " \
 	${sysconfdir}/tmpfiles.d/00-emos-log.conf \
 	${systemd_unitdir}/system/ \
 	${systemd_unitdir}/system-generators/emcfg-generator \
 "
 
-FILES_${PN}_append_em_mx8mn := "\
+FILES:${PN}:append:em:mx8mn := "\
 	${base_libdir}/udev/rules.d/80-ttyAPP.rules \
 "
 
-ALTERNATIVE_${PN} += "init"
+ALTERNATIVE:${PN} += "init"
 ALTERNATIVE_TARGET[init] = "${base_sbindir}/em-init"
 ALTERNATIVE_LINK_NAME[init] = "${base_sbindir}/init"
 ALTERNATIVE_PRIORITY[init] ?= "900"
