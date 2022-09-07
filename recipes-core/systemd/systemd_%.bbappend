@@ -1,4 +1,9 @@
-do_install_append_emos() {
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
+SRC_URI += "\
+	file://read-only-rootfs.conf \
+"
+
+do_install:append:emos() {
 	# Set watchdog timeout
 	sed -i -e 's/.*RuntimeWatchdogSec.*/RuntimeWatchdogSec=29/' ${D}${sysconfdir}/systemd/system.conf
 
@@ -17,4 +22,15 @@ do_install_append_emos() {
 
 	# Avoid syslog warnings about non-existing "render" group
 	sed -i -e '/\<GROUP="render"/d' ${D}${rootlibexecdir}/udev/rules.d/50-udev-default.rules
+
+	# Add configurations for read-only root filesystem
+	install -m755 -d \
+		${D}${systemd_system_unitdir}/systemd-logind.service.d \
+		${D}${systemd_system_unitdir}/systemd-timesyncd.service.d
+
+	install -m644 ${WORKDIR}/read-only-rootfs.conf \
+		${D}${systemd_system_unitdir}/systemd-logind.service.d
+
+	install -m644 ${WORKDIR}/read-only-rootfs.conf \
+		${D}${systemd_system_unitdir}/systemd-timesyncd.service.d
 }

@@ -10,7 +10,7 @@ SRC_DISTRIBUTE_LICENSES += "TQSSLA_V1.0.2"
 
 PR = "r1"
 
-RDEPENDS_${PN} = "rauc"
+RDEPENDS:${PN} = "rauc"
 
 SRC_URI = " \
         file://LICENSE \
@@ -23,8 +23,8 @@ SRC_URI = " \
 S = "${WORKDIR}"
 
 
-FILES_${PN} += "${libdir}/emos/upgrade/emos-upgrade-finalize"
-SYSTEMD_SERVICE_${PN} = "emos-upgrade-finalize.service"
+FILES:${PN} += "${libdir}/emos/upgrade/emos-upgrade-finalize"
+SYSTEMD_SERVICE:${PN} = "emos-upgrade-finalize.service"
 
 inherit systemd
 

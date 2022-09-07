@@ -1,4 +1,4 @@
-RDEPENDS_${PN}_remove_emos = "\
+RDEPENDS:${PN}:remove:emos = "\
 	nativesdk-qemu \
 	nativesdk-qemu-helper \
 "

@@ -10,8 +10,8 @@ SRC_URI = " \
 	file://em-power-handler \
 "
 
-SYSTEMD_SERVICE_${PN} = "em-power-handler.service"
-RDEPENDS_${PN} = "libgpiod-tools"
+SYSTEMD_SERVICE:${PN} = "em-power-handler.service"
+RDEPENDS:${PN} = "libgpiod-tools"
 
 do_install () {
 	install -d ${D}${base_sbindir}

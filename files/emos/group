@@ -11,3 +11,4 @@ www::509
 mosquitto::510
 avahi::511
 avahi-autoipd::512
+sshd::513

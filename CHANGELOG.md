@@ -5,13 +5,16 @@
 - imx8mn-egw: added platform support (machine, u-boot, linux)
 
 ### Changed
-- backport nginx 1.21.1 for CVE-2021-23017
 - emit: set bundle-formats in rauc's system.conf
 - linux: handle bug on rtc where ext_test could be set
+- firmware-imx-8m: update to 8.15
+- tree-wide: update to yocto kirkstone
+- kirkstone contains nginx 1.21.1 for CVE-2021-23017
 
 ### Removed
 - remove nginx version number from response header
 - remove static links for license infos
+- em300 machine support
 
 ## [ 3.2.0-rc8 ] - 2022-03-22
 ### Changed

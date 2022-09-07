@@ -7,7 +7,7 @@ order to provide support for some backported features and fixes, or because it \
 was submitted for revision and it takes some time to become part of a stable \
 version, or because it is not applicable for upstreaming."
 
-LICENSE = "GPLv2+"
+LICENSE = "GPL-2.0-or-later"
 LIC_FILES_CHKSUM = "file://Licenses/README;md5=a2c678cfd4a4d97135585cad908541c6"
 
 SRC_URI = " \
@@ -26,7 +26,7 @@ S = "${WORKDIR}/git"
 DEPENDS += "dtc-native"
 
 PROVIDES += "u-boot u-boot-em"
-RPROVIDES_${PN} += "u-boot u-boot-em"
+RPROVIDES:${PN} += "u-boot u-boot-em"
 
 UBOOT_INITIAL_ENV = "u-boot-initial-env"
 
@@ -39,4 +39,4 @@ EXTRA_OEMAKE += ' \
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 COMPATIBLE_MACHINE = "^$"
-COMPATIBLE_MACHINE_em = "mx28"
+COMPATIBLE_MACHINE:em = "mx28"
