@@ -18,9 +18,6 @@ SRC_URI = " \
 	file://etc-shadow.mount \
 	file://em-app-flash-scan.timer \
 	file://em-log-fsck-errors.service \
-	file://em-timesync \
-	file://em-timesync-timer \
-	file://em-timesync-timer.service \
 	file://emos.target \
 	file://emcfg-generator \
 	file://80-button-handler.rules \
@@ -36,7 +33,6 @@ SRC_URI:append:em:mx8mn = " \
 SYSTEMD_SERVICE:${PN} = " \
 	em-app-flash-scan.timer \
 	em-log-fsck-errors.service \
-	em-timesync-timer.service \
 "
 
 S = "${WORKDIR}"
@@ -48,8 +44,6 @@ do_install() {
 		em-config-reset \
 		em-init \
 		em-update-password \
-		em-timesync \
-		em-timesync-timer \
 		${D}${base_sbindir}/
 
 	install -d ${D}${sysconfdir}/tmpfiles.d
@@ -58,16 +52,12 @@ do_install() {
 	install -d ${D}${sysconfdir}/sysctl.d
 	install -m 0644 sysctl.conf ${D}${sysconfdir}/sysctl.d/80-emos.conf
 
-	install -d ${D}${sysconfdir}/systemd
-	ln -s /run/em/etc/systemd/timesyncd.conf ${D}${sysconfdir}/systemd/
-
 	install -d ${D}${systemd_unitdir}/system/sysinit.target.wants/
 	install -m 0644 \
 		emcfg.service \
 		etc-shadow.mount \
 		em-app-flash-scan.timer \
 		em-log-fsck-errors.service \
-		em-timesync-timer.service \
 		emos.target \
 		${D}${systemd_unitdir}/system/
 	ln -s \
