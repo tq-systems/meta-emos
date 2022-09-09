@@ -1,5 +1,6 @@
 ## [ next ]
 ### Added
+- emit: verification of the app packages with external checksum file
 
 ## [ 4.0.0-rc1 ] - 2022-09-07
 ### Added
