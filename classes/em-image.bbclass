@@ -52,6 +52,7 @@ IMAGE_INSTALL += " \
 		libdeviceinfo \
 		mosquitto \
 		nginx \
+		ca-certificates \
 		"
 
 BAD_RECOMMENDATIONS += " \
