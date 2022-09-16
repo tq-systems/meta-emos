@@ -69,6 +69,21 @@ def checkhash(path, expected):
 	if expected != actual:
 		raise Exception('Incorrect SHA256 checksum on file \'{}\' (expected {}, actual {})'.format(path, expected, actual))
 
+def updatehash(app_data, path, cache):
+	"""Downloads checksum file for app package and update sha256 in its info structure."""
+	checksum_url = '{}.sha256'.format(app_data.url)
+	checksum_path = '{}.sha256'.format(path)
+
+	# download hash file if this is not already in the cache and should be used
+	if cache != True or not os.access(checksum_path, os.R_OK):
+		try:
+			subprocess.run(['wget', '-nv', '-O', checksum_path, checksum_url], check=True)
+		except Exception as e:
+			print('Error downloading checksum file \'{}\''.format(checksum_url), file=sys.stderr, flush=True)
+			raise e
+
+	app_data.sha256 = open(checksum_path, 'r').read().strip()
+	return app_data
 
 def checkstring(s):
 	"""
@@ -103,6 +118,7 @@ class AppData:
 		self.arch = app_info['arch']
 		self.sha256 = app_info.get('sha256[{}]'.format(self.arch))
 		self.disabled = app_info.get('disabled')
+		self.version = app_info.get('version')
 
 class CommandCommon:
 	"""Common functions for all commands"""
@@ -152,7 +168,7 @@ class CommandDownload(CommandCommon):
 
 		if info.get('cache') != False:
 			if app_data.sha256 is None:
-				raise Exception('App \'{}\' has no sha256 field for arch {}'.format(app, app_data.arch))
+				updatehash(app_data, path, info.get('cache'))
 
 			if os.access(path, os.R_OK):
 				try:
@@ -165,8 +181,14 @@ class CommandDownload(CommandCommon):
 		print('Downloading app \'{}\' from: {}'.format(app, app_data.url), file=sys.stderr, flush=True)
 
 		subprocess.run(['wget', '-nv', '-O', path, app_data.url], check=True)
-		if info.get('cache') != False or app_data.sha256 is not None:
-			checkhash(path, app_data.sha256)
+		skip_versions = {'stable', 'latest'}
+		if app_data.version in skip_versions:
+			print('Skipping SHA256 check for app \'{}\' because version is \'{}\''.format(app, app_data.version))
+		else:
+			if app_data.sha256 is None:
+				updatehash(app_data, path), info.get('cache')
+			if info.get('cache') != False or app_data.sha256 is not None:
+				checkhash(path, app_data.sha256)
 
 	def download_apps(self):
 		"""Download all apps listed in the base and bundle specs"""

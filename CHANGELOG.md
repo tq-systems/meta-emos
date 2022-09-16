@@ -1,3 +1,8 @@
+## [ 4.0.0-rc2 ] - 2022-09-16
+### Added
+- emit: verification of the app packages with external checksum file
+- em-image: explicitly install ca-certificates
+
 ## [ 4.0.0-rc1 ] - 2022-09-07
 ### Added
 - imx8mn-egw: added platform support (machine, u-boot, linux)
