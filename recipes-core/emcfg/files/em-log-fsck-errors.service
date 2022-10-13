@@ -1,5 +1,5 @@
 [Unit]
-Description=Push error messages from filesystem checks to systemd journal
+Description=Push messages from filesystem checks to systemd journal
 ConditionPathExists=/run/em/fsck_status
 
 [Service]
