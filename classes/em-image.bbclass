@@ -31,6 +31,7 @@ IMAGE_INSTALL += " \
 		emcfg \
 		empkg \
 		em-flash-read \
+		em-verify \
 		iproute2 \
 		tzdata tzdata-americas tzdata-asia \
 		tzdata-europe tzdata-africa tzdata-antarctica \

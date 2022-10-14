@@ -1,0 +1,60 @@
+#!/bin/sh
+# shellcheck disable=SC3043
+
+set -e
+
+# functions
+usage() {
+	echo >&2 'Usage: em-verify <container> <certificate> <destination>'
+}
+
+error() {
+	local message="$1"
+	echo >&2 "$message"
+	exit 1
+}
+
+log_journal() {
+	local loglevel="$1"
+	local message="$2"
+	echo "$message" | systemd-cat -t "em-verify" -p "$loglevel"
+}
+
+# main
+if [ $# -ne 3 ]; then
+	usage
+	exit 1
+fi
+
+CONTAINER="$1"
+CERTIFICATE="$2"
+DESTINATION="$3"
+
+[ -e "$CONTAINER" ]   || error "Container does not exist: $CONTAINER"
+[ -e "$CERTIFICATE" ] || error "Certificate does not exist: $CERTIFICATE"
+if [ ! -d "$DESTINATION" ]; then
+	mkdir -p "$DESTINATION" || error "Cannot create directory: $DESTINATION"
+fi
+
+# ensure cleaning up on exit
+ARCHIVE="$(mktemp)"
+trap 'rm -f $ARCHIVE' EXIT
+
+# allow errors to handle return codes
+set +e
+
+# verify and extract container
+if ! openssl cms -verify -binary -in "$CONTAINER" -out "$ARCHIVE" -CAfile "$CERTIFICATE"; then
+	log_journal "err" "Verification of $CONTAINER with $CERTIFICATE failed"
+	exit 1
+else
+	log_journal "notice" "Verified $CONTAINER with $CERTIFICATE"
+fi
+
+# extract files from archive to destination
+if ! tar -xf "$ARCHIVE" -C "$DESTINATION"; then
+	log_journal "err" "Extraction of container content failed (unkown format)"
+	exit 1
+else
+	log_journal "notice" "Extracted container content to $DESTINATION"
+fi
