@@ -3,7 +3,7 @@ SRC_URI += "\
 	file://read-only-rootfs.conf \
 "
 
-PACKAGECONFIG:append:pn-systemd = " cgroupv2"
+PACKAGECONFIG:append:pn-systemd = " cgroupv2 sysusers"
 
 do_install:append:emos() {
 	# Set watchdog timeout
