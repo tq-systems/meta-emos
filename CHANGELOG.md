@@ -1,3 +1,10 @@
+## [ next ]
+### Added
+- include em-verify
+
+### Changed
+- removed some minor systemd warnings
+
 ## [ 4.0.0-rc2 ] - 2022-09-16
 ### Added
 - emit: verification of the app packages with external checksum file
