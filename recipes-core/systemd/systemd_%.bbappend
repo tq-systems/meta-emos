@@ -4,6 +4,7 @@ SRC_URI += "\
 "
 
 PACKAGECONFIG:append:pn-systemd = " cgroupv2 sysusers"
+EXTRA_OEMESON += "-Dpstore=false"
 
 do_install:append:emos() {
 	# Set watchdog timeout
