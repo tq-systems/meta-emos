@@ -3,6 +3,9 @@ SRC_URI += "\
 	file://read-only-rootfs.conf \
 "
 
+PACKAGECONFIG:append:pn-systemd = " cgroupv2 sysusers"
+EXTRA_OEMESON += "-Dpstore=false"
+
 do_install:append:emos() {
 	# Set watchdog timeout
 	sed -i -e 's/.*RuntimeWatchdogSec.*/RuntimeWatchdogSec=29/' ${D}${sysconfdir}/systemd/system.conf
