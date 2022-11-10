@@ -3,47 +3,31 @@ defaults:
 
 apps:
   button-handler:
-    version: '2.1.0'
-    sha256[armv5e]: 'e1a46069a258ac8cf6b62779d7318d40746492f4e8bd488dfc41f46e628d01f2'
-    sha256[aarch64]: '249c057184c8794bdb251d73e3bbed360e8e88d0171a198689527be4ce52e2f5'
+    version: '2.2.0'
 
   data-transfer:
-    version: '3.3.0'
-    sha256[armv5e]: 'd16ba60166c5cfcde25e6724826b49bb195cdc3664792008c3feed1d99f1b1fa'
-    sha256[aarch64]: '4749f2686b1400920a7cbbdebadfc35dc0f318adc62b0d696fe0c6c37a639d7d'
+    version: '3.6.0'
 
   device-settings:
-    version: '2.4.0'
-    sha256[armv5e]: '34cba8e7042f63ed90d2e44059f92f9125f15522e106dbf13f3727bb0357a537'
-    sha256[aarch64]: '0af4bef2f8de917bc646e0e7a42bbf41f9c3e870dcd747cbd10032736f5a9972'
+    version: '3.2.1'
 
   flash-scan:
-    version: '2.1.0'
-    sha256[armv5e]: '2615725afcca3ae416fe857bdaa164352237693a620afec69b3b94a778d152ac'
-    sha256[aarch64]: '695820824f1ccc0fc76c224ef301eaa5fc014d0ed29b8e9fed263a9cbe1ff38b'
+    version: '2.2.0'
 
   health-check:
-    version: '1.5.0'
-    sha256[armv5e]: 'c20980807852f0109cf78e2288fc6395826195dffd5a7ea3b5b87faef457fa44'
-    sha256[aarch64]: '924fe3282dd385ce3f4bc6afc2e6362f7e4392ed4f38904e00f9c5192033dac1'
+    version: '1.6.1'
 
   teridiand:
-    version: '1.6.5'
-    sha256[armv5e]: '748b7781b3f23c39a50a3f325505394bc0b412e965ad706a826363052d1efdd2'
-    sha256[aarch64]: '7a54b401b1f519da8cbca0493ecdfeabeb93b5fc44b6e6173f3e1e368378eacb'
+    version: '1.8.0'
 
   teridiand-fw:
     arch: 'all'
     version: '1.1.0'
-    sha256[all]: '40dcee260e60914b19c438a2e734e03d0875aa74c8acc9685fca18ddc1a72bc1'
 
   web-application:
     arch: 'all'
     name: web-application-tq
-    version: '2.8.0'
-    sha256[all]: '56595fbde6f5713e1973069fcd06796f01fdb51a4e8a2c197e42b6ba57cd48c9'
+    version: '2.14.4'
 
   web-login:
-    version: '2.4.0'
-    sha256[armv5e]: 'e7334a9de0b4537585ee75696fb5ae2a5b2bd8967941891c4930be92fccf414c'
-    sha256[aarch64]: '5cb23f8309ae08620b981a65b1b94863a1f19bdefe946a926d7857afb83c8b28'
+    version: '2.5.0'
