@@ -1,4 +1,5 @@
 #!/bin/sh
+# shellcheck disable=SC3043
 
 PRODUCT_INFO=/etc/product-info.json
 CFG=/cfglog/system
@@ -7,6 +8,8 @@ RUNETC=/run/em/etc
 
 NETCONF=/usr/lib/emos/network-config
 RUNSDNET=/run/systemd/network
+
+CFGNETWORKCONF=$CFG/network.json
 
 CMD="$1"; shift
 
@@ -20,6 +23,21 @@ get_default_hostname() {
 	echo "${product_code}-$(get_serial)"
 }
 
+
+set_default_network() {
+	local tmp_file=$CFGNETWORKCONF.tmp
+
+	if [ -e /opt/apps/presets/system/network.json ]; then
+		cp /opt/apps/presets/system/network.json "$tmp_file"
+	else
+		echo '{"mode":"dhcp"}' > "$tmp_file"
+	fi
+	sync "$tmp_file"
+
+	mv "$tmp_file" "$CFGNETWORKCONF"
+	sync "$tmp_file" "$CFGNETWORKCONF"
+}
+
 cmd_init() {
 	mkdir -p $CFG
 
@@ -27,12 +45,8 @@ cmd_init() {
 	[ -e $CFG/hostname ]   || get_default_hostname   > $CFG/hostname
 	[ -e $CFG/ntp.json ]   || echo '{"enable":true}' > $CFG/ntp.json
 
-	if [ ! -e $CFG/network.json ]; then
-		if [ -e /opt/apps/presets/system/network.json ]; then
-			cp /opt/apps/presets/system/network.json $CFG/network.json
-		else
-			echo '{"mode":"dhcp"}' > $CFG/network.json
-		fi
+	if [ ! -e $CFGNETWORKCONF ]; then
+		set_default_network
 	fi
 }
 
@@ -88,7 +102,7 @@ if .hidden.address and .hidden.prefixlen then
 else
 	empty
 end
-	' < $CFG/network.json > $RUNSDNET/br0.network
+	' < $CFGNETWORKCONF > $RUNSDNET/br0.network
 }
 
 cmd_update_ntp() {
@@ -115,8 +129,7 @@ cmd_reset_password() {
 cmd_reset_network() {
 	logger 'Resetting network configuration.'
 
-	rm -f $CFG/network.json
-	cmd_init
+	set_default_network
 	cmd_update_network
 	systemctl restart systemd-networkd.service
 }
