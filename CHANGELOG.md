@@ -4,6 +4,10 @@
 
 ### Changed
 - removed some minor systemd warnings
+- update sdk app versions to latest releases
+- linux: enable ipv6
+- systemd-logind: ignore KEY_RESTART
+- emcfg: sync after network.json writes
 
 ## [ 4.0.0-rc2 ] - 2022-09-16
 ### Added
