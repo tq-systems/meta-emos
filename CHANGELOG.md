@@ -1,13 +1,19 @@
 ## [ next ]
+### Changed
+
+## [ 4.0.0-rc4 ] - 2022-11-11
+### Changed
+- update sdk app versions to latest releases
+- linux: enable ipv6
+- systemd-logind: ignore KEY_RESTART
+- emcfg: sync after network.json writes
+
+## [ 4.0.0-rc3 ] - 2022-11-03
 ### Added
 - include em-verify
 
 ### Changed
 - removed some minor systemd warnings
-- update sdk app versions to latest releases
-- linux: enable ipv6
-- systemd-logind: ignore KEY_RESTART
-- emcfg: sync after network.json writes
 
 ## [ 4.0.0-rc2 ] - 2022-09-16
 ### Added
