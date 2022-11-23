@@ -1,5 +1,7 @@
 ## [ next ]
 ### Changed
+- systemd-logind: ignore long press on KEY_RESTART
+- systemd: relocate platform-specific configs
 
 ## [ 4.0.0-rc4 ] - 2022-11-11
 ### Changed
