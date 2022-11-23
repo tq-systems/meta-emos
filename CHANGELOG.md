@@ -1,3 +1,8 @@
+## [ 4.0.0-rc5 ] - 2022-11-23
+### Changed
+- systemd-logind: ignore long press on KEY_RESTART
+- systemd: relocate platform-specific configs
+
 ## [ 4.0.0-rc4 ] - 2022-11-11
 ### Changed
 - update sdk app versions to latest releases
