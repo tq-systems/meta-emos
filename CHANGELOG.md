@@ -1,4 +1,4 @@
-## [ next ]
+## [ 4.0.0-rc7 ] - 2022-12-09
 ### Changed
 - linux-imx-em: disable DMA on uart2/3
 
