@@ -1,3 +1,7 @@
+## [ next ]
+### Changed
+- linux-imx-em: disable DMA on uart2/3
+
 ## [ 4.0.0-rc6 ] - 2022-11-24
 ### Changed
 - set distro version
