@@ -1,5 +1,13 @@
 ## [ next ]
 ### Changed
+- linux-imx-em: disable DMA on uart2/3
+
+## [ 4.0.0-rc6 ] - 2022-11-24
+### Changed
+- set distro version
+
+## [ 4.0.0-rc5 ] - 2022-11-23
+### Changed
 - systemd-logind: ignore long press on KEY_RESTART
 - systemd: relocate platform-specific configs
 
