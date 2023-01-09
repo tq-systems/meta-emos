@@ -144,13 +144,27 @@ class CommandCommon:
 		Returns the app data for an app.
 		"""
 		app_info = merge_dicts(self.defaults, info)
+
+		# The values 'name' and 'variant' can optionally be defined in a bundle definition to
+		# change the app URL, which is by default: $BASE_URL/{app}/{name}_{version}_{arch}.empkg
+		name = app
+
+		# 'name' changes only {name}
+		if 'name' in app_info:
+			name = app_info['name']
+		else:
+		# 'variant' cannot be mixed with 'name', it extends {app} with a variant subdirectory
+		# and {name} to this URL: $BASE_URL/{app}/{variant}/{app}-{variant}_{version}_{arch}.empkg
+			if 'variant' in app_info:
+				name = "%s-%s" % (app, app_info['variant'])
+				app = "%s/%s" % (app, app_info['variant'])
+
 		app_info = merge_dicts(app_info, {
 			'app': app,
-			'name': app_info.get('name', app),
+			'name': name
 		})
 
 		return AppData(app_info)
-
 
 class CommandDownload(CommandCommon):
 	"""Implementation of the 'download' command"""
@@ -166,7 +180,10 @@ class CommandDownload(CommandCommon):
 		app_data = self.app_data(app, info)
 		path = os.path.join(self.args.download_dir, app_data.filename)
 
-		if info.get('cache') != False:
+		# Checksum handling of these versions is skipped
+		skip_versions = {'stable', 'latest'}
+
+		if (app_data.version not in skip_versions) and (info.get('cache') != False):
 			if app_data.sha256 is None:
 				updatehash(app_data, path, info.get('cache'))
 
@@ -181,7 +198,7 @@ class CommandDownload(CommandCommon):
 		print('Downloading app \'{}\' from: {}'.format(app, app_data.url), file=sys.stderr, flush=True)
 
 		subprocess.run(['wget', '-nv', '-O', path, app_data.url], check=True)
-		skip_versions = {'stable', 'latest'}
+
 		if app_data.version in skip_versions:
 			print('Skipping SHA256 check for app \'{}\' because version is \'{}\''.format(app, app_data.version))
 		else:
