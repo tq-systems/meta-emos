@@ -3,6 +3,7 @@
 - linux-imx-em: disable DMA on uart2/3
 - nginx: enable TLSv1.3 and use only recommended ciphers
 - nginx: improve header settings
+- nginx: allow inline styles
 
 ## [ 4.0.0-rc6 ] - 2022-11-24
 ### Changed
