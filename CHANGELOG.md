@@ -1,3 +1,9 @@
+## [ 4.0.0-rc8 ] - 2023-02-20
+### Fixed
+- increase watchdog timeout to 75s
+- increase systemd priority
+- decrease priority of erasing old system partition after update
+
 ## [ 4.0.0-rc7 ] - 2022-12-09
 ### Changed
 - linux-imx-em: disable DMA on uart2/3
