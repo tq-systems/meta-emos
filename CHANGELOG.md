@@ -3,6 +3,7 @@
 - nginx: enable TLSv1.3 and use only recommended ciphers
 - nginx: improve header settings
 - nginx: allow inline styles
+- nginx: do not cache language file
 
 ## [ 4.0.0-rc7 ] - 2022-12-09
 ### Changed
