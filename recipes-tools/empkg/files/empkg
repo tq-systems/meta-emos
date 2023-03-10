@@ -19,6 +19,12 @@ OPT_SYSTEMD=true
 OPT_PLAIN=false
 OPT_EOL=false
 
+# App_sync() calls app_enable()/app_disable() for multiple apps,
+# each prepares app service files that take effect after a lengthy 'systemctl daemon-reload'.
+# To speed app_sync() up, it is sufficient to only call 'systemctl daemon-reload' once at the end.
+# So app_enable() and app_disable() will only request a 'daemon-reload' by placing a temporary file.
+# At the end of app_sync() the presence of this file is tested and will trigger the 'daemon-reload'.
+REQUEST_DAEMON_RELOAD="$(mktemp -u)"
 
 usage() {
 	cat >&2 <<'EOF'
@@ -230,7 +236,8 @@ app_enable() {
 	app_dbus "$app"
 
 	if $OPT_SYSTEMD && has_systemd "$app"; then
-		systemctl daemon-reload
+		# request 'systemctl daemon-reload' for later
+		touch "$REQUEST_DAEMON_RELOAD"
 
 		if is_autostart "$app"; then
 			systemctl restart "em-app-${app}.service" || true
@@ -252,7 +259,8 @@ app_disable() {
 
 	if $OPT_SYSTEMD && systemctl --quiet is-active "em-app-${app}.service"; then
 		systemctl stop "em-app-${app}.service" || true
-		systemctl daemon-reload
+		# request 'systemctl daemon-reload' for later
+		touch "$REQUEST_DAEMON_RELOAD"
 	fi
 
 	app_dbus "$app"
@@ -528,6 +536,13 @@ update_licenses() {
 	sync
 }
 
+process_reload_request() {
+	if [ -f "$REQUEST_DAEMON_RELOAD" ]; then
+		systemctl daemon-reload
+		rm "$REQUEST_DAEMON_RELOAD"
+	fi
+}
+
 while [ "${1:0:1}" = '-' ]; do
 	arg="$1"; shift
 	case "$arg" in
@@ -618,6 +633,7 @@ enable)
 	ensure_args 1 $#
 	get_lock
 	app_enable "$1"
+	process_reload_request
 	update_www
 	;;
 
@@ -625,12 +641,14 @@ disable)
 	ensure_args 1 $#
 	get_lock
 	app_disable "$1"
+	process_reload_request
 	update_www
 	;;
 
 sync)
 	get_lock
 	app_sync
+	process_reload_request
 	update_www
 	update_licenses
 	;;
