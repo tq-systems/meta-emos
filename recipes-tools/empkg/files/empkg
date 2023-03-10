@@ -19,6 +19,12 @@ OPT_SYSTEMD=true
 OPT_PLAIN=false
 OPT_EOL=false
 
+# App_sync() calls app_enable()/app_disable() for multiple apps,
+# each prepares app service files that take effect after a lengthy 'systemctl daemon-reload'.
+# To speed app_sync() up, it is sufficient to only call 'systemctl daemon-reload' once at the end.
+# So app_enable() and app_disable() will only request a 'daemon-reload' by placing a temporary file.
+# At the end of app_sync() the presence of this file is tested and will trigger the 'daemon-reload'.
+REQUEST_DAEMON_RELOAD="$(mktemp -u)"
 
 usage() {
 	cat >&2 <<'EOF'
@@ -230,7 +236,8 @@ app_enable() {
 	app_dbus "$app"
 
 	if $OPT_SYSTEMD && has_systemd "$app"; then
-		systemctl daemon-reload
+		# request 'systemctl daemon-reload' for later
+		touch "$REQUEST_DAEMON_RELOAD"
 
 		if is_autostart "$app"; then
 			systemctl restart "em-app-${app}.service" || true
@@ -252,7 +259,8 @@ app_disable() {
 
 	if $OPT_SYSTEMD && systemctl --quiet is-active "em-app-${app}.service"; then
 		systemctl stop "em-app-${app}.service" || true
-		systemctl daemon-reload
+		# request 'systemctl daemon-reload' for later
+		touch "$REQUEST_DAEMON_RELOAD"
 	fi
 
 	app_dbus "$app"
@@ -468,37 +476,49 @@ $new_apps"
 
 # Updates the web-container app directory (app symlinks, list JSON, langs JSON)
 update_www() {
-	rm -rf "$WWWDIR"
-	mkdir -p "$WWWDIR"
+	WWWDIRTMP="$(mktemp -d)"
+	WWWAPPSTMP="$WWWDIRTMP/apps.plain"
+	WWWLANGTMP="$WWWDIRTMP/langs.plain"
 
 	local app
 
+	# prepare next WWWDIR in temporary location
 	for app in $(list_enabled); do
 		local index="$APPDIR/installed/$app/www/index.js"
 		[ -r "$index" ] || continue
 
-		local wwwdir="$(dirname "$index")"
-		ln -snf "$wwwdir" "$WWWDIR/$app"
-
-		echo "$app/index.js?$(md5sum "$index" | awk '{print $1}')"
-	done | jq -nRc '[inputs]' > "$WWWAPPS".tmp
-	mv -f "$WWWAPPS.tmp" "$WWWAPPS"
-
-	for app in $(list_enabled); do
 		local lang="$APPDIR/installed/$app/www/i18n/lang.js"
 		[ -r "$lang" ] || continue
 
-		echo "$app/i18n/lang.js?$(md5sum "$lang" | awk '{print $1}')"
-	done | jq -nRc '[inputs]' > "$WWWLANG".tmp
+		local wwwdir="$(dirname "$index")"
+		ln -snf "$wwwdir" "$WWWDIRTMP/$app"
 
-	mv -f "$WWWLANG.tmp" "$WWWLANG"
+		echo "$app/index.js?$(md5sum "$index" | awk '{print $1}')" >> "$WWWAPPSTMP"
+		echo "$app/i18n/lang.js?$(md5sum "$lang" | awk '{print $1}')" >> "$WWWLANGTMP"
+	done
 
 	sync
+
+	# update WWWDIR
+	rm -f "$WWWDIR"/*
+
+	cat "$WWWAPPSTMP" | jq -nRc '[inputs]' > "$WWWAPPS"
+	rm "$WWWAPPSTMP"
+
+	cat "$WWWLANGTMP" | jq -nRc '[inputs]' > "$WWWLANG"
+	rm "$WWWLANGTMP"
+
+	# move remaining files (symlinks)
+	mv "$WWWDIRTMP"/* "$WWWDIR"
+
+	sync
+
+	rm -rf "$WWWDIRTMP"
 }
 
+
 update_licenses() {
-	rm -rf "$LICDIR"
-	mkdir -p "$LICDIR"
+	LICDIRTMP="$(mktemp -d)"
 
 	local app
 
@@ -506,11 +526,21 @@ update_licenses() {
 		local app_license_dir="$APPDIR/installed/$app/license"
 		[ -d "$app_license_dir" ] || continue
 
-		local lic_info_dir="$LICDIR/$app"
+		local lic_info_dir="$LICDIRTMP/$app"
 		ln -snf "$app_license_dir" "$lic_info_dir"
 	done
 
 	sync
+	rm -f "$LICDIR"/*
+	mv "$LICDIRTMP"/* "$LICDIR"
+	sync
+}
+
+process_reload_request() {
+	if [ -f "$REQUEST_DAEMON_RELOAD" ]; then
+		systemctl daemon-reload
+		rm "$REQUEST_DAEMON_RELOAD"
+	fi
 }
 
 while [ "${1:0:1}" = '-' ]; do
@@ -603,6 +633,7 @@ enable)
 	ensure_args 1 $#
 	get_lock
 	app_enable "$1"
+	process_reload_request
 	update_www
 	;;
 
@@ -610,12 +641,14 @@ disable)
 	ensure_args 1 $#
 	get_lock
 	app_disable "$1"
+	process_reload_request
 	update_www
 	;;
 
 sync)
 	get_lock
 	app_sync
+	process_reload_request
 	update_www
 	update_licenses
 	;;

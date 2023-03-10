@@ -4,6 +4,8 @@
 - nginx: improve header settings
 - nginx: allow inline styles
 - nginx: do not cache language file
+- empkg: synchronize license directory and www directory more safely
+- empkg: sync: reduce daemon-reload calls
 
 ## [ 4.0.0-rc7 ] - 2022-12-09
 ### Changed
