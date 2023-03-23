@@ -6,6 +6,9 @@
 - nginx: do not cache language file
 - empkg: synchronize license directory and www directory more safely
 - empkg: sync: reduce daemon-reload calls
+- emos-upgrade: limit resources
+- linux-imx-em: implement register refresh (port-io watcher)
+- systemd-conf: mx28: watchdog timeout 75s
 
 ## [ 4.0.0-rc7 ] - 2022-12-09
 ### Changed
