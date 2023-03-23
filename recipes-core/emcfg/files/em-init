@@ -257,4 +257,4 @@ if command -v empkg >/dev/null; then
 	fi
 fi
 
-exec nice -n -20 /lib/systemd/systemd
+exec /lib/systemd/systemd
