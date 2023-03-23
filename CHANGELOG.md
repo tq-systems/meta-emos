@@ -1,3 +1,15 @@
+## [ next ]
+### Changed
+- nginx: enable TLSv1.3 and use only recommended ciphers
+- nginx: improve header settings
+- nginx: allow inline styles
+- nginx: do not cache language file
+- empkg: synchronize license directory and www directory more safely
+- empkg: sync: reduce daemon-reload calls
+- emos-upgrade: limit resources
+- linux-imx-em: implement register refresh (port-io watcher)
+- systemd-conf: mx28: watchdog timeout 75s
+
 ## [ 4.0.0-rc8 ] - 2023-02-20
 ### Fixed
 - increase watchdog timeout to 75s
