@@ -1,4 +1,4 @@
-## [ next ]
+## [ 4.0.0-rc10 ] - 2023-03-27
 ### Fixed
 - empkg: handle deleted directories www/licenses
 - emos-upgrade: typo in IOSchedulingPriority
