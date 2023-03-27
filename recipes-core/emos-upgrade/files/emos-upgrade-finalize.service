@@ -12,7 +12,7 @@ ExecStart=/usr/lib/emos/upgrade/emos-upgrade-finalize
 CPUSchedulingPolicy=idle
 CPUSchedulingPriority=0
 IOSchedulingClass=idle
-IOSChedulingPriority=7
+IOSchedulingPriority=7
 
 [Install]
 WantedBy=multi-user.target
