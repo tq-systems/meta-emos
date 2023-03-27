@@ -1,3 +1,8 @@
+## [ next ]
+### Fixed
+- empkg: handle deleted directories www/licenses
+- emos-upgrade: typo in IOSchedulingPriority
+
 ## [ 4.0.0-rc9 ] - 2023-03-23
 ### Changed
 - nginx: enable TLSv1.3 and use only recommended ciphers
