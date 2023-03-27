@@ -501,6 +501,8 @@ update_www() {
 
 	# update WWWDIR
 	rm -f "$WWWDIR"/*
+	# create WWWDIR for factory-reset case
+	mkdir -p "$WWWDIR"
 
 	cat "$WWWAPPSTMP" | jq -nRc '[inputs]' > "$WWWAPPS"
 	rm "$WWWAPPSTMP"
@@ -532,6 +534,7 @@ update_licenses() {
 
 	sync
 	rm -f "$LICDIR"/*
+	mkdir -p "$LICDIR"
 	mv "$LICDIRTMP"/* "$LICDIR"
 	sync
 }
