@@ -20,7 +20,7 @@ clear_other_rootfs_partition() {
 
 	logger -t emos-upgrade-finalize "clearing partition '$other_device'"
 	rauc status mark-bad other
-	cat /dev/zero >"$other_device" 2>/dev/null || true
+	blkdiscard -f "$other_device" 2>/dev/null || true
 }
 
 check_update_success() {

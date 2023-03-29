@@ -25,6 +25,7 @@ IMAGE_INSTALL += " \
 		e2fsprogs-tune2fs \
 		coreutils \
 		util-linux-lsblk \
+		util-linux-blkdiscard \
 		less \
 		haveged \
 		emos-upgrade \
