@@ -1,5 +1,8 @@
 ## [ next ]
 ### Fixed
+- linux: enable CFS_BANDWIDTH
+- emos-upgrade-finalize: use blkdiscard
+- em-init: mount tmpfs for mktemp in empkg
 - empkg: handle deleted directories www/licenses
 - emos-upgrade: typo in IOSchedulingPriority
 
