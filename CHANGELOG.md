@@ -1,3 +1,9 @@
+## [ 4.0.0 ] - 2023-04-06
+### Changed
+- linux: enable CFS_BANDWIDTH
+- emos-upgrade-finalize: use blkdiscard
+- em-init: mount tmpfs for mktemp in empkg
+
 ## [ 4.0.0-rc10 ] - 2023-03-27
 ### Fixed
 - empkg: handle deleted directories www/licenses
