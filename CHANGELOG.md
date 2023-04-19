@@ -1,4 +1,6 @@
 ## [ next ]
+### Added
+- pre-update migration mechanism
 ### Fixed
 - linux: enable CFS_BANDWIDTH
 - emos-upgrade-finalize: use blkdiscard
