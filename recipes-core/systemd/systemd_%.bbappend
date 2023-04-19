@@ -1,5 +1,8 @@
 FILESEXTRAPATHS:prepend:emos := "${THISDIR}/files:"
 SRC_URI:append:emos = "\
+	file://0001-shared-dropin-disable-unit-name-prefix-dropins.patch \
+	file://0002-shared-dropin-disable-support-for-toplevel-unit-type.patch \
+	\
 	file://read-only-rootfs.conf \
 "
 
