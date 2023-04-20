@@ -105,9 +105,9 @@ addtask bundle after do_configure before do_build
 inherit deploy
 
 do_deploy() {
-	install -d ${DEPLOYDIR}
-	install -m 0644 ${B}/bundle.raucb ${DEPLOYDIR}/${BUNDLE_NAME}.raucb
-	ln -sf ${BUNDLE_NAME}.raucb ${DEPLOYDIR}/${BUNDLE_LINK_NAME}.raucb
+    install -d ${DEPLOYDIR}
+    install -m 0644 ${B}/bundle.raucb ${DEPLOYDIR}/${BUNDLE_NAME}.raucb
+    ln -sf ${BUNDLE_NAME}.raucb ${DEPLOYDIR}/${BUNDLE_LINK_NAME}.raucb
 }
 do_deploy[cleandirs] = "${DEPLOYDIR}"
 
