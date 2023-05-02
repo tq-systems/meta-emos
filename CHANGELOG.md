@@ -1,3 +1,7 @@
+## [ 4.1.0 ] - 2023-05-02
+### Added
+- pre-update migration mechanism
+
 ## [ 4.0.0 ] - 2023-04-06
 ### Changed
 - linux: enable CFS_BANDWIDTH

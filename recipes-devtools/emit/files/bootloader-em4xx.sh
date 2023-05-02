@@ -8,8 +8,8 @@
 MMCBLK=mmcblk0
 
 bootloader_slots () {
-        local part_config=$(mmc extcsd read "/dev/${MMCBLK}" | \
-                sed -nr '/\[PARTITION_CONFIG: .+\]/{s/^.*\[PARTITION_CONFIG: (.+)\]$/\1/;p}')
+	local part_config=$(mmc extcsd read "/dev/${MMCBLK}" | \
+		sed -nr '/\[PARTITION_CONFIG: .+\]/{s/^.*\[PARTITION_CONFIG: (.+)\]$/\1/;p}')
 
 	case "$(((part_config >> 3) & 0x7))" in
 	1)

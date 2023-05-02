@@ -88,6 +88,13 @@ install-check)
 			echo "Installed firmware too new, downgrades are not supported." >&2
 			exit 10
 		fi
+
+		# run the pre-update migration if it exists
+		if [ -e "$BASEDIR/migration" ]; then
+			# a failed migration does not cancel the update
+			"$BASEDIR/migration" "$SYSTEM_VERSION" "$RAUC_MF_VERSION" "$SYSTEM_MACHINE" \
+				|| echo "Pre-update migration failed" >&2
+		fi
 		;;
 
 	*)

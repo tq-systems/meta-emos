@@ -58,10 +58,10 @@ IMAGE_INSTALL += " \
 		"
 
 BAD_RECOMMENDATIONS += " \
-                      busybox-syslog \
-                      busybox-udhcpc \
-                      udev-hwdb \
-                      "
+		busybox-syslog \
+		busybox-udhcpc \
+		udev-hwdb \
+		"
 
 IMAGE_LINGUAS = ""
 IMAGE_FSTYPES = "tar"

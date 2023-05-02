@@ -44,6 +44,7 @@ parser_build.add_argument('--core-image', required=True, help='Core image used t
 parser_build.add_argument('--image-name', required=True,
 	help='Image name of the generated bundle. This is included in the compatible string and various filenames by default.',
 )
+parser_build.add_argument('--migration-exec', help='Pre-update migration executable')
 parser_build.add_argument('--output-bundle', required=True, help='Output bundle filename')
 
 
@@ -534,6 +535,10 @@ hooks=install
 			os.path.join(self.bundle_dir, 'bootloader.sh'),
 		)
 		os.chmod(os.path.join(self.bundle_dir, 'bootloader.sh'), 0o644)
+
+		if self.args.migration_exec is not None:
+			shutil.copyfile(self.args.migration_exec, os.path.join(self.bundle_dir, 'migration'))
+			os.chmod(os.path.join(self.bundle_dir, 'migration'), 0o755)
 
 		# Generate manifest
 		with open(os.path.join(self.bundle_dir, 'manifest.raucm'), 'w') as manifest:

@@ -1,0 +1,17 @@
+#!/bin/sh
+#
+# Copyright (C) 2023, TQ-Systems GmbH
+# Author: Christoph Krutz <christoph.krutz@tq-group.com>
+#
+
+installed_version="$1"
+update_version="$2"
+machine="$3"
+
+echo "Pre-update migration from $installed_version to $update_version on $machine"
+
+case "$installed_version" in
+*)
+	# nothing to migrate
+	;;
+esac
