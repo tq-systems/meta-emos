@@ -1,10 +1,16 @@
 ## [ next ]
+## [ 4.1.0 ] - 2023-05-02
 ### Added
 - pre-update migration mechanism
-### Fixed
+
+## [ 4.0.0 ] - 2023-04-06
+### Changed
 - linux: enable CFS_BANDWIDTH
 - emos-upgrade-finalize: use blkdiscard
 - em-init: mount tmpfs for mktemp in empkg
+
+## [ 4.0.0-rc10 ] - 2023-03-27
+### Fixed
 - empkg: handle deleted directories www/licenses
 - emos-upgrade: typo in IOSchedulingPriority
 
