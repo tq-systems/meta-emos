@@ -1,3 +1,11 @@
+## [ next ]
+### Added
+- em4xx: u-boot/linux: support for alternative switch
+- systemd: disable unused features
+### Fixed
+- emcfg: sync missing file
+- empkg: postpone app restart until after daemon-reload
+
 ## [ 4.1.0 ] - 2023-05-02
 ### Added
 - pre-update migration mechanism

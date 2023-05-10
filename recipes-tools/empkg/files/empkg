@@ -239,11 +239,12 @@ app_enable() {
 		# request 'systemctl daemon-reload' for later
 		touch "$REQUEST_DAEMON_RELOAD"
 
+		# postpone app restarts until services reloaded
 		if is_autostart "$app"; then
-			systemctl restart "em-app-${app}.service" || true
+			echo "restart em-app-${app}.service" >> "$REQUEST_DAEMON_RELOAD"
 		else
 			# Only restart service if active
-			systemctl try-restart "em-app-${app}.service" || true
+			echo "try-restart em-app-${app}.service" >> "$REQUEST_DAEMON_RELOAD"
 		fi
 	fi
 }
@@ -540,8 +541,16 @@ update_licenses() {
 }
 
 process_reload_request() {
+	local cmd
+	local app
+
 	if [ -f "$REQUEST_DAEMON_RELOAD" ]; then
 		systemctl daemon-reload
+
+		while read -r cmd app; do
+			systemctl "$cmd" "$app"
+		done < "$REQUEST_DAEMON_RELOAD"
+
 		rm "$REQUEST_DAEMON_RELOAD"
 	fi
 }
@@ -620,6 +629,7 @@ install)
 	ensure_args 1 $#
 	get_lock
 	pkg_install "$1"
+	process_reload_request
 	update_www
 	update_licenses
 	;;
@@ -628,6 +638,7 @@ uninstall)
 	ensure_args 1 $#
 	get_lock
 	app_uninstall "$1"
+	process_reload_request
 	update_www
 	update_licenses
 	;;
