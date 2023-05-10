@@ -1,0 +1,33 @@
+From 74f78d857fb733d6b4c73f715ed4184629053a21 Mon Sep 17 00:00:00 2001
+From: Matthias Schiffer <matthias.schiffer@tq-group.com>
+Date: Wed, 19 Apr 2023 15:53:51 +0200
+Subject: [PATCH 1/2] shared/dropin: disable unit name prefix dropins
+
+We currently don't use such dropins for anything, and iterating over the
+non-existing paths takes a lot of time during daemon-reload.
+
+This effectively reverts commit 5396624506e155c4bc10c0ee65b939600860ab67
+("dropin: when looking for dropins for a unit, also look within "-" prefix unit dirs").
+
+Signed-off-by: Matthias Schiffer <matthias.schiffer@tq-group.com>
+---
+ src/shared/dropin.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/src/shared/dropin.c b/src/shared/dropin.c
+index eb016eb114..0b0a0e2cae 100644
+--- a/src/shared/dropin.c
++++ b/src/shared/dropin.c
+@@ -163,6 +163,9 @@ static int unit_file_find_dirs(
+                         return r;
+         }
+ 
++        /* EMOS: "-" prefix dropin support is disabled */
++        return 0;
++
+         /* Return early for top level drop-ins. */
+         if (unit_type_from_string(name) >= 0)
+                 return 0;
+-- 
+2.34.1
+

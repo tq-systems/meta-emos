@@ -1,0 +1,33 @@
+From 0328c8e61d01db49ae32dbd74863022548bc1d75 Mon Sep 17 00:00:00 2001
+From: Matthias Schiffer <matthias.schiffer@tq-group.com>
+Date: Wed, 19 Apr 2023 16:04:26 +0200
+Subject: [PATCH 2/2] shared/dropin: disable support for toplevel unit-type
+ dropins
+
+Another feature unused by EMOS. Further reduces the number of unnecessary
+path lookups during dropin search.
+
+This effectively reverts commit d272467882c9c3c3d4faca5fd7a1f44c5ef2f064
+("shared/dropin: support -.service.d/ top level drop-in for service units").
+
+Signed-off-by: Matthias Schiffer <matthias.schiffer@tq-group.com>
+---
+ src/shared/dropin.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/shared/dropin.c b/src/shared/dropin.c
+index 0b0a0e2cae..e2a9908b8e 100644
+--- a/src/shared/dropin.c
++++ b/src/shared/dropin.c
+@@ -250,7 +250,7 @@ int unit_file_find_dropin_paths(
+ 
+         /* All the names in the unit are of the same type so just grab one. */
+         n = name ?: (const char*) set_first(aliases);
+-        if (n) {
++        if (n && false /* EMOS: Top level dropin support is disabled */) {
+                 UnitType type = _UNIT_TYPE_INVALID;
+ 
+                 type = unit_name_to_type(n);
+-- 
+2.34.1
+
