@@ -8,7 +8,8 @@
 MMCBLK=mmcblk0
 
 bootloader_slots () {
-	local part_config=$(mmc extcsd read "/dev/${MMCBLK}" | \
+	local part_config
+	part_config=$(mmc extcsd read "/dev/${MMCBLK}" | \
 		sed -nr '/\[PARTITION_CONFIG: .+\]/{s/^.*\[PARTITION_CONFIG: (.+)\]$/\1/;p}')
 
 	case "$(((part_config >> 3) & 0x7))" in
@@ -28,7 +29,8 @@ bootloader_upgrade () {
 	local slot="$1"
 
 	local dev="${MMCBLK}boot$((slot - 1))"
-	local size="$(lsblk -bnro size "/dev/${dev}")"
+	local size
+	size="$(lsblk -bnro size "/dev/${dev}")"
 
 	if (
 		dd if="$RAUC_IMAGE_NAME" bs="$size" count=1 conv=sync 2>/dev/null | \

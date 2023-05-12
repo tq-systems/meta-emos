@@ -55,6 +55,8 @@ IMAGE_INSTALL += " \
 		mosquitto \
 		nginx \
 		ca-certificates \
+		glibc-utils \
+		libnss-systemd \
 		"
 
 BAD_RECOMMENDATIONS += " \

@@ -12,7 +12,7 @@ SRC_URI = " \
 
 do_install () {
 	install -d ${D}${sysconfdir}
-        install -m 0644 ${WORKDIR}/teridiand_hw.conf ${D}${sysconfdir}/teridiand_hw.conf
+	install -m 0644 ${WORKDIR}/teridiand_hw.conf ${D}${sysconfdir}/teridiand_hw.conf
 
 	install -d ${D}/lib/udev/rules.d/
 	install -m 0755 ${WORKDIR}/teridian_symlink ${D}/lib/udev/

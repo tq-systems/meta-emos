@@ -1,7 +1,7 @@
 #!/bin/sh
+# shellcheck disable=SC3043,SC3040,SC3037
 
 set -eo pipefail
-
 
 BUILTIN_DIR="/opt/apps"
 APPDIR="/apps"
@@ -13,6 +13,9 @@ WWWLANG="$WWWDIR/langs.json"
 LICDIR="$APPDIR/licenses"
 DBUSDIR="$APPDIR/dbus"
 
+RUNDIRAPPS="/run/em/apps"
+USERDBRUNDIR="/run/host/userdb"
+USERDBSTOREDIR="$APPDIR/userdb"
 
 OPT_ENABLE=true
 OPT_SYSTEMD=true
@@ -112,6 +115,38 @@ ensure_args() {
 	}
 }
 
+get_user_from_sdfile() {
+	local sdfile="$1"
+	local user
+
+	if [ -e "$sdfile" ]; then
+		# Get user if exists, use ^ symbol to ignore a setting of DynamicUser
+		user="$(grep -e "^User=" "$sdfile" | awk -F '=' '{print $2}')"
+		# Always use root if no user is set
+		if [ -z "$user" ]; then
+			user="root"
+		fi
+	else
+		# Assume user=root if systemd service file does not exist
+		user="root"
+	fi
+
+	echo "$user"
+}
+
+get_group_from_sdfile() {
+	local sdfile="$1"
+	local user="$2"
+	local group
+
+	group="$(grep -e "^Group=" "$sdfile" | awk -F '=' '{print $2}')"
+	# Group equals user if no group is set
+	if [ -z "$group" ]; then
+		group="$user"
+	fi
+
+	echo "$group"
+}
 
 # Prints the manifest of an installed app
 app_info() {
@@ -143,14 +178,6 @@ output_array() {
 	fi
 }
 
-app_config() {
-	local app="$1"
-
-	mkdir -p "$CONFIGDIR"
-	( umask 0077 && mkdir -p "$CONFIGDIR/$app" )
-}
-
-
 # Prints the names of all installed apps, separated by newlines
 list_installed() {
 	local appdir
@@ -159,7 +186,7 @@ list_installed() {
 		# the case that no apps are installed is handled here
 		[ -d "$appdir" ] || continue
 
-		echo "$(basename "$appdir")"
+		basename "$appdir"
 	done
 }
 
@@ -228,11 +255,10 @@ app_enable() {
 
 	ensure_installed "$app"
 
-	app_config "$app"
-
 	mkdir -p "$APPDIR/enabled"
 	ln -snf "../installed/$app" "$APPDIR/enabled/$app"
 
+	sync_app_user_and_dirs "$app"
 	app_dbus "$app"
 
 	if $OPT_SYSTEMD && has_systemd "$app"; then
@@ -307,26 +333,28 @@ pkg_info() {
 # Installs or upgrades an app from a package file
 pkg_install() {
 	local pkg="$1"
-	local info="$(pkg_info "$pkg")"
+
+	local info app arch
+	info="$(pkg_info "$pkg")"
 	if [ -z "$info" ]; then
 		echo >&2 "Unable to install '$pkg': failed to read manifest"
 		return 1
 	fi
 
-	local app="$(echo "$info" | jq -r '.id')"
+	app="$(echo "$info" | jq -r '.id')"
 	if [ -z "$app" ]; then
 		echo >&2 "Unable to install '$pkg': invalid manifest"
 		return 1
 	fi
 
-	local arch="$(echo "$info" | jq -r '.arch')"
+	arch="$(echo "$info" | jq -r '.arch')"
 	if ! is_arch_supported "$arch"; then
 		echo >&2 "Unable to install '$pkg': unsupported platform '$arch'"
 		return 1
 	fi
 
-	local version_old
-	local version_new="$(echo "$info" | jq -r '.version')"
+	local version_old version_new
+	version_new="$(echo "$info" | jq -r '.version')"
 
 	local is_new=true
 	if is_installed "$app"; then
@@ -394,6 +422,7 @@ app_uninstall() {
 		app_register "$app"
 	fi
 
+	sync_app_user_and_dirs "$app"
 	app_dbus "$app"
 
 	# Sync before removing directory tree, so the removal at
@@ -519,7 +548,6 @@ update_www() {
 	rm -rf "$WWWDIRTMP"
 }
 
-
 update_licenses() {
 	LICDIRTMP="$(mktemp -d)"
 
@@ -555,6 +583,151 @@ process_reload_request() {
 	fi
 }
 
+init_dirs() {
+	# Create config app and userdb directory
+	mkdir -p "$CONFIGDIR" "$RUNDIRAPPS" "$USERDBRUNDIR" "$USERDBSTOREDIR"
+
+	# Mount userdb directory into path which is known to systemd
+	mount --bind "$USERDBSTOREDIR" "$USERDBRUNDIR"
+}
+
+# Create nss user entry and link
+create_user_entry() {
+	local appname="$1"
+	local userid="$2"
+	local groupid="$3"
+	local userfile="$4"
+
+	# uid/gid have to be numbers
+	jq -nc --arg name "$appname" --argjson uid "$userid" --argjson gid "$groupid" \
+		'{userName: $name, uid: $uid, gid: $gid, disposition: "reserved", locked: true}' \
+		> "$USERDBRUNDIR/$userfile"
+	ln -snf "./$userfile" "$USERDBRUNDIR/$userid.user"
+}
+
+# Create nss group entry and link
+create_group_entry() {
+	local groupname="$1"
+	local groupid="$2"
+	local groupfile="$3"
+
+	# gid hase to be a number
+	jq -nc --arg name "$groupname" --argjson gid "$groupid" \
+		'{groupName: $name, gid: $gid, disposition: "reserved"}' \
+		> "$USERDBRUNDIR/$groupfile"
+	ln -snf "./$groupfile" "$USERDBRUNDIR/$groupid.group"
+}
+
+# Get one free id which can be used for user and/or group id
+get_free_user_group_id() {
+	local id=10000 stop_id=11000
+
+	while [ $id -ne $stop_id ];do
+		if [ ! -e "$USERDBRUNDIR/$id.user" ] && [ ! -e "$USERDBRUNDIR/$id.group" ]; then
+			break
+		else
+			id=$((id+1))
+		fi
+	done
+
+	echo $id
+}
+
+# Get gid from existing group entry
+get_gid_from_group_entry() {
+	local groupfile="$1"
+	jq -r '.gid' "$USERDBRUNDIR/$groupfile"
+}
+
+# Get uid from existing user entry
+get_uid_from_user_entry() {
+	local userfile="$1"
+	jq -r '.uid' "$USERDBRUNDIR/$userfile"
+}
+
+# Synchronize user and directories
+sync_app_user_and_dirs() {
+	local app="$1"
+
+	if ! has_systemd "$app"; then
+		return
+	fi
+
+	# Get user and group from systemd service file
+	local sdfile="$APPDIR/installed/$app/em-app-$app.service"
+	local user group
+	user="$(get_user_from_sdfile "$sdfile")"
+	group="$(get_group_from_sdfile "$sdfile" "$user")"
+
+	sync_app_user "$app" "$user" "$group"
+	sync_app_dirs "$app" "$user" "$group"
+}
+
+# Synchronize user to systemd
+sync_app_user() {
+	local app="$1"
+	local user="$2"
+	local group="$3"
+
+	local groupfile="$group.group"
+	local userfile="$user.user"
+
+	local groupid userid
+	# Handle group entry first as a common group may already exist
+	if [ "$group" != "root" ]; then
+		if [ ! -e "$USERDBRUNDIR/$groupfile" ]; then
+			groupid="$(get_free_user_group_id)"
+			create_group_entry "$group" "$groupid" "$groupfile"
+		else
+			# Get groupid for a common group
+			groupid="$(get_gid_from_group_entry "$groupfile")"
+		fi
+	else
+		# Set gid for root
+		groupid=0
+
+		# Remove depcrecated group entry if it exists
+		if [ -e "$USERDBRUNDIR/$groupfile" ]; then
+			groupid="$(get_gid_from_group_entry "$groupfile")"
+			rm -f "$USERDBRUNDIR/$groupid.group" "$USERDBRUNDIR/$groupfile"
+		fi
+	fi
+
+	# User entry always needs a groupid, so it is always handled after the group entry
+	if [ "$user" != "root" ]; then
+		if [ "$user" = "$group" ]; then
+			userid="$groupid"
+		else
+			userid="$(get_free_user_group_id)"
+		fi
+
+		if [ ! -e "$USERDBRUNDIR/$userfile" ]; then
+			create_user_entry "$user" "$userid" "$groupid" "$userfile"
+		fi
+	else
+		# Remove depcrecated user entry if it exists
+		if [ -e "$USERDBRUNDIR/$userfile" ]; then
+			userid="$(get_uid_from_user_entry "$userfile")"
+			rm -f "$USERDBRUNDIR/$userid.user" "$USERDBRUNDIR/$userfile"
+		fi
+	fi
+}
+
+# Create runtime and working directory including permissions and ownership
+sync_app_dirs() {
+	local app="$1"
+	local user="$2"
+	local group="$3"
+
+	# Ensure existence of runtime and working directory
+	mkdir -p "$RUNDIRAPPS/$app"
+	( umask 0077 && mkdir -p "$CONFIGDIR/$app" )
+
+	# Set ownership
+	chown -R "$user:$group" "$CONFIGDIR/$app" "$RUNDIRAPPS/$app"
+}
+
+# shellcheck disable=SC3057
 while [ "${1:0:1}" = '-' ]; do
 	arg="$1"; shift
 	case "$arg" in
@@ -583,6 +756,7 @@ done
 
 get_lock() {
 	# Arbitrary lock fd that should be unused by the shell
+	# shellcheck disable=SC3023
 	exec 1000>/var/lock/empkg.lock
 	flock -n 1000 || error 'another instance of empkg is active.'
 }
@@ -661,6 +835,7 @@ disable)
 
 sync)
 	get_lock
+	init_dirs
 	app_sync
 	process_reload_request
 	update_www
