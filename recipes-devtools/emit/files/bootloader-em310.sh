@@ -8,7 +8,8 @@
 
 
 bootloader_slots () {
-	local active_slot=$(
+	local active_slot
+	active_slot=$(
 		imx28-blupdate status --device "$RAUC_SLOT_DEVICE" --boot-source \
 			| awk '/NOTICE: Boot source: / {print $4}'
 	)
@@ -28,9 +29,10 @@ bootloader_slots () {
 bootloader_upgrade () {
 	local slot="$1"
 
-	local installed=$( \
+	local installed
+	installed=$(
 		imx28-blupdate extract --device "$RAUC_SLOT_DEVICE" --$slot - \
-			| sha256sum | awk '{print $1}' || true \
+			| sha256sum | awk '{print $1}' || true
 	)
 	if [ "$installed" = "$RAUC_IMAGE_DIGEST" ]; then
 		echo "Bootloader in slot $slot is already up to date! Skipping."
