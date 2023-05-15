@@ -1,5 +1,9 @@
 ## [ next ]
 ### Added
+empkg: non-root user/group handling
+
+## [ 4.1.1 ] - 2023-05-10
+### Added
 - em4xx: u-boot/linux: support for alternative switch
 - systemd: disable unused features
 ### Fixed
