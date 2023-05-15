@@ -15,7 +15,6 @@ DBUSDIR="$APPDIR/dbus"
 
 RUNDIRAPPS="/run/em/apps"
 USERDBRUNDIR="/run/host/userdb"
-USERDBSTOREDIR="$APPDIR/userdb"
 
 OPT_ENABLE=true
 OPT_SYSTEMD=true
@@ -585,10 +584,7 @@ process_reload_request() {
 
 init_dirs() {
 	# Create config app and userdb directory
-	mkdir -p "$CONFIGDIR" "$RUNDIRAPPS" "$USERDBRUNDIR" "$USERDBSTOREDIR"
-
-	# Mount userdb directory into path which is known to systemd
-	mount --bind "$USERDBSTOREDIR" "$USERDBRUNDIR"
+	mkdir -p "$CONFIGDIR" "$RUNDIRAPPS" "$USERDBRUNDIR"
 }
 
 # Create nss user entry and link
@@ -685,12 +681,6 @@ sync_app_user() {
 	else
 		# Set gid for root
 		groupid=0
-
-		# Remove depcrecated group entry if it exists
-		if [ -e "$USERDBRUNDIR/$groupfile" ]; then
-			groupid="$(get_gid_from_group_entry "$groupfile")"
-			rm -f "$USERDBRUNDIR/$groupid.group" "$USERDBRUNDIR/$groupfile"
-		fi
 	fi
 
 	# User entry always needs a groupid, so it is always handled after the group entry
@@ -703,12 +693,6 @@ sync_app_user() {
 
 		if [ ! -e "$USERDBRUNDIR/$userfile" ]; then
 			create_user_entry "$user" "$userid" "$groupid" "$userfile"
-		fi
-	else
-		# Remove depcrecated user entry if it exists
-		if [ -e "$USERDBRUNDIR/$userfile" ]; then
-			userid="$(get_uid_from_user_entry "$userfile")"
-			rm -f "$USERDBRUNDIR/$userid.user" "$USERDBRUNDIR/$userfile"
 		fi
 	fi
 }
