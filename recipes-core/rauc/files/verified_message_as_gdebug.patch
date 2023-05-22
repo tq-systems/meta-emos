@@ -1,0 +1,13 @@
+diff --git a/src/signature.c b/src/signature.c
+index 162be9d..85d4e93 100644
+--- a/src/signature.c
++++ b/src/signature.c
+@@ -1361,7 +1361,7 @@ gboolean cms_verify_bytes(GBytes *content, GBytes *sig, X509_STORE *store, CMS_C
+ 		g_propagate_error(error, ierror);
+ 		goto out;
+ 	}
+-	g_message("Verified %s signature by %s", detached ? "detached" : "inline", signers);
++	g_debug("Verified %s signature by %s", detached ? "detached" : "inline", signers);
+ 
+ 	if (!detached) {
+ 		GBytes *tmp = bytes_from_bio(outcontent);
