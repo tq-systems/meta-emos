@@ -15,7 +15,7 @@ SRC_URI = " \
 	file://fw_env.config \
 "
 
-SRCREV = "f82f1f0e6f088c9f83e8031d225c9d4751537321"
+SRCREV = "41b5af0683f14e1d88e1878ca599393d6f071244"
 SRCBRANCH = "EM3x0-v2017.03+fslc"
 
 PV = "v2017.03+git${SRCPV}"

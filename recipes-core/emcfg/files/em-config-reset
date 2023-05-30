@@ -31,20 +31,20 @@ for arg in "$@"; do
 		SYSTEM_CONFIG_LIST="$SYSTEM_CONFIG_LIST timezone"
 		;;
 	ntp)
-                UNIT_LIST="$UNIT_LIST em-app-device-settings"
-                SYSTEM_CONFIG_LIST="$SYSTEM_CONFIG_LIST ntp"
+		UNIT_LIST="$UNIT_LIST em-app-device-settings"
+		SYSTEM_CONFIG_LIST="$SYSTEM_CONFIG_LIST ntp"
 		;;
 	ftp)
-                UNIT_LIST="$UNIT_LIST em-app-device-settings"
-                SYSTEM_CONFIG_LIST="$SYSTEM_CONFIG_LIST ftp"
+		UNIT_LIST="$UNIT_LIST em-app-device-settings"
+		SYSTEM_CONFIG_LIST="$SYSTEM_CONFIG_LIST ftp"
 		;;
 	smtp)
-                UNIT_LIST="$UNIT_LIST em-app-device-settings"
-                SYSTEM_CONFIG_LIST="$SYSTEM_CONFIG_LIST smtp"
+		UNIT_LIST="$UNIT_LIST em-app-device-settings"
+		SYSTEM_CONFIG_LIST="$SYSTEM_CONFIG_LIST smtp"
 		;;
 	hostname)
-                UNIT_LIST="$UNIT_LIST em-app-device-settings"
-                SYSTEM_CONFIG_LIST="$SYSTEM_CONFIG_LIST hostname"
+		UNIT_LIST="$UNIT_LIST em-app-device-settings"
+		SYSTEM_CONFIG_LIST="$SYSTEM_CONFIG_LIST hostname"
 		;;
 	*/*)
 		echo >&2 "Argument contains a slash: $arg"

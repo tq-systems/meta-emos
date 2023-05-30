@@ -11,9 +11,10 @@ LOCALVERSION = "-em"
 SCMVERSION ?= "y"
 SRCBRANCH ?= ""
 
-SRC_URI = "git://github.com/tq-systems/linux-em.git;branch=${SRCBRANCH};protocol=https \
-           file://defconfig \
-          "
+SRC_URI = " \
+	git://github.com/tq-systems/linux-em.git;branch=${SRCBRANCH};protocol=https \
+	file://defconfig \
+"
 
 S = "${WORKDIR}/git"
 
