@@ -1,6 +1,11 @@
 ## [ next ]
 ### Added
 empkg: non-root user/group handling
+### Changed
+- u-boot-fslc-em: update at phy enable/reset sequence
+- sdk.yml: update devel app
+- rauc: verified signature message to debug level
+- nginx: increase timeout for log generation
 
 ## [ 4.1.1 ] - 2023-05-10
 ### Added
