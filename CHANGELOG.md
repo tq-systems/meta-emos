@@ -1,5 +1,6 @@
 ## [ next ]
-
+### Changed
+- emcfg: scope and label of preset ip address
 ## [ 4.1.2 ] - 2023-05-30
 ### Added
 empkg: non-root user/group handling

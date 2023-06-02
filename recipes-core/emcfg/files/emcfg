@@ -97,6 +97,8 @@ end,
 if .hidden.address and .hidden.prefixlen then
 	"\n[Address]",
 	"Address=\(.hidden.address)/\(.hidden.prefixlen)",
+	"Scope=link",
+	"Label=preset",
 	"PreferredLifetime=0"
 else
 	empty
