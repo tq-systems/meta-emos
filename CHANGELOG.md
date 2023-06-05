@@ -1,5 +1,6 @@
 ## [ next ]
 ### Changed
+- devel-settings: update for fixed ip address
 - emcfg: scope and label of preset ip address
 ## [ 4.1.2 ] - 2023-05-30
 ### Added

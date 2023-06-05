@@ -9,7 +9,7 @@ apps:
     version: '3.6.0'
 
   device-settings:
-    version: '3.2.1'
+    version: '3.3.13'
 
   flash-scan:
     version: '2.2.0'
