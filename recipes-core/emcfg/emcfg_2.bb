@@ -4,7 +4,11 @@ LICENSE = "TQSSLA_V1.0.2"
 LIC_FILES_CHKSUM = "file://${WORKDIR}/LICENSE;md5=5a77156d011829e57ffe26e62f07ff2d"
 SRC_DISTRIBUTE_LICENSES += "TQSSLA_V1.0.2"
 
-inherit update-alternatives systemd
+inherit update-alternatives systemd useradd
+
+# These variables have to be set for class "useradd"
+USERADD_PACKAGES = "${PN}"
+GROUPADD_PARAM:${PN} = "--system em-group-data;--system em-group-update"
 
 SRC_URI = " \
 	file://LICENSE \
@@ -80,6 +84,17 @@ do_install() {
 
 	install -d ${D}${sysconfdir}/systemd/journald.conf.d
 	install -m 0644 ${WORKDIR}/journald-debug.conf ${D}${sysconfdir}/systemd/journald.conf.d/
+
+	# Install mountpoints
+	install -d ${D}/apps
+	install -d ${D}/auth
+	install -d ${D}/cfglog
+	install -d ${D}/data
+	install -d ${D}/update
+
+	install -d ${D}${localstatedir}/lib/private
+
+	ln -s /cfglog/var/log ${D}${localstatedir}/log
 }
 
 do_install:append:em:mx8mn() {
@@ -95,6 +110,11 @@ FILES:${PN} += " \
 	${sysconfdir}/tmpfiles.d/00-emos-log.conf \
 	${systemd_unitdir}/system/ \
 	${systemd_unitdir}/system-generators/emcfg-generator \
+	/apps \
+	/auth \
+	/cfglog \
+	/data \
+	/update \
 "
 
 FILES:${PN}:append:em:mx8mn := "\
