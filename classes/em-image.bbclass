@@ -57,6 +57,7 @@ IMAGE_INSTALL += " \
 		ca-certificates \
 		glibc-utils \
 		libnss-systemd \
+		sudo \
 		"
 
 BAD_RECOMMENDATIONS += " \

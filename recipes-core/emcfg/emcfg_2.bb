@@ -8,7 +8,7 @@ inherit update-alternatives systemd useradd
 
 # These variables have to be set for class "useradd"
 USERADD_PACKAGES = "${PN}"
-GROUPADD_PARAM:${PN} = "--system em-group-data;--system em-group-update"
+GROUPADD_PARAM:${PN} = "--system em-group-data;--system em-group-reboot;--system em-group-update"
 
 SRC_URI = " \
 	file://LICENSE \
@@ -85,6 +85,11 @@ do_install() {
 	install -d ${D}${sysconfdir}/systemd/journald.conf.d
 	install -m 0644 ${WORKDIR}/journald-debug.conf ${D}${sysconfdir}/systemd/journald.conf.d/
 
+	# Add sudo accesses for user.
+	install -d -m 0755 "${D}/etc/sudoers.d"
+	echo "%em-group-reboot ALL=(ALL) NOPASSWD: /sbin/reboot" > "${D}/etc/sudoers.d/0001_reboot"
+	chmod 0440 "${D}/etc/sudoers.d/0001_reboot"
+
 	# Install mountpoints
 	install -d ${D}/apps
 	install -d ${D}/auth
@@ -110,6 +115,7 @@ FILES:${PN} += " \
 	${sysconfdir}/tmpfiles.d/00-emos-log.conf \
 	${systemd_unitdir}/system/ \
 	${systemd_unitdir}/system-generators/emcfg-generator \
+	/etc/sudoers.d \
 	/apps \
 	/auth \
 	/cfglog \
