@@ -432,7 +432,7 @@ app_uninstall() {
 }
 
 # Registers all builtin apps into the main app dir, removes
-# symlinks for apps that have disappered. New apps are automatically
+# symlinks for apps that have disappeared. New apps are automatically
 # enabled.
 #
 # This is an internal command (called from emos-init), so it does not
@@ -485,6 +485,7 @@ $new_apps"
 	done
 
 	for app in $(list_enabled); do
+		sync_app_user_and_dirs "$app"
 		app_dbus "$app"
 	done
 
