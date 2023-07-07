@@ -705,7 +705,7 @@ sync_app_dirs() {
 	local group="$3"
 
 	# Ensure existence of runtime and working directory
-	mkdir -p "$RUNDIRAPPS/$app"
+	( umask 0007 && mkdir -p "$RUNDIRAPPS/$app" )
 	( umask 0077 && mkdir -p "$CONFIGDIR/$app" )
 
 	# Set ownership
