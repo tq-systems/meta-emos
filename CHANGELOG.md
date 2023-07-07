@@ -3,6 +3,7 @@
 - devel-settings: update for fixed ip address
 - emcfg: scope and label of preset ip address
 - em-init: set mountpoint ownership/permissions
+- em-group-reboot: add group allowed to reboot
 
 ## [ 4.1.2 ] - 2023-05-30
 ### Added
