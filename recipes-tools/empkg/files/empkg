@@ -708,6 +708,9 @@ sync_app_dirs() {
 	( umask 0007 && mkdir -p "$RUNDIRAPPS/$app" )
 	( umask 0077 && mkdir -p "$CONFIGDIR/$app" )
 
+	# Permit execution for www-user
+	setfacl -m 'u:www:x' "$RUNDIRAPPS/$app"
+
 	# Set ownership
 	chown -R "$user:$group" "$CONFIGDIR/$app" "$RUNDIRAPPS/$app"
 }
