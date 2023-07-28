@@ -12,3 +12,6 @@ mosquitto::510
 avahi::511
 avahi-autoipd::512
 sshd::513
+em-group-data::514
+em-group-update::515
+em-group-reboot::516

@@ -258,6 +258,13 @@ if command -v empkg >/dev/null; then
 	fi
 fi
 
+# Mountpoint Ownerships/Permissions
+chown root:em-group-update /update
+chmod 775 /update
+chown root:em-group-data /data
+chmod 775 /data
+
+
 # free /tmp as systemd mounts it with other options
 umount /tmp
 
