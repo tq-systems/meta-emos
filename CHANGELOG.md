@@ -1,4 +1,4 @@
-## [ next ]
+## [ 4.1.3 ] - 2023-07-28
 ### Added
 - empkg: add ACL to RDEPENDS
 
