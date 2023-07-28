@@ -15,6 +15,7 @@ DBUSDIR="$APPDIR/dbus"
 
 RUNDIRAPPS="/run/em/apps"
 USERDBRUNDIR="/run/host/userdb"
+USERDBSTOREDIR="$APPDIR/userdb"
 
 OPT_ENABLE=true
 OPT_SYSTEMD=true
@@ -585,7 +586,10 @@ process_reload_request() {
 
 init_dirs() {
 	# Create config app and userdb directory
-	mkdir -p "$CONFIGDIR" "$RUNDIRAPPS" "$USERDBRUNDIR"
+	mkdir -p "$CONFIGDIR" "$RUNDIRAPPS" "$USERDBRUNDIR" "$USERDBSTOREDIR"
+
+	# Mount userdb directory into path which is known to systemd
+	mount --bind "$USERDBSTOREDIR" "$USERDBRUNDIR"
 }
 
 # Create nss user entry and link
@@ -682,6 +686,10 @@ sync_app_user() {
 	else
 		# Set gid for root
 		groupid=0
+
+		# Removing groups/group-ids from persistent storage is not supported for now
+		# in order to protect against reassignment of group-ids from uninstalled to new apps
+		# and the inheritance of corresponding file permissions tied to these ids.
 	fi
 
 	# User entry always needs a groupid, so it is always handled after the group entry
@@ -695,6 +703,10 @@ sync_app_user() {
 		if [ ! -e "$USERDBRUNDIR/$userfile" ]; then
 			create_user_entry "$user" "$userid" "$groupid" "$userfile"
 		fi
+
+		# Removing users/user-ids from persistent storage is not supported for now
+		# in order to protect against reassignment of user-ids from uninstalled to new apps
+		# and the inheritance of corresponding file permissions tied to these ids.
 	fi
 }
 
@@ -707,6 +719,9 @@ sync_app_dirs() {
 	# Ensure existence of runtime and working directory
 	( umask 0007 && mkdir -p "$RUNDIRAPPS/$app" )
 	( umask 0077 && mkdir -p "$CONFIGDIR/$app" )
+
+	# Permit execution for www-user
+	setfacl -m 'u:www:x' "$RUNDIRAPPS/$app"
 
 	# Set ownership
 	chown -R "$user:$group" "$CONFIGDIR/$app" "$RUNDIRAPPS/$app"

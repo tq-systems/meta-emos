@@ -20,7 +20,7 @@ SRC_URI = " \
 S = "${WORKDIR}/src"
 
 DEPENDS = "jansson"
-RDEPENDS:${PN} += "jq"
+RDEPENDS:${PN} += "jq acl"
 
 do_install() {
 	install -d ${D}${sbindir}
