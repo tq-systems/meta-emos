@@ -87,8 +87,9 @@ do_install() {
 
 	# Add sudo accesses for user.
 	install -d -m 0755 "${D}/etc/sudoers.d"
-	echo "%em-group-reboot ALL=(ALL) NOPASSWD: /sbin/reboot" > "${D}/etc/sudoers.d/0001_reboot"
-	chmod 0440 "${D}/etc/sudoers.d/0001_reboot"
+	echo "%em-group-reboot ALL=(ALL) NOPASSWD: /sbin/reboot" > "${D}/etc/sudoers.d/reboot"
+	echo "%em-group-sudo-fw_printenv ALL=(ALL) NOPASSWD: /usr/bin/fw_printenv" > "${D}/etc/sudoers.d/fw_printenv"
+	chmod 0440 "${D}/etc/sudoers.d/"*
 
 	# Install mountpoints
 	install -d ${D}/apps
