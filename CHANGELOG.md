@@ -1,4 +1,4 @@
-## [ next ]
+## [ 4.1.3 ] - 2023-07-28
 ### Added
 - empkg: add ACL to RDEPENDS
 - emos-upgrade: add factory reset option
@@ -15,7 +15,7 @@
 
 ## [ 4.1.2 ] - 2023-05-30
 ### Added
-empkg: non-root user/group handling
+- empkg: non-root user/group handling
 ### Changed
 - u-boot-fslc-em: update at phy enable/reset sequence
 - sdk.yml: update devel app
