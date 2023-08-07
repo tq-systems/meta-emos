@@ -1,13 +1,24 @@
 ## [ next ]
+### Added
+- emos-upgrade: add factory reset option
+- nginx: improve CSP header settings
+- systemd: add xz compression again
+- em-init: free full journals
+
 ### Changed
 - nginx: update nginx to current stable
 - nginx: moved server_tokens to http-context
+- libdeviceinfo: update to v1.6.0
+- em-init: all messages to kmsg
+
+## [ 4.1.4 ] - 2023-08-15
+### Added
+- add sudo permission group for fw_printenv
+- add sudo permission group for restart
 
 ## [ 4.1.3 ] - 2023-07-28
 ### Added
 - empkg: add ACL to RDEPENDS
-- emos-upgrade: add factory reset option
-- nginx: improve CSP header settings
 
 ### Changed
 - devel-settings: update for fixed ip address
