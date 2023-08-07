@@ -1,3 +1,8 @@
+## [ next ]
+### Changed
+- nginx: update nginx to current stable
+- nginx: moved server_tokens to http-context
+
 ## [ 4.1.3 ] - 2023-07-28
 ### Added
 - empkg: add ACL to RDEPENDS
