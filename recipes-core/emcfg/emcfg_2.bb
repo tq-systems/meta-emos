@@ -8,7 +8,10 @@ inherit update-alternatives systemd useradd
 
 # These variables have to be set for class "useradd"
 USERADD_PACKAGES = "${PN}"
-GROUPADD_PARAM:${PN} = "--system em-group-data;--system em-group-reboot;--system em-group-update"
+GROUPADD_PARAM:${PN} += "--system em-group-data;"
+GROUPADD_PARAM:${PN} += "--system em-group-reboot;"
+GROUPADD_PARAM:${PN} += "--system em-group-update;"
+GROUPADD_PARAM:${PN} += "--system em-group-sudo-fw_printenv;"
 
 SRC_URI = " \
 	file://LICENSE \
