@@ -93,7 +93,7 @@ do_install() {
 	install -d -m 0755 "${D}/etc/sudoers.d"
 	echo "%em-group-reboot ALL=(ALL) NOPASSWD: /sbin/reboot" > "${D}/etc/sudoers.d/reboot"
 	echo "%em-group-sudo-fw_printenv ALL=(ALL) NOPASSWD: /usr/bin/fw_printenv" > "${D}/etc/sudoers.d/fw_printenv"
-	echo "%em-group-sudo-systemctl_restart ALL=(ALL) NOPASSWD: /bin/systemctl restart" > "${D}/etc/sudoers.d/systemctl_restart"
+	echo "%em-group-sudo-systemctl_restart ALL=(ALL) NOPASSWD: /bin/systemctl restart *" > "${D}/etc/sudoers.d/systemctl_restart"
 	chmod 0440 "${D}/etc/sudoers.d/"*
 
 	# Install mountpoints
