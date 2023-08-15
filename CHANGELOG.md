@@ -1,3 +1,11 @@
+## [ 4.1.4 ] - 2023-08-15
+### Added
+- sudo: added group permission for fw_printenv
+- sudo: added group permission for systemctl restart
+
+### Changed
+- increase maximum group name length to 40 characters
+
 ## [ 4.1.3 ] - 2023-07-28
 ### Added
 - empkg: add ACL to RDEPENDS
