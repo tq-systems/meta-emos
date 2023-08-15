@@ -15,3 +15,5 @@ sshd::513
 em-group-data::514
 em-group-update::515
 em-group-reboot::516
+em-group-sudo-fw_printenv::517
+em-group-sudo-systemctl_restart::518

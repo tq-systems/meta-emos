@@ -8,7 +8,11 @@ inherit update-alternatives systemd useradd
 
 # These variables have to be set for class "useradd"
 USERADD_PACKAGES = "${PN}"
-GROUPADD_PARAM:${PN} = "--system em-group-data;--system em-group-reboot;--system em-group-update"
+GROUPADD_PARAM:${PN} += "--system em-group-data;"
+GROUPADD_PARAM:${PN} += "--system em-group-reboot;"
+GROUPADD_PARAM:${PN} += "--system em-group-update;"
+GROUPADD_PARAM:${PN} += "--system em-group-sudo-fw_printenv;"
+GROUPADD_PARAM:${PN} += "--system em-group-sudo-systemctl_restart;"
 
 SRC_URI = " \
 	file://LICENSE \
@@ -87,8 +91,10 @@ do_install() {
 
 	# Add sudo accesses for user.
 	install -d -m 0755 "${D}/etc/sudoers.d"
-	echo "%em-group-reboot ALL=(ALL) NOPASSWD: /sbin/reboot" > "${D}/etc/sudoers.d/0001_reboot"
-	chmod 0440 "${D}/etc/sudoers.d/0001_reboot"
+	echo "%em-group-reboot ALL=(ALL) NOPASSWD: /sbin/reboot" > "${D}/etc/sudoers.d/reboot"
+	echo "%em-group-sudo-fw_printenv ALL=(ALL) NOPASSWD: /usr/bin/fw_printenv" > "${D}/etc/sudoers.d/fw_printenv"
+	echo "%em-group-sudo-systemctl_restart ALL=(ALL) NOPASSWD: /bin/systemctl restart *" > "${D}/etc/sudoers.d/systemctl_restart"
+	chmod 0440 "${D}/etc/sudoers.d/"*
 
 	# Install mountpoints
 	install -d ${D}/apps
