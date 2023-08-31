@@ -2,6 +2,7 @@
 ### Added
 - empkg: add ACL to RDEPENDS
 - emos-upgrade: add factory reset option
+- nginx: improve CSP header settings
 
 ### Changed
 - devel-settings: update for fixed ip address
