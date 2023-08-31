@@ -1,6 +1,7 @@
 ## [ next ]
 ### Added
 - empkg: add ACL to RDEPENDS
+- emos-upgrade: add factory reset option
 
 ### Changed
 - devel-settings: update for fixed ip address
