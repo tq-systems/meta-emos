@@ -205,6 +205,45 @@ $FSCK_REBOOT && reboot
 mount -o $MOUNT_OPTS_RO $DEV_AUTH /auth || fatal '/auth mount failed.'
 mount -o $MOUNT_OPTS_RW $DEV_CFGLOG /cfglog || fatal '/cfglog mount failed.'
 
+# check available space on /cfglog
+clean_journal_space() {
+	local oldest=$(ls -rt /cfglog/var/log/journal/*/*.journal* | head -n1)
+
+	rm "$oldest" || return 1
+}
+
+# we need to have at least 12M free for a full rotation + new journal
+disk_available() {
+	df -k --output=avail /cfglog | tail -n1
+}
+
+# we need to have at least 12M free to handle a new journal
+DISK_AVAILABLE_LIMIT="12288"
+
+# How much space uses the system journal?
+# Normally journal files are in /cfglog/var/log/journal/<machine id>
+# but this function counts all files below /cfglog/var/log/journal and subdirectories
+# because machine-id could have changed and old journal on old machine-id must be
+# considered here as well.
+# Possible false positive, when somehow third-party files end up in /cfglog/var/log/journal
+journal_used() {
+	du -sk /cfglog/var/log/journal | awk '{print $1}'
+}
+
+# Journal should not exceed 84M
+JOURNAL_USED_LIMIT="86016"
+
+# if Journal uses up all space, start cleaning
+while [ "$(disk_available)" -le "$DISK_AVAILABLE_LIMIT" ]; do
+	if  [ "$(journal_used)" -ge "$JOURNAL_USED_LIMIT" ]; then
+		echo >/dev/kmsg "em-init: Too little space left on /cfglog ($(disk_available)k), removing oldest journal file."
+		clean_journal_space || break
+	else
+		echo >/dev/kmsg "em-init: Too little space left on /cfglog ($(disk_available)k), but not by system journal. Please fix manually."
+		break
+	fi
+done
+
 if $BACKUP_RESTORE  && ! $END_OF_LIFE; then
 	backup_restore
 	backup_sanitize
