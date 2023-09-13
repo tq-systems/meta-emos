@@ -1,3 +1,11 @@
+## [ 4.1.2_CHDIR ] - 2023-09-13
+### Added
+- systemd: add xz compression again
+- em-init: free full journals
+
+### Changed
+- em-init: all messages to kmsg
+
 ## [ 4.1.2 ] - 2023-05-30
 ### Added
 empkg: non-root user/group handling
