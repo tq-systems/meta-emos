@@ -25,6 +25,7 @@
 #define APP_NO_TIME_TARGET_WANTS "em-app-no-time.target.wants"
 
 const char *const CORE_APPS[] = {
+	"backup",
 	"button-handler",
 	"devel",
 	"device-settings",

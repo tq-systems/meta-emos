@@ -1,3 +1,16 @@
+## [ 4.1.5 ] - 2023-09-19
+### Added
+- emos-upgrade: add factory reset option
+- nginx: improve CSP header settings
+- systemd: add xz compression again
+- em-init: free full journals
+
+### Changed
+- nginx: update nginx to current stable
+- nginx: moved server_tokens to http-context
+- libdeviceinfo: update to v1.6.0
+- em-init: all messages to kmsg
+
 ## [ 4.1.4 ] - 2023-08-15
 ### Added
 - sudo: added group permission for fw_printenv
@@ -21,7 +34,7 @@
 
 ## [ 4.1.2 ] - 2023-05-30
 ### Added
-empkg: non-root user/group handling
+- empkg: non-root user/group handling
 ### Changed
 - u-boot-fslc-em: update at phy enable/reset sequence
 - sdk.yml: update devel app

@@ -14,7 +14,7 @@ pkg_postinst:${PN}:libc-glibc:append:emos () {
 		-i $D${sysconfdir}/nsswitch.conf
 }
 
-PACKAGECONFIG:append:emos = " cgroupv2 sysusers"
+PACKAGECONFIG:append:emos = " cgroupv2 sysusers xz"
 EXTRA_OEMESON:append:emos = " -Dpstore=false"
 
 do_install:append:emos() {
