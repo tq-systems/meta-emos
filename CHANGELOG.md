@@ -1,3 +1,10 @@
+## [ next ]
+### Added
+- create generic /data/apps dir via systemd-tmpfiles
+
+### Changed
+- reorder key generation of dropbearkey, nginx and web-login app
+
 ## [ 4.1.5 ] - 2023-09-19
 ### Added
 - emos-upgrade: add factory reset option
