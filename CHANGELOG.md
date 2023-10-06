@@ -1,4 +1,4 @@
-## [ next ]
+## [ 4.1.5 ] - 2023-09-19
 ### Added
 - emos-upgrade: add factory reset option
 - nginx: improve CSP header settings
@@ -13,8 +13,11 @@
 
 ## [ 4.1.4 ] - 2023-08-15
 ### Added
-- add sudo permission group for fw_printenv
-- add sudo permission group for restart
+- sudo: added group permission for fw_printenv
+- sudo: added group permission for systemctl restart
+
+### Changed
+- increase maximum group name length to 40 characters
 
 ## [ 4.1.3 ] - 2023-07-28
 ### Added
