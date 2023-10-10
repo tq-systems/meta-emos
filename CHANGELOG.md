@@ -1,4 +1,6 @@
 ## [ next ]
+
+## [ 4.1.6 ] - 2023-10-10
 ### Added
 - create generic /data/apps dir via systemd-tmpfiles
 
