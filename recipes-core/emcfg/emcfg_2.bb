@@ -13,6 +13,7 @@ GROUPADD_PARAM:${PN} += "--system em-group-reboot;"
 GROUPADD_PARAM:${PN} += "--system em-group-update;"
 GROUPADD_PARAM:${PN} += "--system em-group-sudo-fw_printenv;"
 GROUPADD_PARAM:${PN} += "--system em-group-sudo-systemctl_restart;"
+GROUPADD_PARAM:${PN} += "--system em-group-cfglog;"
 
 SRC_URI = " \
 	file://LICENSE \
