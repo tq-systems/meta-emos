@@ -1,4 +1,4 @@
-## [ next ]
+## [ 4.1.7 ] - 2023-11-02
 ### Added
 - added em-group-cfglog to access /cfglog subdirectories
 
