@@ -1,11 +1,8 @@
-## [ 4.1.6 ] - 2023-10-10
+## [ next ]
 ### Added
-- create generic /data/apps dir via systemd-tmpfiles
+- added em-group-cfglog to access /cfglog subdirectories
 
-### Changed
-- reorder key generation of dropbearkey, nginx and web-login app
-
-## [ 4.1.5 ] - 2023-09-19
+## [ 4.1.6 ] - 2023-10-10
 ### Added
 - create generic /data/apps dir via systemd-tmpfiles
 
