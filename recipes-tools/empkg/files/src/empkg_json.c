@@ -12,7 +12,7 @@
 
 json_t *g_json_output;
 
-char *empkg_json_get_char(const char *app, const char *key) {
+const char *empkg_json_get_char(const char *app, const char *key) {
 	json_t *json;
 	const char *path = appdb_get_path(P_MANIFEST, app);
 	char *retval;

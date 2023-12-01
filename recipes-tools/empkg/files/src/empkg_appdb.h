@@ -15,6 +15,7 @@
 #include <openssl/evp.h>
 #include <stdbool.h>
 #include <sys/stat.h> /* struct stat */
+#include "empkg.h" /* gAPPDIR, gBUILTINDIR */
 
 /* The app database consists of 5 types of functions:
  * appdb_scan_*(void) - database initiation

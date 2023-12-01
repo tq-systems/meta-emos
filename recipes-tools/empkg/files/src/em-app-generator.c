@@ -5,25 +5,7 @@
  * Author: Matthias Schiffer
  */
 
-#define _GNU_SOURCE
-
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#include <dirent.h>
-#include <errno.h>
-#include <jansson.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include "empkg_json.h"
-
-#define APP_BEFORE_TARGET "em-app-before.target"
-
-#define CORE_TARGET_WANTS "multi-user.target.wants"
-#define APP_TIME_TARGET_WANTS "em-app-time.target.wants"
-#define APP_NO_TIME_TARGET_WANTS "em-app-no-time.target.wants"
+#include "em-app-generator.h"
 
 const char *const CORE_APPS[] = {
 	"backup",
@@ -50,28 +32,6 @@ const char *const TIME_APPS[] = {
 	"teridiand",
 	NULL,
 };
-
-/* write log message to stderr and also to kernel log (requires root) */
-void log_message(const char *format, ...) {
-	FILE *kmsg;
-	va_list args;
-	va_start(args, format);
-
-	// Check if the process is running as root (UID 0)
-	if (geteuid() == 0) {
-		kmsg = fopen("/dev/kmsg", "a");
-		if (kmsg != NULL) {
-			vfprintf(kmsg, format, args);
-			fclose(kmsg);
-		} else {
-			fprintf(stderr, "Error: Unable to open /dev/kmsg\n");
-		}
-	}
-
-	vfprintf(stderr, format, args);
-
-	va_end(args);
-}
 
 bool is_core_app(const char *app) {
 	size_t i;
@@ -222,8 +182,7 @@ void handle_app(const char *app) {
 	add_dependencies(app);
 }
 
-
-int main(int argc, char *argv[]) {
+int em_app_generator(int argc, char *argv[]) {
 	DIR *dir;
 	struct dirent *ent;
 
