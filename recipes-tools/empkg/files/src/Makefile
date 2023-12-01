@@ -7,6 +7,7 @@ empkg : empkg.o \
 	empkg_json.o \
 	empkg_list.o \
 	empkg_log.o \
+	empkg_status.o \
 	em-app-generator.o
 
 all: empkg

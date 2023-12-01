@@ -10,6 +10,7 @@
 #include "empkg.h"
 #include "empkg_appdb.h"
 #include "empkg_list.h"
+#include "empkg_status.h"
 
 struct empkg_config config = {
 	.enable = 1,

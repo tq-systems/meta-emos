@@ -56,3 +56,30 @@ int empkg_json_get_int(const char *id, const char *property) {
 	json_decref(json);
 	return -1;
 }
+
+json_t *empkg_json_generate_status(const bool builtin, const bool enabled, const char *path) {
+	json_t *json = json_load_file(path, 0, NULL);
+
+	if (!json)
+		return NULL;
+
+	if (json_is_object(json)) {
+		json_t *root = json_object();
+		json_t *status = json_object();
+
+		json_object_set_new(status, "builtin", json_boolean(builtin));
+		json_object_set_new(status, "enabled", json_boolean(enabled));
+
+		json_object_set_new(root, "status", status);
+		json_object_set_new(root, "info", json);
+
+		return root;
+
+		/* json_decref(status); */
+		/* json_decref(root); */
+	}
+
+	json_decref(json);
+
+	return json;
+}

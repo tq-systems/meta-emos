@@ -15,3 +15,4 @@ extern json_t *g_json_output;
 
 const char *empkg_json_get_char(const char *id, const char *key);
 int empkg_json_get_int(const char *id, const char *property);
+json_t *empkg_json_generate_status(const bool builtin, const bool enabled, const char *path);
