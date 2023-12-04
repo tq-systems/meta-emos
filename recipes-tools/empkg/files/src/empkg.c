@@ -9,6 +9,7 @@
 #include "em-app-generator.h"
 #include "empkg.h"
 #include "empkg_appdb.h"
+#include "empkg_info.h"
 #include "empkg_list.h"
 #include "empkg_status.h"
 

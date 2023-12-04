@@ -57,6 +57,11 @@ int empkg_json_get_int(const char *id, const char *property) {
 	return -1;
 }
 
+/* spread JSON-text into multiple lines with indendation */
+char *empkg_json_pretty(const char *input) {
+	return json_dumps(json_loads(input, 0, NULL), JSON_INDENT(2));
+}
+
 json_t *empkg_json_generate_status(const bool builtin, const bool enabled, const char *path) {
 	json_t *json = json_load_file(path, 0, NULL);
 
