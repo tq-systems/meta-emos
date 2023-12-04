@@ -10,6 +10,7 @@ empkg : empkg.o \
 	empkg_info.o \
 	empkg_json.o \
 	empkg_list.o \
+	empkg_lock.o \
 	empkg_log.o \
 	empkg_status.o \
 	empkg_tar.o \
