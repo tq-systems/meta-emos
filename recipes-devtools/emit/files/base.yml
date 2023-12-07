@@ -32,7 +32,6 @@ apps:
 
   web-application:
     arch: 'all'
-    name: web-application-tq
     version: '2.14.4'
 
   web-login:
