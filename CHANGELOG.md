@@ -1,4 +1,8 @@
-## [ next ]
+## [ 4.1.8 ] - 2023-12-07
+### Changed
+- emit: remove tq suffix from web-application app
+
+## [ 4.1.7 ] - 2023-11-02
 ### Added
 - added em-group-cfglog to access /cfglog subdirectories
 
