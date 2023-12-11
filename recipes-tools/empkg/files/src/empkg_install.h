@@ -7,3 +7,4 @@
  */
 
 int app_install(const char *empkg);
+int app_uninstall(const char *id);

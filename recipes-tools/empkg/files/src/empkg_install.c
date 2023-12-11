@@ -1,5 +1,5 @@
 /*
- * empkg_install.c - App install functions
+ * empkg_install.c - App install/uninstall functions
  *
  * Copyright © 2024 TQ-Systems GmbH <info@tq-group.com>
  * All rights reserved. For further information see LICENSE.
@@ -14,6 +14,7 @@
 #include "empkg_helper.h"
 #include "empkg_json.h"
 #include "empkg_lock.h"
+#include "empkg_register.h"
 #include "empkg_tar.h"
 #include "empkg_users.h"
 
@@ -131,3 +132,63 @@ int app_install(const char *empkg) {
 
 	return 0;
 };
+
+static int empkg_uninstall(const char *id) {
+	const char *appdir = appdb_get_path(P_INSTALLED, id);
+	char *uninstalldir;
+
+	fprintf(stderr, "Uninstalling %s...\n", id);
+
+	if (!appdb_is(INSTALLED, id) && !appdb_is(ENABLED, id)) {
+		fprintf(stderr, "app '%s' not found.\n", id);
+		return ERRORCODE;
+	}
+
+	/* empkg_disable() prints that it will not disable essential apps. */
+	empkg_disable(id);
+
+	/* Fill our vars with paths */
+	if (asprintf(&uninstalldir, "%s/tmp/uninstall", gAPPDIR) == -1)
+		return ERRORCODE;
+
+	empkg_reset_appdir("tmp");
+	empkg_fops_mv(appdir, uninstalldir); /* move current app in appdir to apptmp for removal */
+	appdb_set(INSTALLED, id, 0);
+
+	free(uninstalldir);
+
+	if (appdb_is(BUILTIN, id)) {
+		fprintf(stderr, "Note: '%s' is builtin, only uninstalling updates.\n", id);
+		app_register(id);
+	}
+
+	empkg_users_sync_app_users_and_dirs(id);
+	empkg_dbus(id);
+	sync();
+	empkg_reset_appdir("tmp");
+
+	return 0;
+};
+
+int app_uninstall(const char *id) {
+	int ret;
+
+	if (!empkg_lock()) {
+		fprintf(stderr, "Could not get lock.\n");
+		return ERRORCODE;
+	}
+
+	ret = empkg_uninstall(id);
+	if (ret)
+		return ret;
+
+	ret = empkg_update_www();
+	if (ret)
+		return ret;
+
+	empkg_update_licenses();
+
+	empkg_unlock();
+
+	return 0;
+}
