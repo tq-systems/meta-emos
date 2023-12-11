@@ -31,6 +31,7 @@
 #define gAPPDIR		"/apps"
 #define gBUILTINDIR	"/opt/apps"
 #define gINSTALLEDDIR	gAPPDIR"/installed"
+#define gDBUSDIR	gAPPDIR"/dbus"
 #define gENABLEDDIR	gAPPDIR"/enabled"
 #define gCONFIGDIR	"/cfglog/apps"
 #define gRUNDIRAPPS	"/run/em/apps"

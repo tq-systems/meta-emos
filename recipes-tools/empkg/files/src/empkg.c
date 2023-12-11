@@ -14,6 +14,7 @@
 #include "empkg_install.h"
 #include "empkg_list.h"
 #include "empkg_status.h"
+#include "empkg_sync.h"
 
 struct empkg_config config = {
 	.enable = 1,
