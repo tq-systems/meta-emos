@@ -1,6 +1,6 @@
 CFLAGS += -std=c99 -Wall -Wextra -O2
 CFLAGS += -D_GNU_SOURCE
-LDLIBS += -ljansson -larchive -lcrypto
+LDLIBS += -ljansson -larchive -lcrypto -lacl
 
 empkg : empkg.o \
 	empkg_appdb.o \
@@ -17,6 +17,7 @@ empkg : empkg.o \
 	empkg_register.o \
 	empkg_status.o \
 	empkg_tar.o \
+	empkg_users.o \
 	em-app-generator.o
 
 all: empkg

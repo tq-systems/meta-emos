@@ -28,10 +28,14 @@
 #define ARRAY_SIZE(array)	(sizeof(array) / sizeof(array[0]))
 #define ERRORCODE 1
 
-#define gAPPDIR "/apps"
-#define gBUILTINDIR "/opt/apps"
-#define gINSTALLEDDIR gAPPDIR"/installed"
-#define gENABLEDDIR gAPPDIR"/enabled"
+#define gAPPDIR		"/apps"
+#define gBUILTINDIR	"/opt/apps"
+#define gINSTALLEDDIR	gAPPDIR"/installed"
+#define gENABLEDDIR	gAPPDIR"/enabled"
+#define gCONFIGDIR	"/cfglog/apps"
+#define gRUNDIRAPPS	"/run/em/apps"
+#define gUSERDBRUNDIR	"/run/host/userdb"
+#define gUSERDBSTOREDIR	gAPPDIR"/userdb"
 
 struct empkg_config {
 	unsigned enable;
