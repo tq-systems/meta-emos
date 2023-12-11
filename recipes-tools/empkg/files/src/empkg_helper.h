@@ -12,3 +12,5 @@ char *remove_suffix(char *filename);
 void empkg_init_dirs(void);
 void empkg_request_daemon_reload(char *cmd, char *app);
 int empkg_process_reload_request(void);
+int empkg_update_www(void);
+void empkg_update_licenses(void);
