@@ -88,3 +88,15 @@ json_t *empkg_json_generate_status(const bool builtin, const bool enabled, const
 
 	return json;
 }
+
+json_t *empkg_json_get_manifest_permissions(const char *id) {
+	const char *manifest = appdb_get_path(P_MANIFEST, id);
+	json_t *json;
+
+	json = json_load_file(manifest, 0, NULL);
+
+	if (json_is_object(json))
+		return json_object_get(json, "permissions");
+
+	return NULL;
+}
