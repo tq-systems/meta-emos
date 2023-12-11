@@ -15,3 +15,4 @@
 
 /* returns content of manifest.json of an empkg file */
 char *empkg_tar_pkg_info(const char *path);
+void empkg_tar_pkg_extract(const char *path, const char *installdir);

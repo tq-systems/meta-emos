@@ -69,3 +69,61 @@ char *empkg_tar_pkg_info(const char *path) {
 
 	return app_info;
 }
+
+void empkg_tar_pkg_extract(const char *path, const char *installdir) {
+	struct archive *ar;
+	struct archive *aw;
+	struct archive_entry *entry;
+	int ret;
+	const int archive_flags = ARCHIVE_EXTRACT_OWNER |
+				  ARCHIVE_EXTRACT_PERM |
+				  ARCHIVE_EXTRACT_TIME |
+				  ARCHIVE_EXTRACT_UNLINK |
+				  ARCHIVE_EXTRACT_XATTR |
+				  ARCHIVE_EXTRACT_SECURE_SYMLINKS;
+
+	ar = archive_read_new();
+	archive_read_support_filter_all(ar);
+	archive_read_support_format_all(ar);
+
+	aw = archive_write_disk_new();
+	archive_write_disk_set_options(aw, archive_flags);
+
+	ret = archive_read_open_filename(ar, path, EMPKG_BUF_SIZE);
+	if (ret != ARCHIVE_OK) {
+		fprintf(stderr, "Error opening empkg '%s'\n", path);
+		return;
+	}
+
+	if(chdir(installdir) != 0) {
+		fprintf(stderr, "Could not change to %s\n", installdir);
+		return;
+	}
+
+	while (archive_read_next_header(ar, &entry) == ARCHIVE_OK) {
+		const void *buff;
+		size_t size;
+		la_int64_t offset;
+
+		/* create file */
+		if (archive_write_header(aw, entry) < ARCHIVE_OK) {
+			fprintf(stderr, "write: %s\n", archive_error_string(aw));
+			continue;
+		}
+
+		if (archive_entry_size(entry) > 0) {
+			/* extract file data */
+			while (archive_read_data_block(ar, &buff, &size, &offset) != ARCHIVE_EOF) {
+				if (archive_write_data_block(aw, buff, size, offset) < ARCHIVE_OK) {
+					fprintf(stderr, "write: %s\n", archive_error_string(aw));
+					break;
+				}
+			}
+		}
+	}
+
+	archive_read_close(ar);
+	archive_read_free(ar);
+	archive_write_close(aw);
+	archive_write_free(aw);
+}
