@@ -10,6 +10,7 @@ empkg : empkg.o \
 	empkg_fops_mkdir.o \
 	empkg_helper.o \
 	empkg_info.o \
+	empkg_install.o \
 	empkg_json.o \
 	empkg_list.o \
 	empkg_lock.o \
