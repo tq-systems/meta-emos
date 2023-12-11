@@ -9,6 +9,7 @@
 #include "em-app-generator.h"
 #include "empkg.h"
 #include "empkg_appdb.h"
+#include "empkg_list.h"
 
 struct empkg_config config = {
 	.enable = 1,

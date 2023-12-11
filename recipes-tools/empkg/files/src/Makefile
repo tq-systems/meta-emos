@@ -5,6 +5,7 @@ LDLIBS += -ljansson -lcrypto
 empkg : empkg.o \
 	empkg_appdb.o \
 	empkg_json.o \
+	empkg_list.o \
 	empkg_log.o \
 	em-app-generator.o
 
