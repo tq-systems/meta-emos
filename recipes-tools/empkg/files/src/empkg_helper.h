@@ -10,3 +10,5 @@ int empkg_is_arch_supported(const char *arch);
 void empkg_reset_appdir(const char *sub);
 char *remove_suffix(char *filename);
 void empkg_init_dirs(void);
+void empkg_request_daemon_reload(char *cmd, char *app);
+int empkg_process_reload_request(void);
