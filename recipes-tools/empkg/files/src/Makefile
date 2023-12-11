@@ -14,6 +14,7 @@ empkg : empkg.o \
 	empkg_list.o \
 	empkg_lock.o \
 	empkg_log.o \
+	empkg_register.o \
 	empkg_status.o \
 	empkg_tar.o \
 	em-app-generator.o
