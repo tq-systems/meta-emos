@@ -7,6 +7,7 @@
  */
 
 #include "empkg_appdb.h"
+#include "empkg_fops.h"
 #include "empkg_json.h"
 
 struct appdb_t *appdb = NULL;

@@ -1,0 +1,112 @@
+/*
+ * empkg_fops.c - File operations
+ *
+ * Copyright © 2024 TQ-Systems GmbH <info@tq-group.com>
+ * All rights reserved. For further information see LICENSE.
+ * Author: Michael Krummsdorf
+ */
+
+#include "empkg.h" /* __maybe_unused */
+#include "empkg_appdb.h"
+#include "empkg_fops.h"
+
+char *empkg_fops_abspath(const char *root, const char *relpath) {
+	char *path;
+
+	if (asprintf(&path, "%s/%s", root, relpath) == -1)
+		return NULL;
+
+	return path;
+}
+
+int empkg_fops_symlink(const char *target, const char *path) {
+	int ret = symlink(target, path);
+
+	if (ret)
+		fprintf(stderr, "Error creating symlink to %s at %s (%s)\n", target, path, strerror(errno));
+
+	return ret;
+}
+
+static int unlink_callback(const char *fpath, __maybe_unused const struct stat *sb,
+			   __maybe_unused int typeflag, __maybe_unused struct FTW *ftwbuf) {
+	return remove(fpath);
+}
+
+int empkg_fops_rm(const char *path) {
+	int ret = nftw(path, unlink_callback, 16, FTW_DEPTH | FTW_PHYS);
+
+	if (ret && errno != ENOENT)
+		fprintf(stderr, "Error removing %s (%s)\n", path, strerror(errno));
+
+	return (errno == ENOENT ? 0 : ret);
+}
+
+int empkg_fops_mv(const char *path, const char *newpath) {
+	int ret = rename(path, newpath);
+	if (ret && errno == EXDEV) {
+		/* Moving across filesystems, copying then deleting... */
+		ret = empkg_fops_cp(path, newpath);
+		if (!ret)
+			empkg_fops_rm(path);
+	}
+
+	if (ret)
+		fprintf(stderr, "Error moving %s to %s (%s)\n", path, newpath, strerror(errno));
+
+	return ret;
+}
+
+int empkg_fops_chown(const char *path, uid_t owner, gid_t group) {
+	struct stat sb;
+	struct dirent **ent;
+	int i = 0, n;
+	char *subpath;
+	int ret = lchown(path, owner, group);
+
+	if (!ret)
+		ret = lstat(path, &sb);
+
+	if (!ret && S_ISDIR(sb.st_mode)) {
+		n = scandir(path, &ent, scandir_filter_default, alphasort);
+
+		while (!ret && (i < n)) {
+			if (asprintf(&subpath, "%s/%s", path, ent[i]->d_name) == -1) {
+				ret = ERRORCODE;
+			} else {
+				ret = empkg_fops_chown(subpath, owner, group);
+				free(subpath);
+			}
+			free(ent[i]);
+			i++;
+		}
+		free(ent);
+	}
+
+	if (ret)
+		fprintf(stderr, "Error chown() on '%s' (%s)\n", path, strerror(errno));
+
+	return ret;
+}
+
+int empkg_fops_setacl(const char *path, const char *user, const char *permissions) {
+	const char *aclpattern = "u::rwx,g::r-x,o::---,m::rwx,u:%s:%s";
+	char aclstring[64];
+	acl_t acl;
+	int ret = 0;
+
+	snprintf(aclstring, strlen(aclpattern) + strlen(user) + strlen(permissions) + 1, aclpattern, user, permissions);
+
+	/* file modes and mask m::rwx is required for acl_set_file() when assigning user ACL
+	 * https://bugzilla.redhat.com/show_bug.cgi?id=985269
+	 */
+	acl = acl_from_text(aclstring);
+	if (acl && acl_valid(acl) == 0) {
+		ret = acl_set_file(path, ACL_TYPE_ACCESS, acl);
+		if (ret)
+			fprintf(stderr, "Error assigning ACL: %s %s\n", acl_to_text(acl, NULL), strerror(errno));
+	}
+	acl_free(acl);
+
+	return ret;
+}

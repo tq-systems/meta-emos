@@ -4,6 +4,9 @@ LDLIBS += -ljansson -larchive -lcrypto
 
 empkg : empkg.o \
 	empkg_appdb.o \
+	empkg_fops.o \
+	empkg_fops_cp.o \
+	empkg_fops_mkdir.o \
 	empkg_info.o \
 	empkg_json.o \
 	empkg_list.o \
