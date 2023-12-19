@@ -1,3 +1,7 @@
+## [ next]
+### Changed
+- linux-imx-em: serial: imx: increase tx trigger
+
 ## [ 4.1.8 ] - 2023-12-07
 ### Changed
 - emit: remove tq suffix from web-application app
