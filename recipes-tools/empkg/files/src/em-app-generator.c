@@ -50,8 +50,47 @@ const char *const TIME_APPS[] = {
 	NULL,
 };
 
+char *empkg_json_get_char(const char *app, const char *key) {
+	const char *manifest_pattern = "/apps/installed/%s/manifest.json";
+	json_t *json;
+	char *retval;
+
+	char manifest_path[strlen(manifest_pattern) + strlen(app) + 1];
+	snprintf(manifest_path, sizeof(manifest_path), manifest_pattern, app);
+
+	json = json_load_file(manifest_path, 0, NULL);
+
+	if (json && json_is_object(json)) {
+		json_t *value = json_object_get(json, key);
+		if (!value) {
+			json_decref(json);
+			return NULL;
+		}
+
+		retval = strdup(json_string_value(value));
+		json_decref(json);
+		return retval;
+	}
+
+	json_decref(json);
+	return NULL;
+}
+
 bool is_core_app(const char *app) {
 	size_t i;
+
+	/* parse app manifest for core_app characteristic */
+	const char *appclass = empkg_json_get_char(app, "appclass");
+
+	if (appclass) {
+		if (strcmp(appclass, "core") == 0)
+			return true;
+
+		return false;
+	}
+
+	fprintf(stderr, "Property 'appclass' not found in manifest. Please update %s by 2025.\n", app);
+
 	for (i = 0; CORE_APPS[i]; i++) {
 		if (strcmp(app, CORE_APPS[i]) == 0)
 			return true;
@@ -62,6 +101,17 @@ bool is_core_app(const char *app) {
 
 bool is_time_app(const char *app) {
 	size_t i;
+
+	/* parse app manifest for time_app characteristic */
+	const char *appclass = empkg_json_get_char(app, "appclass");
+
+	if (appclass) {
+		if (strcmp(appclass, "time") == 0)
+			return true;
+
+		return false;
+	}
+
 	for (i = 0; TIME_APPS[i]; i++) {
 		if (strcmp(app, TIME_APPS[i]) == 0)
 			return true;
