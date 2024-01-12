@@ -1,6 +1,7 @@
 ## [ next]
 ### Changed
 - linux-imx-em: serial: imx: increase tx trigger
+- volatile-binds: generalize bindings
 
 ## [ 4.1.8 ] - 2023-12-07
 ### Changed
