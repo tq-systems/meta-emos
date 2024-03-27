@@ -18,3 +18,5 @@ em-group-reboot::516
 em-group-sudo-fw_printenv::517
 em-group-sudo-systemctl_restart::518
 em-group-cfglog::519
+render::520
+sgx::521
