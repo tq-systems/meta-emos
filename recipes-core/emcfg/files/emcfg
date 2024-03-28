@@ -10,6 +10,7 @@ NETCONF=/usr/lib/emos/network-config
 RUNSDNET=/run/systemd/network
 
 CFGNETWORKCONF=$CFG/network.json
+PRESETSRUN=/apps/installed/presets/run
 
 CMD="$1"; shift
 
@@ -47,6 +48,9 @@ cmd_init() {
 	if [ ! -e $CFGNETWORKCONF ]; then
 		set_default_network
 	fi
+
+	# transfer configs from app presets to /run, if any
+	[ -e $PRESETSRUN ] && cp -r $PRESETSRUN/* /run
 }
 
 cmd_update_network() {
