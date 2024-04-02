@@ -4,10 +4,6 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 # local.conf/cmdline should affect the product-info package only
 RAUC_KEYRING_FILE = "ca.cert.pem"
 
-# deactivate unused features to reduce dependencies of rauc
-PACKAGECONFIG[streaming] = "--enable-streaming=no"
-PACKAGECONFIG[network]   = "--enable-network=no"
-
 SRC_URI += " \
 	file://verified_message_as_gdebug.patch \
 	file://10-rauc-emos.conf \
