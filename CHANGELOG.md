@@ -1,8 +1,9 @@
-## [ next]
+## [ 4.2.0 ] - 2024-04-02
+### Added
+- emcfg: support config drop-ins
 ### Changed
 - linux-imx-em: serial: imx: increase tx trigger
 - volatile-binds: generalize bindings
-- emcfg: support config drop-ins
 
 ## [ 4.1.8 ] - 2023-12-07
 ### Changed
