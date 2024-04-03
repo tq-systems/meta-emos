@@ -18,6 +18,3 @@ do_install () {
 	install -m 0755 ${WORKDIR}/teridian_symlink ${D}/lib/udev/
 	install -m 0644 ${WORKDIR}/70-teridian.rules ${D}/lib/udev/rules.d/
 }
-
-COMPATIBLE_MACHINE = "(em310|em4xx)"
-PACKAGE_ARCH = "${MACHINE_ARCH}"
