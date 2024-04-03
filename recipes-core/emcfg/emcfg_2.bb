@@ -34,9 +34,6 @@ SRC_URI = " \
 	file://openssl-em.cnf \
 	file://journald-debug.conf \
 	file://01-emos-apps-generic.conf \
-"
-
-SRC_URI:append:em:mx8mn = " \
 	file://80-ttyAPP.rules \
 "
 
@@ -82,6 +79,7 @@ do_install() {
 
 	install -d ${D}${base_libdir}/udev/rules.d
 	install -m 0644 ${WORKDIR}/80-button-handler.rules ${D}${base_libdir}/udev/rules.d/
+	install -m 0644 ${WORKDIR}/80-ttyAPP.rules ${D}${base_libdir}/udev/rules.d/
 
 	install -d ${D}${sysconfdir}/ssl
 	install -m 0644 ${WORKDIR}/openssl-em.cnf ${D}${sysconfdir}/ssl/
@@ -111,30 +109,20 @@ do_install() {
 	ln -s /cfglog/var/log ${D}${localstatedir}/log
 }
 
-do_install:append:em:mx8mn() {
-	install -d ${D}${base_libdir}/udev/rules.d
-	install -m 0644 ${WORKDIR}/80-ttyAPP.rules ${D}${base_libdir}/udev/rules.d/
-}
-
-
-RDEPENDS:${PN} += "jq libubootenv-bin openssl-bin faketime em-network-config"
-RDEPENDS:${PN}:append:em:mx8mn = " udev"
+RDEPENDS:${PN} += "jq libubootenv-bin openssl-bin faketime em-network-config udev"
 
 FILES:${PN} += " \
 	${sysconfdir}/tmpfiles.d/00-emos-log.conf \
 	${sysconfdir}/tmpfiles.d/01-emos-apps-generic.conf \
 	${systemd_unitdir}/system/ \
 	${systemd_unitdir}/system-generators/emcfg-generator \
+	${base_libdir}/udev/rules.d/ \
 	/etc/sudoers.d \
 	/apps \
 	/auth \
 	/cfglog \
 	/data \
 	/update \
-"
-
-FILES:${PN}:append:em:mx8mn := "\
-	${base_libdir}/udev/rules.d/80-ttyAPP.rules \
 "
 
 ALTERNATIVE:${PN} += "init"
