@@ -2,3 +2,6 @@
 
 KERNEL=="ttymxc1", SYMLINK+="ttyAPP1"
 KERNEL=="ttymxc2", SYMLINK+="ttyAPP2"
+
+KERNEL=="ttyS1", SYMLINK+="ttyAPP1"
+KERNEL=="ttyS2", SYMLINK+="ttyAPP2"
