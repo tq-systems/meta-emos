@@ -55,10 +55,14 @@ cmd_init() {
 
 cmd_update_network() {
 	local macaddr="$(cat /sys/class/net/eth0/address)"
-	local config=single
+	local config
 
 	if [ -e /sys/class/net/lan0 ]; then
 		config=switch
+	elif [ -e /sys/class/net/eth1 ]; then
+		config=double
+	else
+		config=single
 	fi
 
 	rm -rf $RUNSDNET
