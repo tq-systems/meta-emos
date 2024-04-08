@@ -5,7 +5,6 @@ SRC_URI:append:emos = "\
 	\
 	file://read-only-rootfs.conf \
 "
-PACKAGECONFIG[userdb] = "-Duserdb=true"
 
 pkg_postinst:${PN}:libc-glibc:append:emos () {
 	# Add systemd to nsswitch.conf
