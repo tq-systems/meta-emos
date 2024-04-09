@@ -31,11 +31,37 @@ subparsers = parser.add_subparsers(title='commands', description='valid commands
 
 parser_download = subparsers.add_parser('download', help='Download app packages referenced in the base and bundle specs')
 
+def device_subtype(s):
+	try:
+		ret = json.loads(s)
+		for value in ret.values():
+			assert(isinstance(value, str))
+	except:
+		raise ValueError
+
+	return ret
+
+def manufacturer_id(s):
+	return int(s, 0)
+
+def product_id(s):
+	try:
+		ret = json.loads(s)
+		for value in ret.values():
+			assert(isinstance(value, int))
+	except:
+		raise ValueError
+
+	return ret
+
 parser_build = subparsers.add_parser('build')
 parser_build.add_argument('--build-dir', default='tmp', help='Directory for temporary build artifacts')
 parser_build.add_argument('--bundle-version', help='Bundle version number')
 parser_build.add_argument('--machine', required=True, help='Machine name for compatible string and U-boot version')
 parser_build.add_argument('--device-type', required=True, help='Device type for GUI reference')
+parser_build.add_argument('--device-subtype', required=False, type=device_subtype, help='Map from device compatible to device type (JSON object)')
+parser_build.add_argument('--manufacturer-id', required=False, type=manufacturer_id, help='Alternative manufacturer ID for Modbus (integer)')
+parser_build.add_argument('--product-id', required=False, type=product_id, help='Map from device compatible to product ID for Modbus (JSON object)')
 parser_build.add_argument('--rauc-key', required=True, help='Private key for bundle signature')
 parser_build.add_argument('--rauc-cert', required=True, help='Certificate for bundle signature')
 parser_build.add_argument('--rauc-keyring', required=True,
@@ -349,15 +375,37 @@ class CommandBuild(CommandCommon):
 		"""
 		Returns the device type to be added to the product info.
 
-		The device type is assigned directly via the machine and specified in the GUI and in the bundle file name.
+		The device type is assigned via the machine and visible in the GUI and in the bundle file name.
 		"""
 
-		if self.args.device_type != None:
-			ret = self.args.device_type
-		else:
-			raise Exception('Empty device type')
+		return self.args.device_type
 
-		return ret
+	def get_device_subtype(self):
+		"""
+		Returns the device subtype map to be added to the product info.
+
+		The device subtype is assigned via the machine and overrides the device type displayed in the GUI.
+		"""
+
+		return self.args.device_subtype
+
+	def get_manufacturer_id(self):
+		"""
+		Returns the manufacturer ID to be added to the product info.
+
+		The manufacturer ID is assigned via the machine and can be queried via Modbus.
+		"""
+
+		return self.args.manufacturer_id
+
+	def get_product_id(self):
+		"""
+		Returns the product ID to be added to the product info.
+
+		The product ID is assigned via the machine and can be queried via Modbus.
+		"""
+
+		return self.args.product_id
 
 	def write_product_info(self):
 		"""Writes the product info from the bundle spec to /etc/product-info.json in the image root"""
@@ -365,6 +413,12 @@ class CommandBuild(CommandCommon):
 		info = self.bundle_spec['product_info']
 		machine = self.args.machine
 		name, code = self.get_name_and_code(info, machine)
+
+		def optional(key, value):
+			if value is None:
+				return {}
+			else:
+				return {key: value}
 
 		etcdir = os.path.join(self.root_dir, 'etc')
 		os.makedirs(etcdir, exist_ok=True)
@@ -377,8 +431,12 @@ class CommandBuild(CommandCommon):
 				'devicetype': self.get_device_type(),
 				'software_version': self.get_version(),
 				'creation_year': str(datetime.today().year),
-			}, f, sort_keys=True)
-	
+			} |
+			optional('devicesubtype', self.get_device_subtype()) |
+			optional('manufacturer_id', self.get_manufacturer_id()) |
+			optional('product_id', self.get_product_id()),
+			f, sort_keys=True)
+
 	def get_name_and_code(self, info, machine):
 		"""Returns the code and name for specific manufacturer and hardware"""
 		name_key = "name_" + machine
