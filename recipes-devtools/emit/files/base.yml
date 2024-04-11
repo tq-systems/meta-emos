@@ -1,5 +1,5 @@
 defaults:
-  url: http://packages.tq-group.com/energymanager/apps/{app}/{name}_{version}_{arch}.empkg
+  url: https://packages.tq-group.com/energymanager/apps/{app}/{name}_{version}_{arch}.empkg
 
 apps:
   backup:
