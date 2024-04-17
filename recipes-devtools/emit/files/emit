@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import textwrap
 from urllib.parse import urlparse
 import yaml
 
@@ -456,31 +457,31 @@ class CommandBuild(CommandCommon):
 	def get_rauc_config(self):
 		"""Returns the RAUC config to be written to /etc/rauc/system.conf in the image root"""
 
-		return '''\
-[system]
-compatible={compatible}
-bootloader=uboot
-statusfile=/update/rauc.status
-bundle-formats=plain
+		return textwrap.dedent(f'''\
+			[system]
+			compatible={self.get_compatible_config()}
+			bootloader=uboot
+			statusfile=/update/rauc.status
+			bundle-formats=plain
 
-[keyring]
-path=/etc/rauc/ca.cert.pem
-use-bundle-signing-time=true
+			[keyring]
+			path=/etc/rauc/ca.cert.pem
+			use-bundle-signing-time=true
 
-[slot.u-boot.0]
-device=/dev/mmcblk0
-type=raw
+			[slot.u-boot.0]
+			device=/dev/mmcblk0
+			type=raw
 
-[slot.rootfs.0]
-device=/dev/mmcblk0p2
-type=ext4
-bootname=1
+			[slot.rootfs.0]
+			device=/dev/mmcblk0p2
+			type=ext4
+			bootname=1
 
-[slot.rootfs.1]
-device=/dev/mmcblk0p3
-type=ext4
-bootname=2
-'''.format(compatible=self.get_compatible_config())
+			[slot.rootfs.1]
+			device=/dev/mmcblk0p3
+			type=ext4
+			bootname=2
+			''')
 
 	def write_rauc_config(self):
 		"""Writes the RAUC config and keyring to /etc/rauc/ in the image root"""
@@ -522,29 +523,27 @@ bootname=2
 
 			return 'sha256={}\nsize={}\nfilename={}'.format(sha256, size, name)
 
-		return '''\
-[update]
-description={description}
-compatible={compatible}
-version={version}
 
-[hooks]
-filename=hook.sh
-hooks=install-check
+		rootfs = fileinfo('em-image-{}-{}.tar'.format(self.args.image_name, self.args.machine))
+		uboot = fileinfo('bootloader-{}.bin'.format(self.args.machine))
 
-[image.rootfs]
-{rootfs}
+		return textwrap.dedent(f'''\
+			[update]
+			description={self.get_description()}
+			compatible={self.get_compatible_bundle()}
+			version={self.get_version()}
 
-[image.u-boot]
-{uboot}
-hooks=install
-'''.format(
-			description=self.get_description(),
-			compatible=self.get_compatible_bundle(),
-			version=self.get_version(),
-			rootfs=fileinfo('em-image-{}-{}.tar'.format(self.args.image_name, self.args.machine)),
-			uboot=fileinfo('bootloader-{}.bin'.format(self.args.machine)),
-		)
+			[hooks]
+			filename=hook.sh
+			hooks=install-check
+
+			[image.rootfs]
+			{rootfs}
+
+			[image.u-boot]
+			{uboot}
+			hooks=install
+			''')
 
 	def get_bootloader_path(self):
 		"""Returns the path of the bootloader inside the core image"""
