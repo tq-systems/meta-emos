@@ -1,3 +1,9 @@
+## [ next ]
+### Added
+- groups: added render and sgx group
+### Fixed
+- Fixed wrong usage of PACKAGECONFIG
+
 ## [ 4.2.0 ] - 2024-04-02
 ### Added
 - emcfg: support config drop-ins

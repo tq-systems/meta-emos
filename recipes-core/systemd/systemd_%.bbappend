@@ -5,7 +5,6 @@ SRC_URI:append:emos = "\
 	\
 	file://read-only-rootfs.conf \
 "
-PACKAGECONFIG[userdb] = "-Duserdb=true"
 
 pkg_postinst:${PN}:libc-glibc:append:emos () {
 	# Add systemd to nsswitch.conf
@@ -21,9 +20,6 @@ do_install:append:emos() {
 	# We manage timesyncd enable status in emcfg
 	rm ${D}${sysconfdir}/systemd/timesyncd.conf
 	sed -i -e '/^enable systemd-timesyncd\.service$/d' ${D}${systemd_unitdir}/system-preset/90-systemd.preset
-
-	# Avoid syslog warnings about non-existing "render" group
-	sed -i -e '/\<GROUP="render"/d' ${D}${rootlibexecdir}/udev/rules.d/50-udev-default.rules
 
 	# Add configurations for read-only root filesystem
 	install -m755 -d \
