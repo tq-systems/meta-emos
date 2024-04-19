@@ -1,14 +1,15 @@
 #!/bin/sh
 
 #
-# Copyright (C) 2020, TQ-Systems GmbH
+# Copyright (C) 2020-2024, TQ-Systems GmbH
 #
 # slot-install handling is:
 #
 # (c) Gateware Communications GmbH, Nuremberg 2018
 #
 
-set -eo pipefail
+# Do not set -e to ensure that we exit with code 10 in install-check
+set -o pipefail
 
 
 BASEDIR="$(dirname "$0")"
@@ -108,6 +109,8 @@ install-check)
 	;;
 
 slot-install)
+	set -e
+
 	if [ "$RAUC_SLOT_CLASS" != "u-boot" ]; then
 		echo "Invalid slot class '$RAUC_SLOT_CLASS'! Aborting" >&2
 		exit 1
