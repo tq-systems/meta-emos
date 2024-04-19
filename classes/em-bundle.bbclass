@@ -1,3 +1,4 @@
+EM_BOOTLOADER ?= "virtual/bootloader"
 EM_CORE_IMAGE ?= "em-image-core"
 
 EM_IMAGE_NAME ??= "invalid"
@@ -14,6 +15,8 @@ TQ_DEVICE_TYPE ??= ""
 TQ_DEVICE_SUBTYPE ??= ""
 TQ_MANUFACTURER_ID ??= "0x5233"
 TQ_PRODUCT_ID ??= ""
+
+EM_BUNDLE_BOOTLOADER ??= ""
 
 BUNDLE_BASENAME ??= "${EM_IMAGE_NAME}"
 BUNDLE_NAME ??= "${BUNDLE_BASENAME}-${TQ_DEVICE_TYPE}-sw${EM_BUNDLE_VERSION}"
@@ -82,6 +85,18 @@ def opt_arg(d, name, varname):
     else:
         return ''
 
+def em_bundle_bootloaders(d):
+    bootloaders = d.getVar('EM_BUNDLE_BOOTLOADER').split()
+    deploydir = d.getVar('DEPLOY_DIR_IMAGE')
+    ret = []
+
+    for bootloader in bootloaders:
+        flag = bootloader.replace(',', '_').replace(':', '_')
+        file = os.path.join(deploydir, d.getVarFlag('EM_BUNDLE_BOOTLOADER', flag))
+        ret.append(f"--bootloader '{bootloader}' '{file}'")
+
+    return ' '.join(ret)
+
 EMIT_ARGUMENTS = " \
     --build-dir '${B}/tmp' \
     --bundle-version '${EM_BUNDLE_VERSION}' \
@@ -94,10 +109,11 @@ EMIT_ARGUMENTS = " \
     --rauc-cert '${RAUC_CERT_FILE}' \
     --rauc-keyring '${RAUC_KEYRING_FILE}' \
     --core-image '${DEPLOY_DIR_IMAGE}/${EM_CORE_IMAGE}-${MACHINE}.tar' \
+    ${@ em_bundle_bootloaders(d) } \
     --output-bundle '${B}/bundle.raucb' \
     --image-name '${EM_IMAGE_NAME}' \
 "
-EMIT_ARGUMENTS[vardeps] += "TQ_DEVICE_SUBTYPE TQ_MANUFACTURER_ID TQ_PRODUCT_ID"
+EMIT_ARGUMENTS[vardeps] += "TQ_DEVICE_SUBTYPE TQ_MANUFACTURER_ID TQ_PRODUCT_ID EM_BUNDLE_BOOTLOADER"
 
 do_bundle() {
     local specs=''
@@ -112,7 +128,7 @@ do_bundle() {
 
     ${EMIT} $specs build ${EMIT_ARGUMENTS} $migration_args
 }
-do_bundle[depends] += "${EM_CORE_IMAGE}:do_image_complete"
+do_bundle[depends] += "${EM_BOOTLOADER}:do_deploy ${EM_CORE_IMAGE}:do_image_complete"
 do_bundle[dirs] = "${B}"
 
 addtask bundle after do_configure before do_build

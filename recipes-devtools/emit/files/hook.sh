@@ -45,6 +45,27 @@ check_version() {
 	fi
 }
 
+device_variant() {
+	# For maximum compatibility, avoid head -z, which is not available in busybox
+	local compatible="$(tr </proc/device-tree/compatible '\0' '\n' | head -n 1)"
+	local ram_size="$("$BASEDIR"/ramsize.sh)"
+
+	echo "${compatible}:${ram_size}m"
+}
+
+bootloader_digest() {
+	local variant="$1"
+
+	while read -r digest name; do
+		if [ "$name" = "$variant" ]; then
+			echo "$digest"
+			return 0
+		fi
+	done <"$BASEDIR/bootloaders.txt"
+
+	return 1
+}
+
 
 case "$1" in
 
@@ -106,6 +127,18 @@ install-check)
 		;;
 	esac
 
+	variant="$(device_variant)"
+	if [ -z "$variant" ]; then
+		echo "Unable to determine device variant" >&2
+		exit 10
+	fi
+
+
+	if ! bootloader_digest "$variant" >/dev/null; then
+		echo "No matching bootloader found for your device variant '$variant'" >&2
+		exit 10
+	fi
+
 	;;
 
 slot-install)
@@ -113,6 +146,16 @@ slot-install)
 
 	if [ "$RAUC_SLOT_CLASS" != "u-boot" ]; then
 		echo "Invalid slot class '$RAUC_SLOT_CLASS'! Aborting" >&2
+		exit 1
+	fi
+
+	# Override RAUC-provided variables with variant-specific values
+	variant="$(device_variant)"
+	RAUC_IMAGE_NAME="${BASEDIR}/bootloader-${variant}.bin"
+	RAUC_IMAGE_DIGEST="$(bootloader_digest "$variant")"
+
+	if [ -z "$variant" ] || [ -z "$RAUC_IMAGE_DIGEST" ] || [ ! -e "$RAUC_IMAGE_NAME" ]; then
+		echo "Bootloader variant image not found!" >&2
 		exit 1
 	fi
 
