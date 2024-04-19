@@ -25,6 +25,12 @@ DEPENDS += "bison-native dtc-native"
 IMX_EXTRA_FIRMWARE = ""
 IMX_EXTRA_FIRMWARE:mx8m = "trusted-firmware-a firmware-imx-8m"
 
+# TF-A and firmware-imx-8m licenses
+LICENSE:append:mx8m = " & BSD-3-Clause & MIT & Proprietary"
+
+inherit extra-license-depends
+EXTRA_LICENSE_DEPENDS:mx8m = "trusted-firmware-a firmware-imx-8m"
+
 DEPENDS += "${IMX_EXTRA_FIRMWARE}"
 do_compile[depends] += " \
 	${@' '.join('%s:do_deploy' % r for r in '${IMX_EXTRA_FIRMWARE}'.split() )} \
