@@ -149,6 +149,10 @@ mount -t sysfs sysfs /sys || fatal '/sys mount failed.'
 mount -t tmpfs -o nosuid,nodev,mode=755 run /run || fatal '/run mount failed.'
 mount -t tmpfs -o nosuid,nodev,mode=755 tmpfs /tmp || fatal '/tmp mount failed.'
 
+if command -v setup-u-boot-env >/dev/null; then
+	setup-u-boot-env
+fi
+
 # End of life status
 mkdir -p /run/lock
 
