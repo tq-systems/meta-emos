@@ -11,6 +11,9 @@ EM_BUNDLE_MIGRATION ?= "0"
 EM_BUNDLE_VERSION ?= "${PV}"
 
 TQ_DEVICE_TYPE ??= ""
+TQ_DEVICE_SUBTYPE ??= ""
+TQ_MANUFACTURER_ID ??= "0x5233"
+TQ_PRODUCT_ID ??= ""
 
 BUNDLE_BASENAME ??= "${EM_IMAGE_NAME}"
 BUNDLE_NAME ??= "${BUNDLE_BASENAME}-${TQ_DEVICE_TYPE}-sw${EM_BUNDLE_VERSION}"
@@ -72,11 +75,21 @@ python emit_fetch_post() {
 do_fetch[depends] += "emit-native:do_populate_sysroot"
 do_fetch[postfuncs] += "emit_fetch_post"
 
+def opt_arg(d, name, varname):
+    value = d.getVar(varname)
+    if value:
+        return f"--{name} '{value}'"
+    else:
+        return ''
+
 EMIT_ARGUMENTS = " \
     --build-dir '${B}/tmp' \
     --bundle-version '${EM_BUNDLE_VERSION}' \
     --machine '${MACHINE}' \
     --device-type '${TQ_DEVICE_TYPE}' \
+    ${@ opt_arg(d, 'device-subtype', 'TQ_DEVICE_SUBTYPE') } \
+    ${@ opt_arg(d, 'manufacturer-id', 'TQ_MANUFACTURER_ID') } \
+    ${@ opt_arg(d, 'product-id', 'TQ_PRODUCT_ID') } \
     --rauc-key '${RAUC_KEY_FILE}' \
     --rauc-cert '${RAUC_CERT_FILE}' \
     --rauc-keyring '${RAUC_KEYRING_FILE}' \
@@ -84,6 +97,7 @@ EMIT_ARGUMENTS = " \
     --output-bundle '${B}/bundle.raucb' \
     --image-name '${EM_IMAGE_NAME}' \
 "
+EMIT_ARGUMENTS[vardeps] += "TQ_DEVICE_SUBTYPE TQ_MANUFACTURER_ID TQ_PRODUCT_ID"
 
 do_bundle() {
     local specs=''

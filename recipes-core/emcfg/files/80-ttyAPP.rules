@@ -1,2 +1,4 @@
+# Provide common names for UART devices on different SoCs
+
 KERNEL=="ttymxc1", SYMLINK+="ttyAPP1"
 KERNEL=="ttymxc2", SYMLINK+="ttyAPP2"

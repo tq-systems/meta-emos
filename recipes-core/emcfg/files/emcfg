@@ -16,7 +16,7 @@ CMD="$1"; shift
 
 
 get_serial() {
-	fw_printenv -n serial
+	cat /proc/device-tree/tq,serial-number 2>/dev/null || fw_printenv -n serial
 }
 
 get_default_hostname() {
