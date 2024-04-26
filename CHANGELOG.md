@@ -1,8 +1,29 @@
 ## [ next ]
 ### Added
-- groups: added render and sgx group
+- groups: Added render and sgx group
+
+### Changed
+- linux-em: Updated to v6.6.28
+
+  All machines use the same kernel branch now.
+- libdeviceinfo: updated to v1.7.2
+- emcfg/libdeviceinfo: Add support for reading device serial number from device
+  tree
+
+  Allow reading the serial number without root access once we have updated all
+  U-Boot variants to provide it in the Device Tree
+- emit/libdeviceinfo: Set manufacturer ID, product ID and device type in
+  `product-info.json`
+
+  Instead of hardcoding these values, they are configurable in the machine
+  config now.
+- emit: Update default app download URL to use HTTPS
+- treewide: Make recipes more generic where possible instead of providing
+  separate builds for each machine
+
 ### Fixed
-- Fixed wrong usage of PACKAGECONFIG
+- treewide: Fixed wrong usage of PACKAGECONFIG
+- treewide: Remove obsolete settings from older Yocto versions
 
 ## [ 4.2.0 ] - 2024-04-02
 ### Added
