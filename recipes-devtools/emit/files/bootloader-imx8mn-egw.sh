@@ -1,1 +1,1 @@
-bootloader-em4xx.sh
+bootloader-em-aarch64.sh
