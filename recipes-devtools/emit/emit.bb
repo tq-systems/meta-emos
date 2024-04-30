@@ -8,6 +8,7 @@ SRC_DISTRIBUTE_LICENSES += "TQSSLA_V1.0.2"
 SRC_URI = "\
 	file://emit \
 	file://hook.sh \
+	file://ramsize.sh \
 	file://bootloader-em310.sh \
 	file://bootloader-em4xx.sh \
 	file://bootloader-imx8mn-egw.sh \
@@ -18,6 +19,7 @@ do_install() {
 	install -m755 -d ${D}${bindir} ${D}${datadir}/emit
 
 	install -m755 ${WORKDIR}/emit ${D}${bindir}/
+	install -m755 ${WORKDIR}/ramsize.sh ${D}${datadir}/emit/
 	install -m644 ${WORKDIR}/hook.sh ${D}${datadir}/emit/
 	for machine in em310 em4xx imx8mn-egw; do
 		install -m644 ${WORKDIR}/bootloader-$machine.sh ${D}${datadir}/emit/

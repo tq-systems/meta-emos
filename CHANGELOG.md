@@ -7,6 +7,10 @@
 
   All machines use the same kernel branch now.
 - libdeviceinfo: updated to v1.7.2
+- emcfg: Add support for hardware platforms with two separate Ethernet
+  interfaces "eth0" and "eth1"
+- emcfg: Add support for hardware platforms with RS485 ports
+  "ttyS1" and "ttyS2"
 - emcfg/libdeviceinfo: Add support for reading device serial number from device
   tree
 
@@ -17,7 +21,20 @@
 
   Instead of hardcoding these values, they are configurable in the machine
   config now.
+- emit: Add support for packaging multiple bootloader images in a single
+  update bundle
+
+  The bootloader is not included in the core image anymore; instead, it is
+  copied from DEPLOY_DIR_IMAGE separately.
+
+  During upgrades, a bootloader image is selected based on the machine's primary
+  compatible string and its RAM size found in the Device Tree. The upgrade
+  bundle is rejected if no matching bootloader variant is found.
+- emit: Add support for hardware that expects the "send ACK" eMMC bootpart flag
+  to be set
 - emit: Update default app download URL to use HTTPS
+- u-boot-imx-em: Include missing license information for trusted-firmware-a
+  and firmware-imx-8m
 - treewide: Make recipes more generic where possible instead of providing
   separate builds for each machine
 

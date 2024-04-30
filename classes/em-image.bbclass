@@ -18,7 +18,6 @@ IMAGE_INSTALL += " \
 		kernel-image \
 		kernel-devicetree \
 		kernel-modules \
-		u-boot-em \
 		libubootenv-bin \
 		mmc-utils \
 		e2fsprogs \

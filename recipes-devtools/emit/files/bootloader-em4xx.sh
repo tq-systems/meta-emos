@@ -46,5 +46,5 @@ bootloader_upgrade () {
 		echo 1 >"/sys/class/block/${dev}/force_ro"
 	fi
 
-	mmc bootpart enable "${slot}" 0 "/dev/${MMCBLK}"
+	mmc bootpart enable "${slot}" 1 "/dev/${MMCBLK}"
 }
