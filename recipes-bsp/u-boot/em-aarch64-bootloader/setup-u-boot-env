@@ -1,0 +1,28 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+#
+# Copyright (C) 2024 TQ-Systems GmbH <oss@ew.tq-group.com>, D-82229 Seefeld, Germany.
+# Author: Matthias Schiffer
+
+set -eo pipefail
+
+device_variant() {
+	# Avoid head -z, which is not available in busybox
+	tr </proc/device-tree/compatible '\0' '\n' | head -n 1
+}
+
+mkdir -p /run/em
+
+case "$(device_variant)" in
+'tq,em4xx')
+	variant=em4xx
+	;;
+'tq,am625-em-cb30')
+	variant=em-cb30
+	;;
+*)
+	exit 1
+esac
+
+ln -sf "/etc/u-boot-initial-env-${variant}" /run/em/u-boot-initial-env
+ln -sf "/etc/fw_env.config-${variant}" /run/em/fw_env.config
