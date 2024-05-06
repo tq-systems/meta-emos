@@ -25,4 +25,6 @@ SPL_BINARY = "flash.bin"
 
 UBOOT_MAKE_TARGET = "${UBOOT_BINARY} ${SPL_BINARY}"
 
-PREFERRED_VERSION_trusted-firmware-a = "2.6"
+TFA_PLATFORM = "imx8mn"
+TFA_BUILD_TARGET = "bl31"
+COMPATIBLE_MACHINE:pn-trusted-firmware-a = "^mx8mn$"
