@@ -1,11 +1,22 @@
 ## [ next ]
 ### Added
 - groups: Added render and sgx group
+- Added support for the unified "em-aarch64" machine that supports both the
+  EM4xx-CB (hw0200) and the new TI AM62x-based EM-CB30 (hw0210)
+
+  The "em4xx" machine can't be built directly anymore; the machine configuration
+  only exists as a multiconfig that builds the EM4xx-CB bootloader for the
+  em-aarch64 machine. A similar multiconfig machine "em-cb30" has been added
+  as well.
+
+  Existing build configurations must be updated to set `MACHINE` to "em-aarch64"
+  instead of "em4xx".
 
 ### Changed
 - linux-em: Updated to v6.6.28
 
   All machines use the same kernel branch now.
+- u-boot-em: Updated to v2024.01 (EM-CB30 only)
 - libdeviceinfo: updated to v1.7.2
 - emcfg: Add support for hardware platforms with two separate Ethernet
   interfaces "eth0" and "eth1"

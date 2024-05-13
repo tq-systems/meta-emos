@@ -1,0 +1,12 @@
+# Unified bootloader package
+
+This directory contains license documentation for multiple bootloader images
+for different hardware platforms that may be supported by the installed
+upgrade bundle. Only one bootloader image is actually installed on your
+hardware, depending on the "Device type" displayed in the Device Settings.
+
+The license information relevant to your installation can be found in the
+following files:
+
+- For "hw0200", see the files starting with "mc:em4xx"
+- For "hw0210", see the files starting with "mc:em-cb30"

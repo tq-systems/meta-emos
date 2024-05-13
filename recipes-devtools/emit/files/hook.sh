@@ -85,6 +85,10 @@ install-check)
 
 	IFS="$oldIFS"
 
+	# Backwards compat for pre-unification machine name
+	if [ "$MF_MACHINE" = 'em-aarch64' ] && [ "$SYSTEM_MACHINE" = 'em4xx' ]; then
+		SYSTEM_MACHINE='em-aarch64'
+	fi
 
 	if [ "$MF_MACHINE" != "$SYSTEM_MACHINE" ]; then
 		echo "Your hardware is not supported by this firmware bundle." >&2
