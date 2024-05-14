@@ -16,7 +16,9 @@
 - linux-em: Updated to v6.6.28
 
   All machines use the same kernel branch now.
-- u-boot-em: Updated to v2024.01 (EM-CB30 only)
+- u-boot-em: Updated to v2024.01 (EM310, EM4xx, EM-CB30, IMX8MN-EGW)
+
+  All machines use the same bootloader branch now.
 - libdeviceinfo: updated to v1.7.2
 - emcfg: Add support for hardware platforms with two separate Ethernet
   interfaces "eth0" and "eth1"
