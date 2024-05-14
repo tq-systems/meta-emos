@@ -16,9 +16,6 @@ do_compile:prepend () {
     echo ${scm_version} > ${S}/.scmversion
 }
 
-UBOOT_SUFFIX ?= "img"
-SPL_BINARY ?= "MLO"
-
 require ${COREBASE}/meta/recipes-bsp/u-boot/u-boot-common.inc
 require ${COREBASE}/meta/recipes-bsp/u-boot/u-boot.inc
 
@@ -43,8 +40,9 @@ PACKAGECONFIG[atf] = "BL31=${STAGING_DIR_HOST}/firmware/bl31.bin,,trusted-firmwa
 PACKAGECONFIG[optee] = "TEE=${STAGING_DIR_HOST}${nonarch_base_libdir}/firmware/bl32.bin,,optee-os"
 PACKAGECONFIG[dm] = "DM=${STAGING_DIR_HOST}${nonarch_base_libdir}/firmware/ti-dm/${PLAT_SFX}/${DM_FIRMWARE},,ti-dm-fw"
 
-PACKAGECONFIG:append:aarch64 = " atf optee"
+PACKAGECONFIG:append:aarch64 = " atf"
 PACKAGECONFIG:append:am62xx = " dm"
+PACKAGECONFIG:append:k3 = " optee"
 
 BINMAN_INDIRS="${STAGING_DIR_HOST}${nonarch_base_libdir}/firmware"
 

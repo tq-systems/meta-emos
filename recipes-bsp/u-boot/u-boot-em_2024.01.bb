@@ -3,7 +3,7 @@
 # Copyright (C) 2024 TQ-Systems GmbH <oss@ew.tq-group.com>, D-82229 Seefeld, Germany.
 # Author: Matthias Schiffer
 
-require u-boot-ti-em.inc
+require u-boot-em.inc
 
 DESCRIPTION = "U-Boot for TQ-Systems EM-CB30"
 
@@ -36,8 +36,10 @@ do_deploy:append () {
     if [ -n "${UBOOT_CONFIG}" ]; then
         rm -f ${DEPLOYDIR}/${UBOOT_BINARY}
         rm -f ${DEPLOYDIR}/${UBOOT_SYMLINK}
-        rm -f ${DEPLOYDIR}/${SPL_BINARYFILE}
-        rm -f ${DEPLOYDIR}/${SPL_SYMLINK}
+        if [ -n "${SPL_BINARY}" ]; then
+          rm -f ${DEPLOYDIR}/${SPL_BINARYFILE}
+          rm -f ${DEPLOYDIR}/${SPL_SYMLINK}
+        fi
     fi
 }
 
