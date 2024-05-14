@@ -28,7 +28,7 @@ SRC_URI:remove:k3r5 = " \
 "
 
 SRCBRANCH = "em-v2024.01"
-SRCREV = "3eb6ab839123bd99f8e7333886a5283264c0834d"
+SRCREV = "23b86ec2f4aaee871e1460ffebfa92744f96f552"
 
 do_deploy:append () {
     # If we have multiple configs, only deploy the individual variants with
