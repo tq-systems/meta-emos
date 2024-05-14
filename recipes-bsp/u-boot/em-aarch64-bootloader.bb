@@ -21,13 +21,15 @@ SRC_URI = "\
 
 do_compile[cleandirs] = "${B}"
 do_compile () {
-    cp "${DEPLOY_DIR_IMAGE_MC_em4xx}/flash.bin" bootloader-em4xx.bin
+    cp "${DEPLOY_DIR_IMAGE_MC_em4xx}/flash.bin-512m" bootloader-em4xx-512m.bin
+    cp "${DEPLOY_DIR_IMAGE_MC_em4xx}/flash.bin-1g" bootloader-em4xx-1g.bin
     cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/bootloader-512m.bin" bootloader-em-cb30-512m.bin
     cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/bootloader-1g.bin" bootloader-em-cb30-1g.bin
     cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/bootloader-2g.bin" bootloader-em-cb30-2g.bin
 
     cp "${DEPLOY_DIR_IMAGE_MC_em4xx}/fw_env.config-em4xx" .
-    cp "${DEPLOY_DIR_IMAGE_MC_em4xx}/u-boot-initial-env-em4xx" .
+    # promote the 512m initial-env to the initial-env for all other em4xx configs, because they are identical anyways
+    cp "${DEPLOY_DIR_IMAGE_MC_em4xx}/u-boot-initial-env-em4xx-512m" u-boot-initial-env-em4xx
     cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/fw_env.config-em-cb30" .
     cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/u-boot-initial-env-em-cb30" .
 }

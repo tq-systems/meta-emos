@@ -10,8 +10,8 @@ MACHINEOVERRIDES =. "mx8:mx8m:mx8mn:em:"
 
 require conf/machine/include/arm/arch-arm64.inc
 
-PREFERRED_PROVIDER_u-boot = "u-boot-imx-em"
-PREFERRED_PROVIDER_virtual/bootloader = "u-boot-imx-em"
+PREFERRED_PROVIDER_u-boot = "u-boot-em"
+PREFERRED_PROVIDER_virtual/bootloader = "u-boot-em"
 
 # Set DDR FIRMWARE
 DDR_FIRMWARE_NAME = "lpddr4_pmu_train_1d_imem.bin lpddr4_pmu_train_1d_dmem.bin lpddr4_pmu_train_2d_imem.bin lpddr4_pmu_train_2d_dmem.bin"
