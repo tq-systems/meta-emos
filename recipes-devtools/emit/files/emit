@@ -445,13 +445,25 @@ class CommandBuild(CommandCommon):
 		if name_key in info:
 			name = info[name_key]
 		else:
-			name = info['name']
+			# fallback when unified toolchain with machine == "em-aarch64"
+			# builds bundle with old product_info (name_em4xx)
+			name_key = "name_em4xx"
+			if name_key in info:
+				name = info[name_key]
+			else:
+				name = info['name']
 
 		code_key = "code_" + machine
 		if code_key in info:
 			code = info[code_key]
 		else:
-			code = info['code']
+			# fallback when unified toolchain with machine == "em-aarch64"
+			# builds bundle with old product_info (code_em4xx)
+			code_key = "code_em4xx"
+			if code_key in info:
+				code = info[code_key]
+			else:
+				code = info['code']
 
 		return name, code
 
