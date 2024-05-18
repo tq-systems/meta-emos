@@ -47,10 +47,11 @@ check_version() {
 
 device_variant() {
 	# For maximum compatibility, avoid head -z, which is not available in busybox
-	local compatible="$(tr </proc/device-tree/compatible '\0' '\n' | head -n 1)"
+	# compatible: replace ',' with '_' to turn 'tq,..' into 'tq_...', which is used as bootloader filename
+	local compatible="$(tr </proc/device-tree/compatible '\0' '\n' | head -n 1 | tr ',' '_' )"
 	local ram_size="$("$BASEDIR"/ramsize.sh)"
 
-	echo "${compatible}:${ram_size}m"
+	echo "${compatible}_${ram_size}m"
 }
 
 bootloader_digest() {
