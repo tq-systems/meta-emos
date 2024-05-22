@@ -1,0 +1,104 @@
+#!/bin/sh
+
+set -e
+
+if [ "$#" -lt "1" ]; then
+	echo "Pass at least one argument"
+	exit 1
+fi
+
+PRODUCT_INFO=/etc/product-info.json
+CFGSYS=/cfglog/system
+CFGAUTH=/cfglog/auth
+UNIT_LIST=""
+UNIT_CONFIG_LIST=""
+SYSTEM_CONFIG_LIST=""
+
+get_serial() {
+	fw_printenv -n serial
+}
+
+get_default_hostname() {
+	local product_code="$(jq -r '.code' <"$PRODUCT_INFO")"
+	echo "${product_code}-$(get_serial)"
+}
+
+# validate arguments
+for arg in "$@"; do
+	case "$arg" in
+	timezone)
+		UNIT_LIST="$UNIT_LIST em-app-device-settings"
+		SYSTEM_CONFIG_LIST="$SYSTEM_CONFIG_LIST timezone"
+		;;
+	ntp)
+		UNIT_LIST="$UNIT_LIST em-app-device-settings"
+		SYSTEM_CONFIG_LIST="$SYSTEM_CONFIG_LIST ntp"
+		;;
+	ftp)
+		UNIT_LIST="$UNIT_LIST em-app-device-settings"
+		SYSTEM_CONFIG_LIST="$SYSTEM_CONFIG_LIST ftp"
+		;;
+	smtp)
+		UNIT_LIST="$UNIT_LIST em-app-device-settings"
+		SYSTEM_CONFIG_LIST="$SYSTEM_CONFIG_LIST smtp"
+		;;
+	hostname)
+		UNIT_LIST="$UNIT_LIST em-app-device-settings"
+		SYSTEM_CONFIG_LIST="$SYSTEM_CONFIG_LIST hostname"
+		;;
+	*/*)
+		echo >&2 "Argument contains a slash: $arg"
+		exit 1
+		;;
+	.|..)
+		echo >&2 "Not supported argument: $arg"
+		exit 1
+		;;
+	*)
+		UNIT_LIST="$UNIT_LIST $arg"
+		UNIT_CONFIG_LIST="$UNIT_CONFIG_LIST $arg"
+		;;
+	esac
+done
+
+echo "Stopping: $UNIT_LIST"
+systemctl stop $UNIT_LIST
+
+# remove app configurations
+for unit in $UNIT_CONFIG_LIST; do
+	case "$unit" in
+	em-app-*)
+		APP_ID="$(echo "$unit" | sed -e 's/^em-app-//')"
+		rm -vrf "/cfglog/apps/$APP_ID/"*
+		;;
+	esac
+done
+
+# remove system configurations
+for config in $SYSTEM_CONFIG_LIST; do
+	case "$config" in
+	timezone)
+		rm -vf $CFGSYS/timezone.json
+		;;
+	ntp)
+		rm -vf $CFGSYS/ntp.json
+		echo '{"enable":true}' > $CFGSYS/ntp.json
+		;;
+	ftp)
+		rm -vf $CFGSYS/ftp.json
+		rm -vf $CFGAUTH/ftp.json
+		;;
+	smtp)
+		rm -vf $CFGSYS/smtp.json
+		rm -vf $CFGAUTH/smtp.json
+		;;
+	hostname)
+		get_default_hostname   > /etc/hostname
+		;;
+	esac
+done
+
+echo "Starting: $UNIT_LIST"
+systemctl start $UNIT_LIST
+
+exit 0
