@@ -18,9 +18,6 @@ apps:
   json:
     version: '2.3.2'
 
-  sensors:
-    version: '1.4.0'
-
   smart-meter:
     arch: 'all'
     version: '2.4.1'
