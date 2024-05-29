@@ -7,6 +7,18 @@ if [ "$#" -lt "1" ]; then
 	exit 1
 fi
 
+# Print deprecation warning.
+cat <<END_OF_DEPRECATION_WARNING >&2
+
+WARNING: em-config-reset is DEPRECATED and will be removed soon!
+
+For regular apps, use drop-in replacement \`em-appctl\`. For restoring default
+values of system configs, employ emcfg. For more information, refer to
+\`em-appctl help\` and \`emcfg help\`.
+
+END_OF_DEPRECATION_WARNING
+
+
 PRODUCT_INFO=/etc/product-info.json
 CFGSYS=/cfglog/system
 CFGAUTH=/cfglog/auth
