@@ -91,8 +91,7 @@ def em_bundle_bootloaders(d):
     ret = []
 
     for bootloader in bootloaders:
-        flag = bootloader.replace(',', '_').replace(':', '_')
-        file = os.path.join(deploydir, d.getVarFlag('EM_BUNDLE_BOOTLOADER', flag))
+        file = os.path.join(deploydir, d.getVarFlag('EM_BUNDLE_BOOTLOADER', bootloader))
         ret.append(f"--bootloader '{bootloader}' '{file}'")
 
     return ' '.join(ret)
