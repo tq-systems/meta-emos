@@ -50,6 +50,8 @@
   and firmware-imx-8m
 - treewide: Make recipes more generic where possible instead of providing
   separate builds for each machine
+- Remove obsolete sensors app from sdk bundle
+- Update base apps and sdk apps
 
 ### Fixed
 - treewide: Fixed wrong usage of PACKAGECONFIG
