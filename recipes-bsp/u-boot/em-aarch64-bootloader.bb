@@ -12,7 +12,9 @@ DESCRIPTION = "Bootloader images for all hardware supported by the em-aarch64 ma
 PROVIDES = "virtual/bootloader"
 
 inherit deploy extra-license-depends
-EXTRA_LICENSE_MCDEPENDS = "mc::em4xx:virtual/bootloader mc::em-cb30:k3-bootloader-image"
+EXTRA_LICENSE_MCDEPENDS = ""
+EXTRA_LICENSE_MCDEPENDS:append:em-with-em4xx = " mc::em4xx:virtual/bootloader"
+EXTRA_LICENSE_MCDEPENDS:append:em-with-em-cb30 = " mc::em-cb30:k3-bootloader-image"
 
 SRC_URI = "\
     file://README \
@@ -21,25 +23,38 @@ SRC_URI = "\
 
 do_compile[cleandirs] = "${B}"
 do_compile () {
+    :
+}
+do_compile:append:em-with-em4xx () {
     cp "${DEPLOY_DIR_IMAGE_MC_em4xx}/flash.bin-512m" bootloader-em4xx-512m.bin
     cp "${DEPLOY_DIR_IMAGE_MC_em4xx}/flash.bin-1g" bootloader-em4xx-1g.bin
-    cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/bootloader-512m.bin" bootloader-em-cb30-512m.bin
-    cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/bootloader-1g.bin" bootloader-em-cb30-1g.bin
-    cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/bootloader-2g.bin" bootloader-em-cb30-2g.bin
 
     cp "${DEPLOY_DIR_IMAGE_MC_em4xx}/fw_env.config-em4xx" .
     # promote the 512m initial-env to the initial-env for all other em4xx configs, because they are identical anyways
     cp "${DEPLOY_DIR_IMAGE_MC_em4xx}/u-boot-initial-env-em4xx-512m" u-boot-initial-env-em4xx
+}
+do_compile:append:em-with-em-cb30 () {
+    cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/bootloader-512m.bin" bootloader-em-cb30-512m.bin
+    cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/bootloader-1g.bin" bootloader-em-cb30-1g.bin
+    cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/bootloader-2g.bin" bootloader-em-cb30-2g.bin
+
     cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/fw_env.config-em-cb30" .
     cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/u-boot-initial-env-em-cb30" .
 }
-do_compile[mcdepends] += "mc::em4xx:virtual/bootloader:do_deploy mc::em-cb30:k3-bootloader-image:do_deploy"
+COMPILE_MCDEPENDS = ""
+COMPILE_MCDEPENDS:append:em-with-em4xx = " mc::em4xx:virtual/bootloader:do_deploy"
+COMPILE_MCDEPENDS:append:em-with-em-cb30 = " mc::em-cb30:k3-bootloader-image:do_deploy"
+do_compile[mcdepends] += "${COMPILE_MCDEPENDS}"
+
+INSTALL_CONFIGS = ""
+INSTALL_CONFIGS:append:em-with-em4xx = " em4xx"
+INSTALL_CONFIGS:append:em-with-em-cb30 = " em-cb30"
 
 do_install () {
     install -D -m 755 -t "${D}${base_sbindir}" "${WORKDIR}/setup-u-boot-env"
 
     for file in fw_env.config u-boot-initial-env; do
-        for config in em4xx em-cb30; do
+        for config in ${INSTALL_CONFIGS}; do
             install -D -m 644 -t "${D}${sysconfdir}" "${B}/${file}-${config}"
         done
 
