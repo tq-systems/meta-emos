@@ -1,4 +1,8 @@
-## [ v5.0.0 ] - 2024-05-31
+## [ 5.0.1 ] - 2024-06-03
+### Fixed
+- u-boot-em: fixed missing explicit firmware dependency
+
+## [ 5.0.0 ] - 2024-05-31
 ### Added
 - groups: Added render and sgx group
 - Added support for the unified "em-aarch64" machine that supports both the
