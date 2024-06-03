@@ -22,10 +22,8 @@ EXTRA_LICENSE_DEPENDS:k3 = "ti-sci-fw trusted-firmware-a optee-os"
 EXTRA_LICENSE_DEPENDS:k3r5 = "ti-sci-fw"
 EXTRA_LICENSE_DEPENDS:mx8m = "trusted-firmware-a firmware-imx-8m"
 
-IMX_EXTRA_FIRMWARE = ""
-IMX_EXTRA_FIRMWARE:mx8m = "firmware-imx-8m"
-
-DEPENDS += "${IMX_EXTRA_FIRMWARE}"
+EXTRA_COMPILE_DEPENDS = ""
+EXTRA_COMPILE_DEPENDS:mx8m = "firmware-imx-8m:do_deploy"
 
 SRC_URI = " \
     git://github.com/tq-systems/u-boot-em.git;branch=${SRCBRANCH};protocol=https \
@@ -59,6 +57,7 @@ do_compile:prepend:mx8m() {
 		done
 	fi
 }
+do_compile[depends] += "${EXTRA_COMPILE_DEPENDS}"
 
 do_deploy:append () {
     # If we have multiple configs, only deploy the individual variants with
