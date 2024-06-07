@@ -16,65 +16,65 @@ CMD="$1"; shift
 
 
 get_serial() {
-	cat /proc/device-tree/tq,serial-number 2>/dev/null || fw_printenv -n serial
+    cat /proc/device-tree/tq,serial-number 2>/dev/null || fw_printenv -n serial
 }
 
 get_default_hostname() {
-	local product_code="$(jq -r '.code' <"$PRODUCT_INFO")"
-	echo "${product_code}-$(get_serial)"
+    local product_code="$(jq -r '.code' <"$PRODUCT_INFO")"
+    echo "${product_code}-$(get_serial)"
 }
 
 
 set_default_network() {
-	local tmp_file=$CFGNETWORKCONF.tmp
+    local tmp_file=$CFGNETWORKCONF.tmp
 
-	if [ -e /opt/apps/presets/system/network.json ]; then
-		cp /opt/apps/presets/system/network.json "$tmp_file"
-	else
-		echo '{"mode":"dhcp"}' > "$tmp_file"
-	fi
-	sync "$tmp_file"
-	mv "$tmp_file" "$CFGNETWORKCONF"
-	sync "$CFGNETWORKCONF"
+    if [ -e /opt/apps/presets/system/network.json ]; then
+        cp /opt/apps/presets/system/network.json "$tmp_file"
+    else
+        echo '{"mode":"dhcp"}' > "$tmp_file"
+    fi
+    sync "$tmp_file"
+    mv "$tmp_file" "$CFGNETWORKCONF"
+    sync "$CFGNETWORKCONF"
 }
 
 cmd_init() {
-	mkdir -p $CFG
+    mkdir -p $CFG
 
-	[ -e $CFG/machine-id ] || touch                    $CFG/machine-id
-	[ -e $CFG/hostname ]   || get_default_hostname   > $CFG/hostname
-	[ -e $CFG/ntp.json ]   || echo '{"enable":true}' > $CFG/ntp.json
+    [ -e $CFG/machine-id ] || touch                    $CFG/machine-id
+    [ -e $CFG/hostname ]   || get_default_hostname   > $CFG/hostname
+    [ -e $CFG/ntp.json ]   || echo '{"enable":true}' > $CFG/ntp.json
 
-	if [ ! -e $CFGNETWORKCONF ]; then
-		set_default_network
-	fi
+    if [ ! -e $CFGNETWORKCONF ]; then
+        set_default_network
+    fi
 
-	# transfer configs from app presets to /run, if any
-	[ -e $PRESETSRUN ] && cp -r $PRESETSRUN/* /run
+    # transfer configs from app presets to /run, if any
+    [ -e $PRESETSRUN ] && cp -r $PRESETSRUN/* /run
 }
 
 cmd_update_network() {
-	local macaddr="$(cat /sys/class/net/eth0/address)"
-	local config
+    local macaddr="$(cat /sys/class/net/eth0/address)"
+    local config
 
-	if [ -e /sys/class/net/lan0 ]; then
-		config=switch
-	elif [ -e /sys/class/net/eth1 ]; then
-		config=double
-	else
-		config=single
-	fi
+    if [ -e /sys/class/net/lan0 ]; then
+        config=switch
+    elif [ -e /sys/class/net/eth1 ]; then
+        config=double
+    else
+        config=single
+    fi
 
-	rm -rf $RUNSDNET
-	mkdir -p $RUNSDNET
+    rm -rf $RUNSDNET
+    mkdir -p $RUNSDNET
 
-	for file in "$NETCONF/$config/"*; do
-		ln -s "$file" $RUNSDNET/
-	done
+    for file in "$NETCONF/$config/"*; do
+        ln -s "$file" $RUNSDNET/
+    done
 
-	jq \
-		--arg macaddr "$macaddr" \
-		-r '
+    jq \
+        --arg macaddr "$macaddr" \
+        -r '
 "[Match]
 Name=br0
 
@@ -88,93 +88,93 @@ ClientIdentifier=mac
 LinkLocalAddressing=yes",
 
 if .mode == "static" then
-	"DHCP=no",
-	"Address=\(.address)/\(.prefixlen)",
+    "DHCP=no",
+    "Address=\(.address)/\(.prefixlen)",
 
-	if .gateway then
-		"Gateway=\(.gateway)"
-	else
-		empty
-	end,
-	(.dns // [] | map("DNS=\(.)") | .[])
+    if .gateway then
+        "Gateway=\(.gateway)"
+    else
+        empty
+    end,
+    (.dns // [] | map("DNS=\(.)") | .[])
 
 else
-	"DHCP=ipv4"
+    "DHCP=ipv4"
 end,
 
 if .hidden.address and .hidden.prefixlen then
-	"\n[Address]",
-	"Address=\(.hidden.address)/\(.hidden.prefixlen)",
-	"Scope=link",
-	"Label=preset",
-	"PreferredLifetime=0"
+    "\n[Address]",
+    "Address=\(.hidden.address)/\(.hidden.prefixlen)",
+    "Scope=link",
+    "Label=preset",
+    "PreferredLifetime=0"
 else
-	empty
+    empty
 end
-	' < $CFGNETWORKCONF > $RUNSDNET/br0.network
+    ' < $CFGNETWORKCONF > $RUNSDNET/br0.network
 }
 
 cmd_update_ntp() {
-	mkdir -p $RUNETC/systemd/
+    mkdir -p $RUNETC/systemd/
 
-	jq -r '
+    jq -r '
 "[Time]",
 (.servers // [] | map("NTP=\(.)") | .[])
-	' < $CFG/ntp.json > $RUNETC/systemd/timesyncd.conf
+    ' < $CFG/ntp.json > $RUNETC/systemd/timesyncd.conf
 }
 
 cmd_reset_password() {
-	logger 'Resetting password configuration.'
+    logger 'Resetting password configuration.'
 
-	systemctl stop em-app-web-login
-	# This resets all users - if we ever allow adding multiple users, we should not just delete the whole file
-	rm $APPCFG/web-login/users.json
-	systemctl start em-app-web-login
+    systemctl stop em-app-web-login
+    # This resets all users - if we ever allow adding multiple users, we should not just delete the whole file
+    rm $APPCFG/web-login/users.json
+    systemctl start em-app-web-login
 
-	rm -f $CFG/password
-	em-update-password
+    rm -f $CFG/password
+    em-update-password
 }
 
 cmd_reset_network() {
-	logger 'Resetting network configuration.'
+    logger 'Resetting network configuration.'
 
-	set_default_network
-	cmd_update_network
-	systemctl restart systemd-networkd.service
+    set_default_network
+    cmd_update_network
+    systemctl restart systemd-networkd.service
 }
 
 cmd_debug_access() {
-	logger 'Enabling SSH debug access.'
+    logger 'Enabling SSH debug access.'
 
-	systemctl --no-block start dropbear.socket
+    systemctl --no-block start dropbear.socket
 }
 
 cmd_update() {
-	em-update-password
-	cmd_update_network
-	cmd_update_ntp
+    em-update-password
+    cmd_update_network
+    cmd_update_ntp
 
-	if [ "$(fw_printenv -n enable_ssh 2>/dev/null)" = '1' ]; then
-		cmd_debug_access
-	fi
+    if [ "$(fw_printenv -n enable_ssh 2>/dev/null)" = '1' ]; then
+        cmd_debug_access
+    fi
 }
 
 cmd_factory_reset() {
-	logger 'Performing factory reset.'
+    logger 'Performing factory reset.'
 
-	touch /update/factory-reset
-	reboot
+    touch /update/factory-reset
+    reboot
 }
 
 cmd_restore_backup() {
-	if [ ! -e '/update/backup.tar.gz' ]; then
-		echo >&2 'No backup file found.'
-		exit 1
-	fi
+    if [ ! -e '/update/backup.tar.gz' ]; then
+        echo >&2 'No backup file found.'
+        exit 1
+    fi
 
-	logger 'Importing backup.'
-	touch /update/backup-restore
-	reboot
+    logger 'Importing backup.'
+    touch /update/backup-restore
+    reboot
 }
 
 case "$CMD" in
@@ -187,10 +187,10 @@ reset_network|\
 debug_access|\
 factory_reset|\
 restore_backup)
-	"cmd_$CMD"
-	;;
+    "cmd_$CMD"
+    ;;
 
 *)
-	echo >&2 'emcfg: unknown command.'
-	exit 1
+    echo >&2 'emcfg: unknown command.'
+    exit 1
 esac
