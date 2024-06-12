@@ -6,3 +6,4 @@ Kind=bridge
 MulticastQuerier=no
 MulticastSnooping=no
 STP=no
+FDBMaxLearned=1024
