@@ -1,4 +1,8 @@
 ## [ next ]
+### Fixed
+- u-boot-em:
+  - Fix regression in RTC configuration on all hardware variants
+  - Revert incompatible environment change on EM4xx-CB
 
 ## [ 5.0.1 ] - 2024-06-03
 ### Fixed
