@@ -1,0 +1,66 @@
+From e493642e71704f14d845eb5db9e4b81bb634415b Mon Sep 17 00:00:00 2001
+From: Gregor Herburger <gregor.herburger@ew.tq-group.com>
+Date: Tue, 11 Jun 2024 15:36:46 +0200
+Subject: [PATCH] network: bridge: add support for IFLA_BR_FDB_MAX_LEARNED
+
+Signed-off-by: Gregor Herburger <gregor.herburger@ew.tq-group.com>
+---
+ src/libsystemd/sd-netlink/netlink-types-rtnl.c | 1 +
+ src/network/netdev/bridge.c                    | 6 ++++++
+ src/network/netdev/bridge.h                    | 1 +
+ src/network/netdev/netdev-gperf.gperf          | 1 +
+ 4 files changed, 9 insertions(+)
+
+diff --git a/src/libsystemd/sd-netlink/netlink-types-rtnl.c b/src/libsystemd/sd-netlink/netlink-types-rtnl.c
+index 167bbc5ccfc6..1d653fbbce8d 100644
+--- a/src/libsystemd/sd-netlink/netlink-types-rtnl.c
++++ b/src/libsystemd/sd-netlink/netlink-types-rtnl.c
+@@ -174,6 +174,7 @@ static const NLType rtnl_link_info_data_bridge_types[] = {
+         [IFLA_BR_MCAST_MLD_VERSION]          = { .type = NETLINK_TYPE_U8 },
+         [IFLA_BR_VLAN_STATS_PER_PORT]        = { .type = NETLINK_TYPE_U8 },
+         [IFLA_BR_MULTI_BOOLOPT]              = { .type = NETLINK_TYPE_BINARY, .size = sizeof(struct br_boolopt_multi) },
++        [IFLA_BR_FDB_MAX_LEARNED]            = { .type = NETLINK_TYPE_U32 },
+ };
+ 
+ static const NLType rtnl_link_info_data_can_types[] = {
+diff --git a/src/network/netdev/bridge.c b/src/network/netdev/bridge.c
+index b974f2ae0a67..5b506043fee6 100644
+--- a/src/network/netdev/bridge.c
++++ b/src/network/netdev/bridge.c
+@@ -151,6 +151,12 @@ static int netdev_bridge_post_create(NetDev *netdev, Link *link, sd_netlink_mess
+                         return log_netdev_error_errno(netdev, r, "Could not append IFLA_BR_MCAST_IGMP_VERSION attribute: %m");
+         }
+ 
++        if (b->fdb_max_learned > 0) {
++                r = sd_netlink_message_append_u32(req, IFLA_BR_FDB_MAX_LEARNED, b->fdb_max_learned);
++                if (r < 0)
++                        return log_netdev_error_errno(netdev, r, "Could not append IFLA_BR_FDB_MAX_LEARNED attribute: %m");
++        }
++
+         r = sd_netlink_message_close_container(req);
+         if (r < 0)
+                 return log_netdev_error_errno(netdev, r, "Could not append IFLA_LINKINFO attribute: %m");
+diff --git a/src/network/netdev/bridge.h b/src/network/netdev/bridge.h
+index a6f322404410..15ea332c3a40 100644
+--- a/src/network/netdev/bridge.h
++++ b/src/network/netdev/bridge.h
+@@ -19,6 +19,7 @@ typedef struct Bridge {
+         uint16_t group_fwd_mask;
+         uint16_t default_pvid;
+         uint8_t igmp_version;
++        uint32_t fdb_max_learned;
+ 
+         usec_t forward_delay;
+         usec_t hello_time;
+diff --git a/src/network/netdev/netdev-gperf.gperf b/src/network/netdev/netdev-gperf.gperf
+index a948ec2c8a0e..a8520ffbfaef 100644
+--- a/src/network/netdev/netdev-gperf.gperf
++++ b/src/network/netdev/netdev-gperf.gperf
+@@ -221,6 +221,7 @@ Bridge.VLANFiltering,                     config_parse_tristate,
+ Bridge.VLANProtocol,                      config_parse_vlanprotocol,                 0,                             offsetof(Bridge, vlan_protocol)
+ Bridge.STP,                               config_parse_tristate,                     0,                             offsetof(Bridge, stp)
+ Bridge.MulticastIGMPVersion,              config_parse_uint8,                        0,                             offsetof(Bridge, igmp_version)
++Bridge.FDBMaxLearned,                     config_parse_uint32,                       0,                             offsetof(Bridge, fdb_max_learned)
+ VRF.TableId,                              config_parse_uint32,                       0,                             offsetof(Vrf, table) /* deprecated */
+ VRF.Table,                                config_parse_uint32,                       0,                             offsetof(Vrf, table)
+ BareUDP.DestinationPort,                  config_parse_ip_port,                      0,                             offsetof(BareUDP, dest_port)
