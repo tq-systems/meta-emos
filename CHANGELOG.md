@@ -1,5 +1,6 @@
 ## [ next ]
 ### Fixed
+- layer.conf: Remove obsolete meta-python2 dependency
 - u-boot-em:
   - Fix regression in RTC configuration on all hardware variants
   - Revert incompatible environment change on EM4xx-CB
