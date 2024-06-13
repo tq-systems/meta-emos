@@ -38,6 +38,8 @@ static void print_usage(const char *prog) {
 	     "  list-apps             Prints the names of all installed apps and their versions\n"
 	     "  list                  (deprecated for list-apps)\n"
 	     "\n"
+	     "  is-installed <app>    Returns exit code 0 if <app> is installed, 1 otherwise\n"
+	     "  is-enabled <app>      Returns exit code 0 if <app> is enabled, 1 otherwise\n"
 	     "  status [app]          Prints the current status and manifest information of\n"
 	     "                        [all/an] installed apps\n"
 	     "  info <pkg>            Prints the manifest of an app package\n"
@@ -92,6 +94,8 @@ const struct empkg_cmd empkg_cmd_list[] = {
 	{ "list-autostart", 0, list_autostart },
 	{ "list-apps"     , 0, list_apps      },
 	{ "list"          , 0, list_apps      }, /* deprecated */
+	{ "is-installed"  , 1, is_installed   },
+	{ "is-enabled"    , 1, is_enabled     },
 	{ "status"        , 2, status         },
 	{ "info"          , 1, info           },
 	{ "install"       , 1, app_install    },

@@ -75,3 +75,17 @@ int list_apps(void) {
 
 	return 0;
 };
+
+int is_installed(const char *id) {
+	if (appdb_is(INSTALLED, id))
+		return 0;
+	else
+		return ERRORCODE;
+};
+
+int is_enabled(const char *id) {
+	if (appdb_is(ENABLED, id))
+		return 0;
+	else
+		return ERRORCODE;
+};

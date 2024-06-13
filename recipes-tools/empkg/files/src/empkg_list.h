@@ -14,3 +14,5 @@ int list_installed(void);
 int list_enabled(void);
 int list_autostart(void);
 int list_apps(void);
+int is_installed(const char *id);
+int is_enabled(const char *id);
