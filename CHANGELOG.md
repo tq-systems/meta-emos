@@ -1,4 +1,7 @@
 ## [ next ]
+### Added
+- linux-em: Add IFLA_BR_FDB_MAX_LEARNED and limit fdb max learned fdb entries
+
 ### Fixed
 - layer.conf: Remove obsolete meta-python2 dependency
 - u-boot-em:
