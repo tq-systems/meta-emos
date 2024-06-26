@@ -18,6 +18,7 @@ GROUPADD_PARAM:${PN} += "--system em-group-cfglog;"
 SRC_URI = " \
 	file://LICENSE \
 	file://emcfg \
+	file://em-appctl \
 	file://em-config-reset \
 	file://em-init \
 	file://em-update-password \
@@ -48,6 +49,7 @@ do_install() {
 	install -d ${D}${base_sbindir}
 	install -m 0755 \
 		emcfg \
+		em-appctl \
 		em-config-reset \
 		em-init \
 		em-update-password \

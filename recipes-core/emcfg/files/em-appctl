@@ -1,0 +1,454 @@
+#!/bin/sh
+# shellcheck disable=SC3018,SC3040,SC3043
+set -euo pipefail
+
+
+################################################################################
+##                                 Variables                                  ##
+################################################################################
+
+SCRIPT_NAME="$(basename "$0")"
+EM_APP_PREFIX='em-app-'
+
+# Default options
+VERBOSE=                                # set non-zero to enable info messages
+
+
+################################################################################
+##                                 Usage                                      ##
+################################################################################
+
+print_usage_main() {
+    # Do not indent the Here doc.
+    cat <<END_OF_USAGE
+Manage Energy Manager apps and their configurations.
+
+Usage: $SCRIPT_NAME [OPTS ...] COMMAND [ARGS ...]
+
+Use "$SCRIPT_NAME COMMAND help" to get help on a specific command.
+
+Supported commands:
+    start:          start apps
+    stop:           stop apps
+    restart:        restart apps
+    set-config:     set app config to the content of a given file and restart app
+    reset:          restart an app, removing all of its config files
+    help:           show this help message and exit
+
+Supported options:
+    -v:             verbose mode: show informative log messages
+    -h:             show this help message and exit
+END_OF_USAGE
+}
+
+print_usage_start() {
+    cat <<END_OF_USAGE
+Start the given list of apps.
+
+Usage: $SCRIPT_NAME start APP1 [APP2 ...]
+
+Examples:
+    $SCRIPT_NAME start device-settings
+    $SCRIPT_NAME start device-settings teridiand
+END_OF_USAGE
+}
+
+print_usage_stop() {
+    cat <<END_OF_USAGE
+Stop the given list of apps. The command returns a list of stopped dependent
+apps that have also been stopped such that they can be restarted again later.
+
+Usage: $SCRIPT_NAME stop APP1 [APP2 ...]
+
+Examples:
+    $SCRIPT_NAME stop device-settings teridiand
+
+    # Store stopped dependents and restart them again:
+    stopped_deps="\$($SCRIPT_NAME stop device-settings)"
+    $SCRIPT_NAME start device-settings \$stopped_deps
+END_OF_USAGE
+}
+
+print_usage_restart() {
+    cat <<END_OF_USAGE
+Restart the given apps.
+
+Usage: $SCRIPT_NAME restart APP1 [APP2 ...]
+
+Examples:
+    $SCRIPT_NAME restart device-settings teridiand
+END_OF_USAGE
+}
+
+print_usage_set_config() {
+    cat <<END_OF_USAGE
+Stop the given app, replace the configuration file with the content of a given
+source file and start the app again. A target config file can be specified,
+otherwise the default config file of the app is used.
+
+Usage: $SCRIPT_NAME set-config APP SOURCE_FILE [TARGET_FILE]
+
+Examples:
+    $SCRIPT_NAME set-config health-check    /tmp/config.json
+    $SCRIPT_NAME set-config device-settings /tmp/test_smtp.json /cfglog/auth/smtp.json
+END_OF_USAGE
+}
+
+print_usage_reset() {
+    cat <<END_OF_USAGE
+Restart apps and remove all of its configuration files.  Supports configurations
+in non-standard locations as well.
+
+Usage:
+    $SCRIPT_NAME reset APP1 [APP2 ...]
+        # or:
+    $SCRIPT_NAME reset -p APP CONFIG_PATH_1 [CONFIG_PATH_2 ...]
+
+This command has two modes that can be toggled via the -p ('path') flag. By
+default, it uses the "app list" mode that accepts one or more app names. For
+each app, all configs in the default config directories (i.e.,
+/cfglog/apps/<APP_ID>/ and /run/em/apps/<APP_ID>/) are removed.
+
+The second mode ("path mode") accepts only a single app and one or more paths to
+config files or directories. It is required for apps that use config files in
+non-standard locations, or to remove only a specific config file in the default
+config directory of a certain app (instead of removing all).
+
+Examples:
+    $SCRIPT_NAME reset device-settings health-check
+    $SCRIPT_NAME reset -p health-check    /data/apps/health-check
+    $SCRIPT_NAME reset -p device-settings /cfglog/apps/device-settings/serial_config.json
+END_OF_USAGE
+}
+
+
+################################################################################
+##                                 Functions                                  ##
+################################################################################
+
+# Print an warning/error message to STDERR.
+log_warn() { echo "WARNING: $*" >&2; }
+log_err() { echo "ERROR: $*" >&2; }
+
+# Print an error message and exit with an error code.
+log_fatal() { log_err "$*"; exit 1; }
+
+# Print a debug message to STDERR if VERBOSE is set.
+log_info() {
+    if [ -n "$VERBOSE" ]; then
+        echo "$*" >&2
+    fi
+}
+
+# Given the output of a systemd transaction, extract a list of all stopped
+# dependent units/apps. Reads from STDIN and prints to STDOUT.
+filter_stopped_deps() {
+    local deps
+
+    stopped_dep_line_pattern="^Enqueued auxiliary job [[:digit:]]+ (${EM_APP_PREFIX}[-_[:alnum:]]+)[.]service[/]stop[.]\$"
+    app_name_pattern="${EM_APP_PREFIX}[-_[:alnum:]]+"
+
+    # Filter input, join the output into a single line. Remove em-app-prefixes.
+    deps=$(     # no quotes here!
+        grep -E "$stopped_dep_line_pattern" |
+            grep -Eo "$app_name_pattern" |
+            sed "s/^$EM_APP_PREFIX//" || true  # no fail if empty
+    )
+    [ -z "$deps" ] || echo $deps  # No quotes here! Do not output newline on empty list.
+}
+
+# Stops the given list of systemd units. The transaction is evaluated and a list
+# of stopped dependent unit is returned such that they can be restarted later.
+stop_apps() {
+    local app_list=
+
+    # Add em-app- prefix and build unit list.
+    for app_id in "$@"; do
+        app_list="$app_list $(get_service_name "$app_id")"
+    done
+
+    log_info "Stopping: $app_list"
+    { systemctl stop --show-transaction $app_list 2>&1 | filter_stopped_deps; } ||  # outputs stopped deps
+        log_fatal "Failed to stop systemd units '$app_list'"
+}
+
+# Start EM apps or other systemd units.
+start_apps() {
+    local app_list=
+
+    # Add em-app- prefix and build unit list.
+    for app_id in "$@"; do
+        app_list="$app_list $(get_service_name "$app_id")"
+    done
+
+    echo starting
+    log_info "Starting: $app_list"
+    echo starting
+    systemctl start $app_list
+    echo started
+}
+
+# Get the systemd service of a given app id by adding the em-app- prefix.
+get_service_name() {
+    echo "$EM_APP_PREFIX$1"
+}
+
+get_app_config_dir() {
+    echo "/cfglog/apps/$1"
+}
+
+get_app_run_dir() {
+    echo "/run/em/apps/$1"
+}
+
+# Remove config files. If a directory is given, all files within are removed.
+# Log with info level. Log warnings on non-existence, but keep going.
+remove_configs() {
+    local cfg
+
+    for cfg in "$@"; do
+        if [ -f "$cfg" ]; then
+            log_info "$(rm -v "$cfg")"
+        elif [ -d "$cfg" ]; then
+            log_info "$(rm -vrf "${cfg:?}/"*)"
+        else
+            log_warn "Could not remove config '$cfg' as it does not exist."
+        fi
+    done
+}
+
+# Check whether each of the given apps is installed. If not, emit warnings.
+warn_if_uninstalled() {
+    local app_id
+
+    for app_id in "$@"; do
+        empkg is-installed "$app_id" ||
+            log_warn "App '$app_id' does not seem to be installed."
+    done
+}
+
+# For the given app IDs, return the list of default config directories of those
+# apps.
+get_default_config_dirs() {
+    local app_id config_list=
+
+    for app_id in "$@"; do
+        # Add app to app list.
+        app_list="$app_list $app_id"
+
+        # Add default config dirs to config list.
+        config_dir="$(get_app_config_dir "$app_id")"
+        run_dir="$(get_app_run_dir "$app_id")"
+        config_list="$config_list $config_dir $run_dir"
+    done
+
+    echo $config_list
+}
+
+
+################################################################################
+##                                 Commands                                   ##
+################################################################################
+
+# The functions in this section resemble the commands provided by this script.
+
+cmd_start() {
+    local app_list=
+
+    # Ensure we have a posistional argument.
+    if [ "$#" -lt 1 ]; then
+        log_fatal "$SCRIPT_NAME start: pass app list or use '$SCRIPT_NAME start help' to get help."
+    elif [ "$1" = 'help' ]; then
+        print_usage_start
+        exit
+    fi
+
+    app_list="$*"
+
+    warn_if_uninstalled $app_list       # check installation state
+    start_apps $app_list
+}
+
+cmd_stop() {
+    local app_list=""
+
+    # Ensure we have a posistional argument.
+    if [ "$#" -lt 1 ]; then
+        log_fatal "$SCRIPT_NAME stop: pass app list or use '$SCRIPT_NAME stop help' to get help."
+    elif [ "$1" = 'help' ]; then
+        print_usage_stop
+        exit
+    fi
+
+    app_list="$*"
+
+    warn_if_uninstalled $app_list       # check installation state
+    stop_apps $app_list
+}
+
+cmd_restart() {
+    local app_id app_list=
+
+    # Ensure we have a posistional argument.
+    if [ "$#" -lt 1 ]; then
+        log_fatal "$SCRIPT_NAME restart: pass app list or use '$SCRIPT_NAME restart help' to get help."
+    elif [ "$1" = 'help' ]; then
+        print_usage_restart
+        exit
+    fi
+
+    # Add em-app- prefix and restart systemd units.
+    for app_id in "$@"; do
+        warn_if_uninstalled "$app_id"
+        app_list="$app_list $(get_service_name "$app_id")"
+    done
+
+    log_info "Restarting:$app_list"
+    systemctl restart $app_list
+}
+
+# Replace the config of a given app and config file with another config file.
+cmd_set_config() {
+    if [ "${1-}" = 'help' ]; then
+        print_usage_set_config
+        exit
+    fi
+
+    # Ensure we have 2--3 positional arguments.
+    if [ $# -lt 2 ] || [ $# -gt 3 ]; then
+        log_fatal "$SCRIPT_NAME set-config: pass app, source, and target config or use '$SCRIPT_NAME set-config help' to get help."
+    fi
+
+    local app_id="$1" cfg_source="$2" cfg_target
+
+    ### Input sanity checks
+    # Check existence of source file.
+    [ -f "$cfg_source" ] || log_fatal "source file '$cfg_source' is not a valid file"
+    warn_if_uninstalled "$app_id"       # validate app name
+
+    # Positional argument 3 is optional, use default config file if unset
+    if [ -z "${3-}" ]; then
+        cfg_target="$(get_app_config_dir "$app_id")/config.json"  # use default config file
+    else
+        cfg_target="$3"
+    fi
+
+    log_info "Replacing '$cfg_target' with '$cfg_source'."
+
+    # Copy app config.
+    dep_list="$(stop_apps "$app_id")"
+    cp "$cfg_source" "$cfg_target"
+    start_apps "$app_id" $dep_list
+}
+
+# Remove the config files of the given apps.
+cmd_reset() {
+    local dep_list opt path_mode=
+
+    # Parse options.
+    while getopts 'p' 'opt'; do
+        case "$opt" in
+        p)
+            # Enable path mode (support for non-standard config file paths)
+            path_mode=1
+            ;;
+        *)
+            log_fatal "Unsupported option, use '$SCRIPT_NAME remove help' to get help."
+            ;;
+        esac
+    done
+    shift $((OPTIND-1))         # shift off parsed arguments
+
+    # Ensure we have a posistional argument.
+    if [ $# -lt 1 ]; then
+        log_fatal "$SCRIPT_NAME remove: pass app/config list or use '$SCRIPT_NAME remove help' to get help."
+    elif [ "$1" = 'help' ]; then
+        print_usage_reset
+        exit
+    fi
+
+    local app_list config_list
+    if [ -z "$path_mode" ]; then
+        ### Normal mode. Arguments are a list of apps remove.
+
+        # Process args.
+        app_list="$*"
+        config_list="$(get_default_config_dirs "$@")"
+    else
+        ### Path mode: take exactly one app and a list of (non-standard) config files to remove.
+        if [ $# -lt 2 ]; then
+            log_fatal "$SCRIPT_NAME remove -p: pass app and config list or use '$SCRIPT_NAME remove help' to get help."
+        fi
+
+        # Process args.
+        app_list="$1"
+        shift
+        config_list="$*"
+    fi
+
+    ### Perform config removal: stop apps, remove app/sys configs, restart apps.
+    # Do not use quotes here to split lists into individual arguments.
+
+    warn_if_uninstalled $app_list           # sanity check
+    dep_list="$(stop_apps $app_list)"       # stop apps
+    remove_configs $config_list             # remove app configs
+    start_apps $app_list $dep_list          # restart apps and dependent apps
+}
+
+
+################################################################################
+##                                     Main                                   ##
+################################################################################
+
+# Parse options.
+while getopts 'vh' 'opt'; do
+    case "$opt" in
+    v)
+        VERBOSE=1           # enable info log messages
+        ;;
+    h)
+        print_usage_main
+        exit
+        ;;
+    *)
+        log_fatal "Unsupported option, use '$SCRIPT_NAME help' to get help."
+        ;;
+    esac
+done
+shift $((OPTIND-1))         # shift off parsed arguments
+
+# Ensure we have a posistional argument.
+if [ "$#" -lt 1 ]; then
+    log_fatal "$SCRIPT_NAME: pass a command or '$SCRIPT_NAME help' to get help."
+fi
+
+# Process first argument, that is, the command to execute.
+case "$1" in
+start)
+    shift
+    cmd_start "$@"
+    ;;
+stop)
+    shift
+    cmd_stop "$@"
+    ;;
+restart)
+    shift
+    cmd_restart "$@"
+    ;;
+set-config)
+    shift
+    cmd_set_config "$@"
+    ;;
+reset)
+    shift
+    cmd_reset "$@"
+    ;;
+help)
+    print_usage_main
+    ;;
+*)
+    log_fatal "$SCRIPT_NAME: unsupported command '$1', use '$SCRIPT_NAME help' to get help."
+    ;;
+esac
+# EOF

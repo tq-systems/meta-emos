@@ -42,6 +42,9 @@
 
   Existing build configurations must be updated to set `MACHINE` to "em-aarch64"
   instead of "em4xx".
+- empkg: added is-installed and is-enabled commands
+- emcfg: added reset_ntp, reset_hostname, and help commands
+- em-appctl: an app and config manager replacing the now-deprecated em-config-reset
 
 ### Changed
 - linux-em: Updated to v6.6.28
@@ -83,6 +86,7 @@
   separate builds for each machine
 - Remove obsolete sensors app from sdk bundle
 - Update base apps and sdk apps
+- deprecated em-config-reset
 
 ### Fixed
 - treewide: Fixed wrong usage of PACKAGECONFIG
