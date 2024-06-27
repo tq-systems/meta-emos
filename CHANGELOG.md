@@ -1,5 +1,8 @@
 ## [ next ]
 
+### Added
+- Add seccomp features to support more sandboxing features
+
 ## [ 5.0.3 ] - 2024-06-14
 ### Added
 - linux-em: Add IFLA_BR_FDB_MAX_LEARNED and limit fdb max learned fdb entries
