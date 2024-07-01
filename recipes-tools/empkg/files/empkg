@@ -261,6 +261,7 @@ app_enable() {
 	ln -snf "../installed/$app" "$APPDIR/enabled/$app"
 
 	sync_app_user_and_dirs "$app"
+	sync_app_acl_perms "$app"
 	app_dbus "$app"
 
 	if $OPT_SYSTEMD && has_systemd "$app"; then
@@ -492,6 +493,10 @@ $new_apps"
 		app_dbus "$app"
 	done
 
+	for app in $(list_enabled); do
+		sync_app_acl_perms "$app"
+	done
+
 	# Delay enabling apps until all new apps have been registered,
 	# so potential dependencies between new apps are satisfied
 	echo -n "$new_apps" | while read -r app; do
@@ -537,10 +542,10 @@ update_www() {
 	# create WWWDIR for factory-reset case
 	mkdir -p "$WWWDIR"
 
-	cat "$WWWAPPSTMP" | jq -nRc '[inputs]' > "$WWWAPPS"
+	jq -nRc '[inputs]' "$WWWAPPSTMP" > "$WWWAPPS"
 	rm "$WWWAPPSTMP"
 
-	cat "$WWWLANGTMP" | jq -nRc '[inputs]' > "$WWWLANG"
+	jq -nRc '[inputs]' "$WWWLANGTMP" > "$WWWLANG"
 	rm "$WWWLANGTMP"
 
 	# move remaining files (symlinks)
@@ -648,6 +653,18 @@ get_uid_from_user_entry() {
 	jq -r '.uid' "$USERDBRUNDIR/$userfile"
 }
 
+list_own_permissions_from_manifest() {
+	jq -r '.permissions.own[]' "$1" 2> /dev/null
+}
+
+list_rw_permissions_from_manifest() {
+	jq -r '.permissions.rw[]' "$1" 2> /dev/null
+}
+
+list_ro_permissions_from_manifest() {
+	jq -r '.permissions.ro[]' "$1" 2> /dev/null
+}
+
 # Synchronize user and directories
 sync_app_user_and_dirs() {
 	local app="$1"
@@ -663,7 +680,53 @@ sync_app_user_and_dirs() {
 	group="$(get_group_from_sdfile "$sdfile" "$user")"
 
 	sync_app_user "$app" "$user" "$group"
-	sync_app_dirs "$app" "$user" "$group"
+
+	# handle app requested directory permissions
+	local manifest="$APPDIR/installed/$app/manifest.json"
+
+	for dir in $(list_own_permissions_from_manifest "$manifest"); do
+		if [ "$dir" = "$RUNDIRAPPS/$app" ] \
+			|| [ "$dir" = "$CONFIGDIR/$app" ] \
+			|| [ "$dir" = "/data/apps/$app" ]; then
+			mkdir -p "$dir"
+			chown -R "$user:$group" "$dir"
+			# grant execution access for nginx user 'www' to display frontend
+			[ "$dir" = "$RUNDIRAPPS/$app" ] && setfacl -m "u:www:x" "$dir"
+		else
+			error "$app: Cannot create own-group directory: '$dir' is no own directory."
+		fi
+	done
+
+	# keep empkg backwards compatible to apps without path permissions in manifest
+	if [ "$(list_own_permissions_from_manifest "$manifest" | wc -l)" -eq "0" ]; then
+		echo >/dev/kmsg "empkg: Creating own directories (legacy mode). Please update $app to path permissions."
+		sync_app_dirs "$app" "$user" "$group"
+	fi
+}
+
+sync_app_acl_perms() {
+	local app="$1"
+	local manifest="$APPDIR/installed/$app/manifest.json"
+	# Get user from systemd service file
+	local sdfile="$APPDIR/installed/$app/em-app-$app.service"
+	local user
+	user="$(get_user_from_sdfile "$sdfile")"
+
+	for dir in $(list_rw_permissions_from_manifest "$manifest"); do
+		if [ -d "$dir" ]; then
+			setfacl -Rm "u:$user:rwx" "$dir"
+		else
+			error "$app: Cannot assign rw access: '$dir' does not exist."
+		fi
+	done
+
+	for dir in $(list_ro_permissions_from_manifest "$manifest"); do
+		if [ -d "$dir" ]; then
+			setfacl -Rm "u:$user:r-x" "$dir"
+		else
+			error "$app: Cannot assign ro access: '$dir' does not exist."
+		fi
+	done
 }
 
 # Synchronize user to systemd
