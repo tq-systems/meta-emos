@@ -2,6 +2,8 @@
 
 ### Added
 - Add seccomp features to support more sandboxing features
+- empkg: assign app-defined path permissions
+- em-app-generator: handle app-defined systemd start target (appclass)
 
 ## [ 5.0.3 ] - 2024-06-14
 ### Added
