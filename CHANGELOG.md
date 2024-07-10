@@ -8,6 +8,9 @@
 ### Changed
 - linux-em: em310: remove ignore_oscillator
 
+### Fixed
+- nginx: fix configuration so that all responses use appropriate content security policy headers for all requests improving cross site scripting defense
+
 ## [ 5.0.3 ] - 2024-06-14
 ### Added
 - linux-em: Add IFLA_BR_FDB_MAX_LEARNED and limit fdb max learned fdb entries
