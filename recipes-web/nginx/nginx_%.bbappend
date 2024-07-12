@@ -7,6 +7,7 @@ SRC_URI:append:emos = " \
 	file://static_cache.conf \
 	file://ssl.conf \
 	file://nginx-log-setup \
+	file://headers.conf \
 "
 
 RDEPENDS:${PN}:append:emos = " emcfg"
@@ -22,6 +23,7 @@ do_install:append:emos() {
 	install -m 0644 ${WORKDIR}/no_cache.conf ${D}${sysconfdir}/nginx/
 	install -m 0644 ${WORKDIR}/static_cache.conf ${D}${sysconfdir}/nginx/
 	install -m 0644 ${WORKDIR}/ssl.conf ${D}${sysconfdir}/nginx/
+	install -m 0644 ${WORKDIR}/headers.conf ${D}${sysconfdir}/nginx/
 
 	# Do not create /var/log/nginx, as it will fail due to our symlink setup
 	sed -i '/\/log\//d' ${D}${sysconfdir}/tmpfiles.d/${BPN}.conf
