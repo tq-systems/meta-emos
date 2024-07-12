@@ -13,6 +13,7 @@ GROUPADD_PARAM:${PN} += "--system em-group-reboot;"
 GROUPADD_PARAM:${PN} += "--system em-group-update;"
 GROUPADD_PARAM:${PN} += "--system em-group-sudo-fw_printenv;"
 GROUPADD_PARAM:${PN} += "--system em-group-sudo-systemctl_restart;"
+GROUPADD_PARAM:${PN} += "--system em-group-sudo-systemctl_stop;"
 GROUPADD_PARAM:${PN} += "--system em-group-cfglog;"
 
 SRC_URI = " \
@@ -97,6 +98,7 @@ do_install() {
 	echo "%em-group-reboot ALL=(ALL) NOPASSWD: /sbin/reboot" > "${D}/etc/sudoers.d/reboot"
 	echo "%em-group-sudo-fw_printenv ALL=(ALL) NOPASSWD: /usr/bin/fw_printenv" > "${D}/etc/sudoers.d/fw_printenv"
 	echo "%em-group-sudo-systemctl_restart ALL=(ALL) NOPASSWD: /bin/systemctl restart *" > "${D}/etc/sudoers.d/systemctl_restart"
+	echo "%em-group-sudo-systemctl_stop ALL=(ALL) NOPASSWD: /bin/systemctl stop *" > "${D}/etc/sudoers.d/systemctl_stop"
 	chmod 0440 "${D}/etc/sudoers.d/"*
 
 	# Install mountpoints
