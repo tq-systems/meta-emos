@@ -1,3 +1,7 @@
+## [ 5.0.5 ] - 2024-07-12
+### Fixed
+- nginx: missing header.conf
+
 ## [ 5.0.4 ] - 2024-07-12
 ### Added
 - Add seccomp features to support more sandboxing features
