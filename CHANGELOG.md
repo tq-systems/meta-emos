@@ -1,3 +1,17 @@
+## [ 5.0.4 ] - 2024-07-12
+### Added
+- Add seccomp features to support more sandboxing features
+- empkg: assign app-defined path permissions
+- em-app-generator: handle app-defined systemd start target (appclass)
+
+### Changed
+- linux-em: em310: remove ignore_oscillator
+- systemd: dont allocate 1M on the stack
+- linux-em: add support for config fragments
+
+### Fixed
+- nginx: fix configuration so that all responses use appropriate content security policy headers for all requests improving cross site scripting defense
+
 ## [ 5.0.3 ] - 2024-06-14
 ### Added
 - linux-em: Add IFLA_BR_FDB_MAX_LEARNED and limit fdb max learned fdb entries
