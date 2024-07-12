@@ -7,6 +7,7 @@
 
 ### Changed
 - linux-em: em310: remove ignore_oscillator
+- systemd: dont allocate 1M on the stack
 
 ### Fixed
 - nginx: fix configuration so that all responses use appropriate content security policy headers for all requests improving cross site scripting defense
