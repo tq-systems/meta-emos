@@ -30,20 +30,6 @@
 
 ## [ 5.0.0 ] - 2024-05-31
 ### Added
-- linux-em: Add IFLA_BR_FDB_MAX_LEARNED and limit fdb max learned fdb entries
-
-### Fixed
-- layer.conf: Remove obsolete meta-python2 dependency
-- u-boot-em:
-  - Fix regression in RTC configuration on all hardware variants
-  - Revert incompatible environment change on EM4xx-CB
-
-## [ 5.0.1 ] - 2024-06-03
-### Fixed
-- u-boot-em: fixed missing explicit firmware dependency
-
-## [ 5.0.0 ] - 2024-05-31
-### Added
 - groups: Added render and sgx group
 - Added support for the unified "em-aarch64" machine that supports both the
   EM4xx-CB (hw0200) and the new TI AM62x-based EM-CB30 (hw0210)
