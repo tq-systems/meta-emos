@@ -4,6 +4,7 @@
 - Add seccomp features to support more sandboxing features
 - empkg: assign app-defined path permissions
 - em-app-generator: handle app-defined systemd start target (appclass)
+- groups: Add groups for sudo to allow sandboxing
 
 ### Changed
 - linux-em: em310: remove ignore_oscillator
@@ -18,20 +19,6 @@
 - linux-em: Add IFLA_BR_FDB_MAX_LEARNED and limit fdb max learned fdb entries
 
 ## [ 5.0.2 ] - 2024-06-12
-### Fixed
-- layer.conf: Remove obsolete meta-python2 dependency
-- u-boot-em:
-  - Fix regression in RTC configuration on all hardware variants
-  - Revert incompatible environment change on EM4xx-CB
-
-## [ 5.0.1 ] - 2024-06-03
-### Fixed
-- u-boot-em: fixed missing explicit firmware dependency
-
-## [ 5.0.0 ] - 2024-05-31
-### Added
-- linux-em: Add IFLA_BR_FDB_MAX_LEARNED and limit fdb max learned fdb entries
-
 ### Fixed
 - layer.conf: Remove obsolete meta-python2 dependency
 - u-boot-em:
