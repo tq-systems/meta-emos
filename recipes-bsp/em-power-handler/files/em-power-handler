@@ -16,6 +16,7 @@ gpioset $POWER_GPIO=0
 
 while true; do
 	gpiomon -f -s -n 1 $FAULT_GPIO & FAULT_PID=$!
+	sleep 1
 	gpioset -m signal $POWER_GPIO=1 & POWER_PID=$!
 
 	wait $FAULT_PID

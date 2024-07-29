@@ -10,6 +10,7 @@
 - linux-em: em310: remove ignore_oscillator
 - systemd: dont allocate 1M on the stack
 - linux-em: add support for config fragments
+- em-power-handler: solve race between gpiomon and gpioset
 
 ### Fixed
 - nginx: fix configuration so that all responses use appropriate content security policy headers for all requests improving cross site scripting defense
