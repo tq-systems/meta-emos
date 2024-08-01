@@ -4,12 +4,12 @@
 - Add seccomp features to support more sandboxing features
 - empkg: assign app-defined path permissions
 - em-app-generator: handle app-defined systemd start target (appclass)
-- groups: Add groups for sudo to allow sandboxing
 
 ### Changed
 - linux-em: em310: remove ignore_oscillator
 - systemd: dont allocate 1M on the stack
 - linux-em: add support for config fragments
+- groups: Add groups for sudo to allow sandboxing
 - em-power-handler: solve race between gpiomon and gpioset
 
 ### Fixed
