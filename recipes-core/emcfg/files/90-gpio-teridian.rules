@@ -1,0 +1,4 @@
+SUBSYSTEM=="spidev", KERNEL=="spidev0.0", GROUP="em-group-spi", MODE="0660"
+KERNEL=="gpiochip*", OWNER="root", GROUP="em-group-gpio", MODE="0660"
+SUBSYSTEM=="gpio", GROUP="em-group-gpio", MODE="0660"
+SUBSYSTEM=="gpio", ACTION=="add", PROGRAM="/bin/sh -c 'chgrp -R em-group-gpio /sys/class/gpio && chmod -R g=u /sys/class/gpio'"

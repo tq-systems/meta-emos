@@ -13,7 +13,12 @@ GROUPADD_PARAM:${PN} += "--system em-group-reboot;"
 GROUPADD_PARAM:${PN} += "--system em-group-update;"
 GROUPADD_PARAM:${PN} += "--system em-group-sudo-fw_printenv;"
 GROUPADD_PARAM:${PN} += "--system em-group-sudo-systemctl_restart;"
+GROUPADD_PARAM:${PN} += "--system em-group-sudo-systemctl_stop;"
+GROUPADD_PARAM:${PN} += "--system em-group-sudo-cat_device_key;"
 GROUPADD_PARAM:${PN} += "--system em-group-cfglog;"
+GROUPADD_PARAM:${PN} += "--system em-group-gpio;"
+GROUPADD_PARAM:${PN} += "--system em-group-spi;"
+
 
 SRC_URI = " \
 	file://LICENSE \
@@ -36,6 +41,7 @@ SRC_URI = " \
 	file://journald-debug.conf \
 	file://01-emos-apps-generic.conf \
 	file://80-ttyAPP.rules \
+	file://90-gpio-teridian.rules \
 "
 
 SYSTEMD_SERVICE:${PN} = " \
@@ -82,6 +88,7 @@ do_install() {
 	install -d ${D}${base_libdir}/udev/rules.d
 	install -m 0644 ${WORKDIR}/80-button-handler.rules ${D}${base_libdir}/udev/rules.d/
 	install -m 0644 ${WORKDIR}/80-ttyAPP.rules ${D}${base_libdir}/udev/rules.d/
+	install -m 0644 ${WORKDIR}/90-gpio-teridian.rules ${D}${base_libdir}/udev/rules.d/
 
 	install -d ${D}${sysconfdir}/ssl
 	install -m 0644 ${WORKDIR}/openssl-em.cnf ${D}${sysconfdir}/ssl/
@@ -97,6 +104,9 @@ do_install() {
 	echo "%em-group-reboot ALL=(ALL) NOPASSWD: /sbin/reboot" > "${D}/etc/sudoers.d/reboot"
 	echo "%em-group-sudo-fw_printenv ALL=(ALL) NOPASSWD: /usr/bin/fw_printenv" > "${D}/etc/sudoers.d/fw_printenv"
 	echo "%em-group-sudo-systemctl_restart ALL=(ALL) NOPASSWD: /bin/systemctl restart *" > "${D}/etc/sudoers.d/systemctl_restart"
+	echo "%em-group-sudo-systemctl_stop ALL=(ALL) NOPASSWD: /bin/systemctl stop *" > "${D}/etc/sudoers.d/systemctl_stop"
+	echo "%em-group-sudo-cat_device_key ALL=(ALL) NOPASSWD: /bin/cat /auth/etc/default/auth/device.key" > "${D}/etc/sudoers.d/cat_device_key"
+	echo "%em-group-sudo-cat_device_key ALL=(ALL) NOPASSWD: /bin/cat /auth/etc/default/auth/device.crt" >> "${D}/etc/sudoers.d/cat_device_key"
 	chmod 0440 "${D}/etc/sudoers.d/"*
 
 	# Install mountpoints

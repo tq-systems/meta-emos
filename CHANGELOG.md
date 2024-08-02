@@ -1,3 +1,11 @@
+## [ next ]
+### Added
+- sandboxing: added additional groups
+- udev: rules for GPIO and SPI devices
+
+### Fixed
+- em-power-handler: solve race condition
+
 ## [ 5.0.5 ] - 2024-07-12
 ### Fixed
 - nginx: missing header.conf
@@ -12,6 +20,8 @@
 - linux-em: em310: remove ignore_oscillator
 - systemd: dont allocate 1M on the stack
 - linux-em: add support for config fragments
+- groups: Add groups for sudo to allow sandboxing
+- em-power-handler: solve race between gpiomon and gpioset
 
 ### Fixed
 - nginx: fix configuration so that all responses use appropriate content security policy headers for all requests improving cross site scripting defense
@@ -21,20 +31,6 @@
 - linux-em: Add IFLA_BR_FDB_MAX_LEARNED and limit fdb max learned fdb entries
 
 ## [ 5.0.2 ] - 2024-06-12
-### Fixed
-- layer.conf: Remove obsolete meta-python2 dependency
-- u-boot-em:
-  - Fix regression in RTC configuration on all hardware variants
-  - Revert incompatible environment change on EM4xx-CB
-
-## [ 5.0.1 ] - 2024-06-03
-### Fixed
-- u-boot-em: fixed missing explicit firmware dependency
-
-## [ 5.0.0 ] - 2024-05-31
-### Added
-- linux-em: Add IFLA_BR_FDB_MAX_LEARNED and limit fdb max learned fdb entries
-
 ### Fixed
 - layer.conf: Remove obsolete meta-python2 dependency
 - u-boot-em:
