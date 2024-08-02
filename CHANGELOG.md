@@ -1,4 +1,4 @@
-## [ next ]
+## [ 5.0.6 ] - 2024-08-02
 ### Added
 - sandboxing: added additional groups
 - udev: rules for GPIO and SPI devices
