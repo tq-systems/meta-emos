@@ -1,3 +1,7 @@
+## [ 5.0.7 ] - 2024-08-08
+### Fixed
+- udev: fix teridian gpio rules
+
 ## [ 5.0.6 ] - 2024-08-02
 ### Added
 - sandboxing: added additional groups
