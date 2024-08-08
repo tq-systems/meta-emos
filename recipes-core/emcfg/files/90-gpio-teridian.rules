@@ -1,4 +1,10 @@
 SUBSYSTEM=="spidev", KERNEL=="spidev0.0", GROUP="em-group-spi", MODE="0660"
 KERNEL=="gpiochip*", OWNER="root", GROUP="em-group-gpio", MODE="0660"
 SUBSYSTEM=="gpio", GROUP="em-group-gpio", MODE="0660"
-SUBSYSTEM=="gpio", ACTION=="add", PROGRAM="/bin/sh -c 'chgrp -R em-group-gpio /sys/class/gpio && chmod -R g=u /sys/class/gpio'"
+SUBSYSTEM=="gpio", ACTION=="add", \
+	RUN+="/bin/chgrp -R em-group-gpio '/sys%p'", \
+	RUN+="/bin/chmod -R g=u '/sys%p'"
+
+SUBSYSTEM=="subsystem", KERNEL=="gpio", ACTION=="add", \
+	RUN+="/bin/chgrp em-group-gpio '/sys/class/gpio/export' '/sys/class/gpio/unexport'", \
+	RUN+="/bin/chmod g=u '/sys/class/gpio/export' '/sys/class/gpio/unexport'"
