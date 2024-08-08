@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include "empkg_json.h"
 
 #define APP_BEFORE_TARGET "em-app-before.target"
 
@@ -70,32 +71,6 @@ void log_message(const char *format, ...) {
 	vfprintf(stderr, format, args);
 
 	va_end(args);
-}
-
-char *empkg_json_get_char(const char *app, const char *key) {
-	const char *manifest_pattern = "/apps/installed/%s/manifest.json";
-	json_t *json;
-	char *retval;
-
-	char manifest_path[strlen(manifest_pattern) + strlen(app) + 1];
-	snprintf(manifest_path, sizeof(manifest_path), manifest_pattern, app);
-
-	json = json_load_file(manifest_path, 0, NULL);
-
-	if (json && json_is_object(json)) {
-		json_t *value = json_object_get(json, key);
-		if (!value) {
-			json_decref(json);
-			return NULL;
-		}
-
-		retval = strdup(json_string_value(value));
-		json_decref(json);
-		return retval;
-	}
-
-	json_decref(json);
-	return NULL;
 }
 
 bool is_core_app(const char *app) {
