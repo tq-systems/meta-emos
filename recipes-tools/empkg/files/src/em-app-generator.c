@@ -82,7 +82,7 @@ bool is_core_app(const char *app) {
 	/* parse app manifest for core_app characteristic */
 	const char *appclass = empkg_json_get_char(app, "appclass");
 
-	if (appclass) {
+	if (appclass && strlen(appclass) > 0) {
 		if (strcmp(appclass, "core") == 0)
 			return true;
 
@@ -105,7 +105,7 @@ bool is_time_app(const char *app) {
 	/* parse app manifest for time_app characteristic */
 	const char *appclass = empkg_json_get_char(app, "appclass");
 
-	if (appclass) {
+	if (appclass && strlen(appclass) > 0) {
 		if (strcmp(appclass, "time") == 0)
 			return true;
 
