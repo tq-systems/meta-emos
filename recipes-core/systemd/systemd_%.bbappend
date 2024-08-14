@@ -6,6 +6,7 @@ SRC_URI:append:emos = "\
 	file://0004-network-bridge-add-support-for-IFLA_BR_FDB_MAX_LEARN.patch \
 	file://0005-networkctl-add-support-to-display-learned-fdb-entrie.patch \
 	file://0006-serialize-don-t-allocate-1M-on-the-stack-just-like-t.patch \
+	file://0007-seccomp-add-arm_fadvise64_64-to-system-service-group.patch \
 	\
 	file://read-only-rootfs.conf \
 "
