@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/acl.h> /* acl_... */
 #include <sys/stat.h> /* mkdir */
 #include <unistd.h> /* symlink */
 
@@ -23,4 +22,3 @@ int empkg_fops_cp(const char *src, const char *dst);
 int empkg_fops_mv(const char *path, const char *newpath);
 int empkg_fops_chown(const char *path, uid_t owner, gid_t group);
 int empkg_fops_mkdir(const char *path);
-int empkg_fops_setacl(const char *path, const char *user, const char *permissions);

@@ -88,25 +88,3 @@ int empkg_fops_chown(const char *path, uid_t owner, gid_t group) {
 
 	return ret;
 }
-
-int empkg_fops_setacl(const char *path, const char *user, const char *permissions) {
-	const char *aclpattern = "u::rwx,g::r-x,o::---,m::rwx,u:%s:%s";
-	char aclstring[64];
-	acl_t acl;
-	int ret = 0;
-
-	snprintf(aclstring, strlen(aclpattern) + strlen(user) + strlen(permissions) + 1, aclpattern, user, permissions);
-
-	/* file modes and mask m::rwx is required for acl_set_file() when assigning user ACL
-	 * https://bugzilla.redhat.com/show_bug.cgi?id=985269
-	 */
-	acl = acl_from_text(aclstring);
-	if (acl && acl_valid(acl) == 0) {
-		ret = acl_set_file(path, ACL_TYPE_ACCESS, acl);
-		if (ret)
-			fprintf(stderr, "Error assigning ACL: %s %s\n", acl_to_text(acl, NULL), strerror(errno));
-	}
-	acl_free(acl);
-
-	return ret;
-}

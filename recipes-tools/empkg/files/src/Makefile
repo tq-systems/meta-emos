@@ -3,6 +3,7 @@ CFLAGS += -D_GNU_SOURCE
 LDLIBS += -ljansson -larchive -lcrypto -lacl
 
 empkg : empkg.o \
+	empkg_acl.o \
 	empkg_appdb.o \
 	empkg_dbus.o \
 	empkg_enable.o \
