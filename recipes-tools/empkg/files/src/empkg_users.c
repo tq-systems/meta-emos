@@ -288,10 +288,24 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 	json_t *json_perm, *dir;
 	DIR *dircheck;
 	size_t notused;
-	struct passwd *usernam;
-	struct group *groupnam;
+	struct passwd *pusr = getpwnam(user);
+	struct passwd usernam, userwww;
+	struct group *pgrp = getgrnam(group);
+	struct group groupnam;
 
 	json_perm = empkg_json_get_manifest_permissions(id);
+
+	if (!pusr || !pgrp) {
+		fprintf(stderr, "Error collecting uid for '%s' or gid for '%s'.\n", user, group);
+		return ERRORCODE;
+	}
+
+	/* getpwnam points to a static memory that gets updated on each call.
+	 * we need to copy the memory contents to store the results before
+	 * subsequent calls (for www user later on)
+	 */
+	memcpy(&usernam, pusr, sizeof(struct passwd));
+	memcpy(&groupnam, pgrp, sizeof(struct group));
 
 	json_array_foreach(json_object_get(json_perm, "own"), notused, dir) {
 		const char *dirpath = json_string_value(dir);
@@ -302,25 +316,17 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 			/* create own directory */
 			empkg_fops_mkdir(dirpath);
 
-			usernam = getpwnam(user);
-			if (!usernam) {
-				fprintf(stderr, "Error collecting uid for '%s'.\n", user);
-				return ERRORCODE;
-			}
-
-			groupnam = getgrnam(group);
-			if (!usernam) {
-				fprintf(stderr, "Error collecting uid for '%s'.\n", group);
-				return ERRORCODE;
-			}
-
-			empkg_fops_chown(dirpath, usernam->pw_uid, groupnam->gr_gid);
+			empkg_fops_chown(dirpath, usernam.pw_uid, groupnam.gr_gid);
 
 			/* also grant execution access for nginx user 'www'
 			 * to /run/apps/$app to display frontend
 			 */
 			if (!strcmp(appdb_get_path(P_RUNDIR, id), dirpath)) {
-				empkg_fops_setacl(appdb_get_path(P_RUNDIR, id), "www", "--x");
+				pusr = getpwnam("www");
+				if (pusr) {
+					memcpy(&userwww, pusr, sizeof(struct passwd));
+					empkg_fops_setacl(appdb_get_path(P_RUNDIR, id), userwww.pw_name, "--x");
+				}
 			}
 		} else {
 			fprintf(stderr, "%s: Cannot create own-group directory: '%s' is no own directory.\n", id, dirpath);
@@ -338,7 +344,7 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 		const char *dirpath = json_string_value(dir);
 		dircheck = opendir(dirpath);
 		if (dircheck) {
-			empkg_fops_setacl(dirpath, user, "rwx");
+			empkg_fops_setacl(dirpath, usernam.pw_name, "rwx");
 		} else {
 			fprintf(stderr, "%s: Cannot assign rw access: '%s' does not exist.\n", id, dirpath);
 		}
@@ -350,7 +356,7 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 		const char *dirpath = json_string_value(dir);
 		dircheck = opendir(dirpath);
 		if (dircheck) {
-			empkg_fops_setacl(dirpath, user, "r-x");
+			empkg_fops_setacl(dirpath, usernam.pw_name, "r-x");
 		} else {
 			fprintf(stderr, "%s: Cannot assign ro access: '%s' does not exist.\n", id, dirpath);
 		}
