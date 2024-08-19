@@ -13,6 +13,7 @@
 #include "empkg_info.h"
 #include "empkg_install.h"
 #include "empkg_list.h"
+#include "empkg_log.h"
 #include "empkg_status.h"
 #include "empkg_sync.h"
 
@@ -121,7 +122,7 @@ static int empkg_match_fn(char *argv[], struct empkg_config *config) {
 					if (argv[a]) {
 						config->arg = strdup(argv[a]);
 					} else if (1 == empkg_cmd_list[c].has_arg) {
-						fprintf(stderr, "Command %s requires argument.\n", empkg_cmd_list[c].cmd);
+						log_message("empkg: Command %s requires argument.\n", empkg_cmd_list[c].cmd);
 						config->cmd = NULL;
 						return ERRORCODE;
 					}
@@ -147,7 +148,7 @@ int main(int argc, char *argv[]) {
 		return em_app_generator(argc, argv);
 
 	if (argc > 6) {
-		fprintf(stderr, "Too many arguments\n");
+		fprintf(stderr, "empkg: Too many arguments\n");
 		return ERRORCODE;
 	}
 
@@ -155,7 +156,7 @@ int main(int argc, char *argv[]) {
 		return ERRORCODE;
 
 	if (empkg_match_fn(argv, &config)) {
-		fprintf(stderr, "Command error.\n");
+		fprintf(stderr, "empkg: Command error.\n");
 		print_usage(prog_name);
 		return ERRORCODE;
 	}
@@ -167,7 +168,7 @@ int main(int argc, char *argv[]) {
 	err |= appdb_scan_builtin();
 	err |= appdb_scan_enabled();
 	if (err) {
-		fprintf(stderr, "Error initializing app database: %d\n", err);
+		log_message("empkg: Error initializing app database: %d\n", err);
 		return err;
 	}
 

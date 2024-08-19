@@ -12,6 +12,7 @@
 #include "empkg_list.h"
 
 static int printappversion(const char *id) {
+	/* Output required on stdout, because read back from app */
 	fprintf(stdout, "%s - %s\n", id, appdb_get_version(id));
 
 	return 0;
@@ -47,6 +48,7 @@ int list_enabled(void) {
 	appdb_all(ENABLED, empkg_json_array_append);
 
 	output = empkg_json_output_dumps();
+	/* Output required on stdout, because read back from app */
 	fprintf(stdout, "%s\n", output);
 	free(output);
 

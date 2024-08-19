@@ -22,12 +22,12 @@ int empkg_lock(void) {
 
 	fd = open(empkg_file_lock, O_RDWR | O_CREAT, 0600);
 	if (fd < 0) {
-		fprintf(stderr, "Cannot open lock file\n");
+		log_message("empkg: Cannot open lock file\n");
 		return 0;
 	}
 
 	if (flock(fd, LOCK_EX|LOCK_NB) == -1) {
-		fprintf(stderr, "Another instance of this program is running.\n");
+		log_message("empkg: Another instance of this program is running.\n");
 		return 0;
 	}
 

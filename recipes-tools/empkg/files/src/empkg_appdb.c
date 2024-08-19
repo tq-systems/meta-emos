@@ -43,7 +43,7 @@ int scandir_filter_valid_id(const struct dirent *ent) {
 		return 0;
 
 	if (!appdb_is_valid_id(ent->d_name)) {
-		fprintf(stderr, "%s:%d invalid id: %s\n", __func__, __LINE__, ent->d_name);
+		log_message("empkg: %s:%d invalid id: %s\n", __func__, __LINE__, ent->d_name);
 		return 0;
 	}
 
@@ -245,7 +245,7 @@ int appdb_scan_installed(void) {
 	n = scandir(path, &ent, scandir_filter_valid_id, alphasort);
 
 	if (n == -1) {
-		fprintf(stderr, "opendir error");
+		log_message("empkg: opendir error");
 		return ERRORCODE;
 	}
 
@@ -269,7 +269,7 @@ int appdb_scan_builtin(void) {
 	n = scandir(gBUILTINDIR, &ent, scandir_filter_valid_id, alphasort);
 
 	if (n == -1) {
-		fprintf(stderr, "opendir error");
+		log_message("empkg: opendir error");
 		return ERRORCODE;
 	}
 
@@ -296,7 +296,7 @@ int appdb_scan_enabled(void) {
 	n = scandir(path, &ent, scandir_filter_valid_id_link, alphasort);
 
 	if (n == -1) {
-		fprintf(stderr, "opendir error");
+		log_message("empkg: opendir error");
 		return ERRORCODE;
 	}
 
@@ -352,7 +352,7 @@ static void appdb_check_md5sums(const char *id) {
 	unsigned int diglen = EVP_MD_size(EVP_md5());
 
 	if (!a) {
-		fprintf(stderr, "Not found\n");
+		log_message("empkg: app '%s' not found\n", id);
 		return;
 	}
 
@@ -455,11 +455,11 @@ int appdb_get(const dbp prop, const char *id) {
 		ret = a->systemd;
 		break;
 	case MD5SUMS:
-		fprintf(stderr, "%s cannot handle MD5SUMS type. Use appdb_get_md5sums() instead.\n", __func__);
+		log_message("empkg: %s cannot handle MD5SUMS type. Use appdb_get_md5sums() instead.\n", __func__);
 		ret = -1;
 		break;
 	case VERSION:
-		fprintf(stderr, "%s cannot handle VERSION type. Use appdb_get_version() instead.\n", __func__);
+		log_message("empkg: %s cannot handle VERSION type. Use appdb_get_version() instead.\n", __func__);
 		ret = -1;
 		break;
 	}
@@ -535,11 +535,11 @@ int appdb_set(const dbp prop, const char *id, const int value) {
 		a->systemd = value;
 		break;
 	case MD5SUMS:
-		fprintf(stderr, "%s cannot handle MD5SUMS type. Use appdb_check_md5sums() instead.\n", __func__);
+		log_message("empkg: %s cannot handle MD5SUMS type. Use appdb_check_md5sums() instead.\n", __func__);
 		return ERRORCODE;
 		break;
 	case VERSION:
-		fprintf(stderr, "%s cannot handle VERSION type. Use appdb_set_version() instead.\n", __func__);
+		log_message("empkg: %s cannot handle VERSION type. Use appdb_set_version() instead.\n", __func__);
 		return ERRORCODE;
 		break;
 	}
@@ -562,7 +562,7 @@ int appdb_all(const dbp prop, int (*callback_fn)(const char *)) {
 	int ret = 0;
 
 	if (!callback_fn) {
-		fprintf(stderr, "ERROR: %s: callback_fn is NULL!\n", __func__);
+		log_message("empkg: ERROR: %s: callback_fn is NULL!\n", __func__);
 		ret = ERRORCODE;
 	}
 

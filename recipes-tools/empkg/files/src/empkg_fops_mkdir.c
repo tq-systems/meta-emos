@@ -16,7 +16,7 @@ static inline int empkg_do_mkdir(const char *path, mode_t mode) {
 	int ret;
 	ret = mkdir(path, mode);
 	if (errno != EEXIST)
-		printf("Error creating dir %s (%s)\n", path, strerror(errno));
+		log_message("empkg: Error creating dir %s (%s)\n", path, strerror(errno));
 	return ret;
 }
 

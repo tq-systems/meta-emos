@@ -8,7 +8,14 @@
 
 #include "empkg_log.h"
 
-/* write log message to stderr and also to kernel log (requires root) */
+/* write log message to stderr and also to kernel log (requires root)
+ * A) em-init (before systemd):
+ *    output only visible in kernel log
+ * B) ssh session: em-app-install or manually
+ *    output only visible in stderr
+ * C) console: manually
+ *    output visible in both
+ */
 void log_message(const char *format, ...) {
 	FILE *kmsg;
 	va_list args;

@@ -31,7 +31,7 @@ static acl_entry_t empkg_acl_find_aclentry(acl_t acl, uid_t uid)
 		/* get qualifier(for ACL_USER entries that's the uid) */
 		entry_uid = acl_get_qualifier(entry);
 		if (!entry_uid) {
-			fprintf(stderr, "Error getting entry uid\n");
+			log_message("empkg: Error getting entry uid.\n");
 			return NULL;
 		}
 
@@ -61,7 +61,7 @@ int empkg_acl_setacl(const char *path, const int uid, const bool write) {
 	/* get current ACL */
 	acl = acl_get_file(path, ACL_TYPE_ACCESS);
 	if (!acl) {
-		fprintf(stderr, "Error getting ACL\n");
+		log_message("empkg: Error getting ACL.\n");
 		return -1;
 	}
 
@@ -69,7 +69,7 @@ int empkg_acl_setacl(const char *path, const int uid, const bool write) {
 	if (!aclentry) {
 		/* prepare a new entry */
 		if (acl_create_entry(&acl, &aclentry) == -1) {
-			fprintf(stderr, "Error creating ACL entry\n");
+			log_message("empkg: Error creating ACL entry.\n");
 			acl_free(acl);
 			return -1;
 		}
@@ -86,14 +86,14 @@ int empkg_acl_setacl(const char *path, const int uid, const bool write) {
 
 	/* update ACL_MASK to accomodate all current permissions */
 	if (acl_calc_mask(&acl))
-		fprintf(stderr, "Error calculating mask\n");
+		log_message("empkg: Error calculating mask\n");
 
 	if (acl_valid(acl) == 0) {
 		ret = acl_set_file(path, ACL_TYPE_ACCESS, acl);
 		if (ret)
-			fprintf(stderr, "Error assigning ACL to '%s' (errno %d):\n%s", path, errno, acl_to_text(acl, NULL));
+			log_message("empkg: Error assigning ACL to '%s' (errno %d):\n%s", path, errno, acl_to_text(acl, NULL));
 	} else {
-		fprintf(stderr, "Error validating ACL:\n%s\n", acl_to_text(acl, NULL));
+		log_message("empkg: Error validating ACL:\n%s\n", acl_to_text(acl, NULL));
 	}
 
 	acl_free(aclpermset);

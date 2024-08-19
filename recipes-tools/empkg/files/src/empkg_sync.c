@@ -13,6 +13,7 @@
 #include "empkg_fops.h"
 #include "empkg_helper.h"
 #include "empkg_lock.h"
+#include "empkg_log.h"
 #include "empkg_register.h"
 #include "empkg_users.h"
 
@@ -42,7 +43,7 @@ int app_sync(void) {
 	char **new = new_apps, **enable_new = new_apps;
 
 	if (!empkg_lock()) {
-		fprintf(stderr, "Could not get lock.\n");
+		log_message("empkg: Could not get lock.\n");
 		return ERRORCODE;
 	}
 

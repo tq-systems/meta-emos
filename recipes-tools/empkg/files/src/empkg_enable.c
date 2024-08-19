@@ -12,6 +12,7 @@
 #include "empkg_fops.h"
 #include "empkg_helper.h"
 #include "empkg_lock.h"
+#include "empkg_log.h"
 #include "empkg_users.h"
 
 int empkg_enable(const char *id) {
@@ -20,7 +21,7 @@ int empkg_enable(const char *id) {
 	int ret;
 
 	if (!appdb_is(INSTALLED, id)) {
-		fprintf(stderr, "app '%s' not found.\n", id);
+		log_message("empkg: app '%s' not found.\n", id);
 		return ERRORCODE;
 	}
 
@@ -59,7 +60,7 @@ int app_enable(const char *id) {
 	int ret = 0;
 
 	if (!empkg_lock()) {
-		fprintf(stderr, "Could not get lock.\n");
+		log_message("empkg: Could not get lock.\n");
 		return ERRORCODE;
 	}
 
@@ -88,12 +89,12 @@ int empkg_disable(const char *id) {
 	int ret;
 
 	if (!appdb_is(INSTALLED, id) && !appdb_is(ENABLED, id)) {
-		fprintf(stderr, "app '%s' not found.\n", id);
+		log_message("empkg: app '%s' not found.\n", id);
 		return ERRORCODE;
 	}
 
 	if (appdb_is(ESSENTIAL, id)) {
-		fprintf(stderr, "unable to disable essential app '%s'\n", id);
+		log_message("empkg: unable to disable essential app '%s'\n", id);
 		return ERRORCODE;
 	}
 
@@ -118,7 +119,7 @@ int app_disable(const char *id) {
 	int ret;
 
 	if (!empkg_lock()) {
-		fprintf(stderr, "Could not get lock.\n");
+		log_message("empkg: Could not get lock.\n");
 		return ERRORCODE;
 	}
 

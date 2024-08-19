@@ -15,8 +15,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "empkg_json.h"
-#include "empkg_log.h"
 
 #define APP_BEFORE_TARGET "em-app-before.target"
 #define CORE_TARGET_WANTS "multi-user.target.wants"

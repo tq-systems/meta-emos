@@ -26,7 +26,7 @@ static int create_user_entry(const char *id, const int userid,
 
 	fuser = fopen(userdbrunfile, "w");
 	if (!fuser) {
-		fprintf(stderr, "Cannot open %s (%s)\n", userdbrunfile, strerror(errno));
+		log_message("empkg: Cannot open %s (%s)\n", userdbrunfile, strerror(errno));
 		free(userdbrunfile);
 		return errno;
 	}
@@ -58,7 +58,7 @@ static int create_group_entry(const char *groupname, const int groupid, const ch
 
 	fgroup = fopen(groupdbrunfile, "w");
 	if (!fgroup) {
-		fprintf(stderr, "Cannot open %s (%s)\n", groupdbrunfile, strerror(errno));
+		log_message("empkg: Cannot open %s (%s)\n", groupdbrunfile, strerror(errno));
 		return errno;
 	}
 	free(groupdbrunfile);
@@ -215,7 +215,7 @@ static int sync_app_user(const char *id, const char *user, const char *group) {
 	}
 
 	if (err || groupid < 0)
-		fprintf(stderr, "Error getting groupid for '%s'\n", id);
+		log_message("empkg: Error getting groupid for '%s'\n", id);
 
 	if (strcmp(user, "root")) {
 		if (strcmp(user, group) == 0)
@@ -253,7 +253,7 @@ static int sync_app_dirs(const char *id, const char *user, const char *group) {
 	empkg_fops_mkdir(configdirapp);
 
 	if (!pusr || !pgrp) {
-		fprintf(stderr, "Error collecting uid for '%s' or gid for '%s'.\n", user, group);
+		log_message("empkg: Error collecting uid for '%s' or gid for '%s'.\n", user, group);
 		return ERRORCODE;
 	}
 
@@ -287,7 +287,7 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 	json_perm = empkg_json_get_manifest_permissions(id);
 
 	if (!pusr || !pgrp) {
-		fprintf(stderr, "Error collecting uid for '%s' or gid for '%s'.\n", user, group);
+		log_message("empkg: Error collecting uid for '%s' or gid for '%s'.\n", user, group);
 		return ERRORCODE;
 	}
 
@@ -320,7 +320,7 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 				}
 			}
 		} else {
-			fprintf(stderr, "%s: Cannot create own-group directory: '%s' is no own directory.\n", id, dirpath);
+			log_message("empkg: %s: Cannot create own-group directory: '%s' is no own directory.\n", id, dirpath);
 		}
 	}
 
@@ -337,7 +337,7 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 		if (dircheck) {
 			empkg_acl_setacl(dirpath, usernam.pw_uid, true);
 		} else {
-			fprintf(stderr, "%s: Cannot assign rw access: '%s' does not exist.\n", id, dirpath);
+			log_message("empkg: %s: Cannot assign rw access: '%s' does not exist.\n", id, dirpath);
 		}
 		closedir(dircheck);
 	}
@@ -349,7 +349,7 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 		if (dircheck) {
 			empkg_acl_setacl(dirpath, usernam.pw_uid, false);
 		} else {
-			fprintf(stderr, "%s: Cannot assign ro access: '%s' does not exist.\n", id, dirpath);
+			log_message("empkg: %s: Cannot assign ro access: '%s' does not exist.\n", id, dirpath);
 		}
 		closedir(dircheck);
 	}

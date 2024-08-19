@@ -9,6 +9,7 @@
 #include "empkg.h" /* __maybe_unused */
 #include "empkg_appdb.h"
 #include "empkg_fops.h"
+#include "empkg_log.h"
 
 char *empkg_fops_abspath(const char *root, const char *relpath) {
 	char *path;
@@ -23,7 +24,7 @@ int empkg_fops_symlink(const char *target, const char *path) {
 	int ret = symlink(target, path);
 
 	if (ret)
-		fprintf(stderr, "Error creating symlink to %s at %s (%s)\n", target, path, strerror(errno));
+		log_message("empkg: Error creating symlink to %s at %s (%s)\n", target, path, strerror(errno));
 
 	return ret;
 }
@@ -37,7 +38,7 @@ int empkg_fops_rm(const char *path) {
 	int ret = nftw(path, unlink_callback, 16, FTW_DEPTH | FTW_PHYS);
 
 	if (ret && errno != ENOENT)
-		fprintf(stderr, "Error removing %s (%s)\n", path, strerror(errno));
+		log_message("empkg: Error removing %s (%s)\n", path, strerror(errno));
 
 	return (errno == ENOENT ? 0 : ret);
 }
@@ -52,7 +53,7 @@ int empkg_fops_mv(const char *path, const char *newpath) {
 	}
 
 	if (ret)
-		fprintf(stderr, "Error moving %s to %s (%s)\n", path, newpath, strerror(errno));
+		log_message("empkg: Error moving %s to %s (%s)\n", path, newpath, strerror(errno));
 
 	return ret;
 }
@@ -84,7 +85,7 @@ int empkg_fops_chown(const char *path, uid_t owner, gid_t group) {
 	}
 
 	if (ret)
-		fprintf(stderr, "Error chown() on '%s' (%s)\n", path, strerror(errno));
+		log_message("empkg: error chown() on '%s' (%s)\n", path, strerror(errno));
 
 	return ret;
 }
