@@ -1,3 +1,10 @@
+## [ 5.1.0 ] - 2024-08-19
+### Changed
+- empkg: ported to application written in C
+
+### Fixed
+- systemd: seccomp: add arm_fadvise64_64 to system-service group
+
 ## [ 5.0.7 ] - 2024-08-08
 ### Fixed
 - udev: fix teridian gpio rules
@@ -26,11 +33,9 @@
 - linux-em: add support for config fragments
 - groups: Add groups for sudo to allow sandboxing
 - em-power-handler: solve race between gpiomon and gpioset
-- empkg: ported to application written in C
 
 ### Fixed
 - nginx: fix configuration so that all responses use appropriate content security policy headers for all requests improving cross site scripting defense
-- systemd: seccomp: add arm_fadvise64_64 to system-service group
 
 ## [ 5.0.3 ] - 2024-06-14
 ### Added
