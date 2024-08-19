@@ -5,24 +5,9 @@
  * Author: Matthias Schiffer
  */
 
-#define _GNU_SOURCE
-
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#include <dirent.h>
-#include <errno.h>
-#include <jansson.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-
-#define APP_BEFORE_TARGET "em-app-before.target"
-
-#define CORE_TARGET_WANTS "multi-user.target.wants"
-#define APP_TIME_TARGET_WANTS "em-app-time.target.wants"
-#define APP_NO_TIME_TARGET_WANTS "em-app-no-time.target.wants"
+#include "em-app-generator.h"
+#include "empkg_json.h"
+#include "empkg_log.h"
 
 const char *const CORE_APPS[] = {
 	"backup",
@@ -50,46 +35,20 @@ const char *const TIME_APPS[] = {
 	NULL,
 };
 
-char *empkg_json_get_char(const char *app, const char *key) {
-	const char *manifest_pattern = "/apps/installed/%s/manifest.json";
-	json_t *json;
-	char *retval;
-
-	char manifest_path[strlen(manifest_pattern) + strlen(app) + 1];
-	snprintf(manifest_path, sizeof(manifest_path), manifest_pattern, app);
-
-	json = json_load_file(manifest_path, 0, NULL);
-
-	if (json && json_is_object(json)) {
-		json_t *value = json_object_get(json, key);
-		if (!value) {
-			json_decref(json);
-			return NULL;
-		}
-
-		retval = strdup(json_string_value(value));
-		json_decref(json);
-		return retval;
-	}
-
-	json_decref(json);
-	return NULL;
-}
-
 bool is_core_app(const char *app) {
 	size_t i;
 
 	/* parse app manifest for core_app characteristic */
 	const char *appclass = empkg_json_get_char(app, "appclass");
 
-	if (appclass) {
+	if (appclass && strlen(appclass) > 0) {
 		if (strcmp(appclass, "core") == 0)
 			return true;
 
 		return false;
 	}
 
-	fprintf(stderr, "Property 'appclass' not found in manifest. Please update %s by 2025.\n", app);
+	log_message("em-app-generator: Property 'appclass' not found in manifest. Please update %s by 2025.\n", app);
 
 	for (i = 0; CORE_APPS[i]; i++) {
 		if (strcmp(app, CORE_APPS[i]) == 0)
@@ -105,7 +64,7 @@ bool is_time_app(const char *app) {
 	/* parse app manifest for time_app characteristic */
 	const char *appclass = empkg_json_get_char(app, "appclass");
 
-	if (appclass) {
+	if (appclass && strlen(appclass) > 0) {
 		if (strcmp(appclass, "time") == 0)
 			return true;
 
@@ -225,8 +184,7 @@ void handle_app(const char *app) {
 	add_dependencies(app);
 }
 
-
-int main(int argc, char *argv[]) {
+int em_app_generator(int argc, char *argv[]) {
 	DIR *dir;
 	struct dirent *ent;
 
