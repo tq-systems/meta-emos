@@ -6,6 +6,7 @@
  * Author: Michael Krummsdorf
  */
 
+#include "empkg_log.h"
 #include "empkg_tar.h"
 
 char *empkg_tar_pkg_info(const char *path) {
@@ -21,7 +22,7 @@ char *empkg_tar_pkg_info(const char *path) {
 	archive_read_support_format_all(a);
 	ret = archive_read_open_filename(a, path, EMPKG_BUF_SIZE);
 	if (ret != ARCHIVE_OK) {
-		fprintf(stderr, "Error opening empkg '%s'\n", path);
+		log_message("empkg: Error opening empkg '%s'\n", path);
 		return NULL;
 	}
 
@@ -36,7 +37,7 @@ char *empkg_tar_pkg_info(const char *path) {
 
 	/* Check result of iteration. Exit if manifest.json was not found */
 	if ((ret != ARCHIVE_OK) || (strcmp(archive_entry_pathname(entry), "manifest.json"))) {
-		fprintf(stderr, "File manifest.json not found in %s\n", path);
+		log_message("empkg: File manifest.json not found in %s\n", path);
 		return NULL;
 	}
 
@@ -91,12 +92,12 @@ void empkg_tar_pkg_extract(const char *path, const char *installdir) {
 
 	ret = archive_read_open_filename(ar, path, EMPKG_BUF_SIZE);
 	if (ret != ARCHIVE_OK) {
-		fprintf(stderr, "Error opening empkg '%s'\n", path);
+		log_message("empkg: Error opening empkg '%s'\n", path);
 		return;
 	}
 
 	if(chdir(installdir) != 0) {
-		fprintf(stderr, "Could not change to %s\n", installdir);
+		log_message("empkg: Could not change to %s\n", installdir);
 		return;
 	}
 
@@ -107,7 +108,7 @@ void empkg_tar_pkg_extract(const char *path, const char *installdir) {
 
 		/* create file */
 		if (archive_write_header(aw, entry) < ARCHIVE_OK) {
-			fprintf(stderr, "write: %s\n", archive_error_string(aw));
+			log_message("empkg: write: %s\n", archive_error_string(aw));
 			continue;
 		}
 
@@ -115,7 +116,7 @@ void empkg_tar_pkg_extract(const char *path, const char *installdir) {
 			/* extract file data */
 			while (archive_read_data_block(ar, &buff, &size, &offset) != ARCHIVE_EOF) {
 				if (archive_write_data_block(aw, buff, size, offset) < ARCHIVE_OK) {
-					fprintf(stderr, "write: %s\n", archive_error_string(aw));
+					log_message("empkg: write: %s\n", archive_error_string(aw));
 					break;
 				}
 			}

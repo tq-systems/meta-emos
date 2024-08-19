@@ -9,6 +9,7 @@
 #include "empkg.h"
 #include "empkg_appdb.h"
 #include "empkg_fops.h"
+#include "empkg_log.h"
 
 void app_register(const char *id) {
 	const char *target = appdb_get_path(P_BUILTIN, id);
@@ -18,7 +19,7 @@ void app_register(const char *id) {
 	int err;
 
 	if (!appdb_is(BUILTIN, id)) {
-		fprintf(stderr, "tried to register app '%s', but it is not builtin.", id);
+		log_message("empkg: tried to register app '%s', but it is not builtin.", id);
 		return;
 	}
 

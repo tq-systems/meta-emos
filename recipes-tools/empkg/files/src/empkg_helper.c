@@ -9,6 +9,7 @@
 #include "empkg.h"
 #include "empkg_appdb.h"
 #include "empkg_fops.h"
+#include "empkg_log.h"
 
 struct sd_reload_command {
 	char *cmd;
@@ -50,11 +51,11 @@ int empkg_process_reload_request(void) {
 			return ERRORCODE;
 
 		if (!strcmp(entry->cmd, "daemon-reload"))
-			fprintf(stderr, "empkg: reloading system daemons, this could take a bit...\n");
+			log_message("empkg: reloading system daemons, this could take a bit...\n");
 
 		ret = system(syscall);
 		if (ret)
-			fprintf(stderr, "error executing %s\n", syscall);
+			log_message("empkg: error executing %s\n", syscall);
 		free(syscall);
 
 		/* additional entries malloc'd? */
@@ -137,7 +138,7 @@ int empkg_update_www(void) {
 	empkg_fops_mkdir(WWWDIRTMP);
 	ret = appdb_all(ENABLED, empkg_update_www_cb);
 	if (ret)
-		fprintf(stderr, "Error update_www()\n");
+		log_message("empkg: Error update_www()\n");
 
 	/* convert md5sums in WWWTMPDIR/ *.plain to temporary WWWTMPDIR/ *.json
 	 * move from WWWTMP to wwwdir
@@ -270,5 +271,5 @@ void empkg_init_dirs(void) {
 	empkg_fops_mkdir(userdbstoredir);
 
 	if (mount(userdbstoredir, userdbrundir, NULL, MS_BIND, NULL))
-		fprintf(stderr, "Error mounting %s to %s (%s)\n", userdbstoredir, userdbrundir, strerror(errno));
+		log_message("empkg: Error mounting %s to %s (%s)\n", userdbstoredir, userdbrundir, strerror(errno));
 }

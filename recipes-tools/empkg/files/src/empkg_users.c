@@ -7,6 +7,7 @@
  */
 
 #include "empkg.h" /* gAPPDIR, gBUILTINDIR */
+#include "empkg_acl.h"
 #include "empkg_appdb.h"
 #include "empkg_fops.h"
 #include "empkg_json.h"
@@ -25,7 +26,7 @@ static int create_user_entry(const char *id, const int userid,
 
 	fuser = fopen(userdbrunfile, "w");
 	if (!fuser) {
-		fprintf(stderr, "Cannot open %s (%s)\n", userdbrunfile, strerror(errno));
+		log_message("empkg: Cannot open %s (%s)\n", userdbrunfile, strerror(errno));
 		free(userdbrunfile);
 		return errno;
 	}
@@ -57,7 +58,7 @@ static int create_group_entry(const char *groupname, const int groupid, const ch
 
 	fgroup = fopen(groupdbrunfile, "w");
 	if (!fgroup) {
-		fprintf(stderr, "Cannot open %s (%s)\n", groupdbrunfile, strerror(errno));
+		log_message("empkg: Cannot open %s (%s)\n", groupdbrunfile, strerror(errno));
 		return errno;
 	}
 	free(groupdbrunfile);
@@ -214,7 +215,7 @@ static int sync_app_user(const char *id, const char *user, const char *group) {
 	}
 
 	if (err || groupid < 0)
-		fprintf(stderr, "Error getting groupid for '%s'\n", id);
+		log_message("empkg: Error getting groupid for '%s'\n", id);
 
 	if (strcmp(user, "root")) {
 		if (strcmp(user, group) == 0)
@@ -238,10 +239,11 @@ static int sync_app_user(const char *id, const char *user, const char *group) {
 static int sync_app_dirs(const char *id, const char *user, const char *group) {
 	const char *rundirapp = appdb_get_path(P_RUNDIR, id);
 	const char *configdirapp = appdb_get_path(P_CONFIGDIR, id);
-	acl_t acl;
 	mode_t oldmask;
-	struct passwd *usernam;
-	struct group *groupnam;
+	struct passwd *pusr = getpwnam(user);
+	struct passwd usernam, userwww;
+	struct group *pgrp = getgrnam(group);
+	struct group groupnam;
 	int ret = 0;
 
 	oldmask = umask(0007);
@@ -250,36 +252,25 @@ static int sync_app_dirs(const char *id, const char *user, const char *group) {
 	umask(0077);
 	empkg_fops_mkdir(configdirapp);
 
-	/* file modes and mask m::rwx is required for acl_set_file() when assigning user ACL
-	 * https://bugzilla.redhat.com/show_bug.cgi?id=985269
-	 */
-	acl = acl_from_text("u::rwx,g::r-x,o::---,m::rwx,u:www:--x");
-	if (acl && acl_valid(acl) == 0) {
-		ret = acl_set_file(rundirapp, ACL_TYPE_ACCESS, acl);
-		if (ret)
-			fprintf(stderr, "Error assigning ACL: %s %s\n", acl_to_text(acl, NULL), strerror(errno));
+	if (!pusr || !pgrp) {
+		log_message("empkg: Error collecting uid for '%s' or gid for '%s'.\n", user, group);
+		return ERRORCODE;
 	}
 
-	acl_free(acl);
+	memcpy(&usernam, pusr, sizeof(struct passwd));
+	memcpy(&groupnam, pgrp, sizeof(struct group));
+
+	pusr = getpwnam("www");
+	memcpy(&userwww, pusr, sizeof(struct passwd));
+
+	empkg_acl_setacl(rundirapp, userwww.pw_uid, false);
+
 	umask(oldmask);
 
-	/* get uid for user */
-	usernam = getpwnam(user);
-	if (!usernam) {
-		fprintf(stderr, "Error collecting uid for '%s'.\n", user);
-		return ERRORCODE;
-	}
-
-	groupnam = getgrnam(group);
-	if (!usernam) {
-		fprintf(stderr, "Error collecting uid for '%s'.\n", group);
-		return ERRORCODE;
-	}
-
 	/* recursive chown */
-	ret = empkg_fops_chown(configdirapp, usernam->pw_uid, groupnam->gr_gid);
+	ret = empkg_fops_chown(configdirapp, usernam.pw_uid, groupnam.gr_gid);
 	if (!ret)
-		ret = empkg_fops_chown(rundirapp, usernam->pw_uid, groupnam->gr_gid);
+		ret = empkg_fops_chown(rundirapp, usernam.pw_uid, groupnam.gr_gid);
 
 	return ret;
 }
@@ -288,10 +279,24 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 	json_t *json_perm, *dir;
 	DIR *dircheck;
 	size_t notused;
-	struct passwd *usernam;
-	struct group *groupnam;
+	struct passwd *pusr = getpwnam(user);
+	struct passwd usernam, userwww;
+	struct group *pgrp = getgrnam(group);
+	struct group groupnam;
 
 	json_perm = empkg_json_get_manifest_permissions(id);
+
+	if (!pusr || !pgrp) {
+		log_message("empkg: Error collecting uid for '%s' or gid for '%s'.\n", user, group);
+		return ERRORCODE;
+	}
+
+	/* getpwnam points to a static memory that gets updated on each call.
+	 * we need to copy the memory contents to store the results before
+	 * subsequent calls (for www user later on)
+	 */
+	memcpy(&usernam, pusr, sizeof(struct passwd));
+	memcpy(&groupnam, pgrp, sizeof(struct group));
 
 	json_array_foreach(json_object_get(json_perm, "own"), notused, dir) {
 		const char *dirpath = json_string_value(dir);
@@ -302,28 +307,20 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 			/* create own directory */
 			empkg_fops_mkdir(dirpath);
 
-			usernam = getpwnam(user);
-			if (!usernam) {
-				fprintf(stderr, "Error collecting uid for '%s'.\n", user);
-				return ERRORCODE;
-			}
-
-			groupnam = getgrnam(group);
-			if (!usernam) {
-				fprintf(stderr, "Error collecting uid for '%s'.\n", group);
-				return ERRORCODE;
-			}
-
-			empkg_fops_chown(dirpath, usernam->pw_uid, groupnam->gr_gid);
+			empkg_fops_chown(dirpath, usernam.pw_uid, groupnam.gr_gid);
 
 			/* also grant execution access for nginx user 'www'
 			 * to /run/apps/$app to display frontend
 			 */
 			if (!strcmp(appdb_get_path(P_RUNDIR, id), dirpath)) {
-				empkg_fops_setacl(appdb_get_path(P_RUNDIR, id), "www", "--x");
+				pusr = getpwnam("www");
+				if (pusr) {
+					memcpy(&userwww, pusr, sizeof(struct passwd));
+					empkg_acl_setacl(appdb_get_path(P_RUNDIR, id), userwww.pw_uid, false);
+				}
 			}
 		} else {
-			fprintf(stderr, "%s: Cannot create own-group directory: '%s' is no own directory.\n", id, dirpath);
+			log_message("empkg: %s: Cannot create own-group directory: '%s' is no own directory.\n", id, dirpath);
 		}
 	}
 
@@ -338,9 +335,9 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 		const char *dirpath = json_string_value(dir);
 		dircheck = opendir(dirpath);
 		if (dircheck) {
-			empkg_fops_setacl(dirpath, user, "rwx");
+			empkg_acl_setacl(dirpath, usernam.pw_uid, true);
 		} else {
-			fprintf(stderr, "%s: Cannot assign rw access: '%s' does not exist.\n", id, dirpath);
+			log_message("empkg: %s: Cannot assign rw access: '%s' does not exist.\n", id, dirpath);
 		}
 		closedir(dircheck);
 	}
@@ -350,9 +347,9 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 		const char *dirpath = json_string_value(dir);
 		dircheck = opendir(dirpath);
 		if (dircheck) {
-			empkg_fops_setacl(dirpath, user, "r-x");
+			empkg_acl_setacl(dirpath, usernam.pw_uid, false);
 		} else {
-			fprintf(stderr, "%s: Cannot assign ro access: '%s' does not exist.\n", id, dirpath);
+			log_message("empkg: %s: Cannot assign ro access: '%s' does not exist.\n", id, dirpath);
 		}
 		closedir(dircheck);
 	}

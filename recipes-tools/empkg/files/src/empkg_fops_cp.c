@@ -8,6 +8,7 @@
 
 #include "empkg_appdb.h"
 #include "empkg_fops.h"
+#include "empkg_log.h"
 
 /* copy src file/dir to dst file/dir
  * if S_ISDIR() for src, mkdir dst -> fail if dst exists
@@ -28,7 +29,7 @@ int empkg_fops_cp(const char *src, const char *dst) {
 	if (!err && S_ISDIR(sb.st_mode)) {
 		err = mkdir(dst, 0755);
 		if (err) {
-			fprintf(stderr, "Error copying: %s (%s)\n", dst, strerror(errno));
+			log_message("empkg: Error copying: %s (%s)\n", dst, strerror(errno));
 			return err;
 		}
 
@@ -50,20 +51,20 @@ int empkg_fops_cp(const char *src, const char *dst) {
 		fdst = fopen(dst, "r");
 		if (fdst) {
 			fclose(fdst);
-			fprintf(stderr, "Error copying: file %s exists\n", dst);
+			log_message("empkg: Error copying: file %s exists\n", dst);
 			errno = EEXIST;
 			return ERRORCODE;
 		}
 
 		fdst = fopen(dst, "w");
 		if (!fdst) {
-			fprintf(stderr, "Error copying: could not open %s for writing (%s)\n", dst, strerror(errno));
+			log_message("empkg: Error copying: could not open %s for writing (%s)\n", dst, strerror(errno));
 			return ERRORCODE;
 		}
 
 		fsrc = fopen(src, "r");
 		if (!fsrc) {
-			fprintf(stderr, "Error copying: could not open %s for reading (%s)\n", src, strerror(errno));
+			log_message("empkg: Error copying: could not open %s for reading (%s)\n", src, strerror(errno));
 			return ERRORCODE;
 		}
 

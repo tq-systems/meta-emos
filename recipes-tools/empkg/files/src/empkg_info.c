@@ -16,7 +16,7 @@ int info(const char *path) {
 
 	appmanifest = empkg_tar_pkg_info(path);
 	if (!appmanifest) {
-		fprintf(stderr, "Error reading app_info\n");
+		log_message("empkg: Error reading app_info\n");
 		return ERRORCODE;
 	}
 

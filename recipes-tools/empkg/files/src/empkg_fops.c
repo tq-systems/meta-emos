@@ -9,6 +9,7 @@
 #include "empkg.h" /* __maybe_unused */
 #include "empkg_appdb.h"
 #include "empkg_fops.h"
+#include "empkg_log.h"
 
 char *empkg_fops_abspath(const char *root, const char *relpath) {
 	char *path;
@@ -23,7 +24,7 @@ int empkg_fops_symlink(const char *target, const char *path) {
 	int ret = symlink(target, path);
 
 	if (ret)
-		fprintf(stderr, "Error creating symlink to %s at %s (%s)\n", target, path, strerror(errno));
+		log_message("empkg: Error creating symlink to %s at %s (%s)\n", target, path, strerror(errno));
 
 	return ret;
 }
@@ -37,7 +38,7 @@ int empkg_fops_rm(const char *path) {
 	int ret = nftw(path, unlink_callback, 16, FTW_DEPTH | FTW_PHYS);
 
 	if (ret && errno != ENOENT)
-		fprintf(stderr, "Error removing %s (%s)\n", path, strerror(errno));
+		log_message("empkg: Error removing %s (%s)\n", path, strerror(errno));
 
 	return (errno == ENOENT ? 0 : ret);
 }
@@ -52,7 +53,7 @@ int empkg_fops_mv(const char *path, const char *newpath) {
 	}
 
 	if (ret)
-		fprintf(stderr, "Error moving %s to %s (%s)\n", path, newpath, strerror(errno));
+		log_message("empkg: Error moving %s to %s (%s)\n", path, newpath, strerror(errno));
 
 	return ret;
 }
@@ -84,29 +85,7 @@ int empkg_fops_chown(const char *path, uid_t owner, gid_t group) {
 	}
 
 	if (ret)
-		fprintf(stderr, "Error chown() on '%s' (%s)\n", path, strerror(errno));
-
-	return ret;
-}
-
-int empkg_fops_setacl(const char *path, const char *user, const char *permissions) {
-	const char *aclpattern = "u::rwx,g::r-x,o::---,m::rwx,u:%s:%s";
-	char aclstring[64];
-	acl_t acl;
-	int ret = 0;
-
-	snprintf(aclstring, strlen(aclpattern) + strlen(user) + strlen(permissions) + 1, aclpattern, user, permissions);
-
-	/* file modes and mask m::rwx is required for acl_set_file() when assigning user ACL
-	 * https://bugzilla.redhat.com/show_bug.cgi?id=985269
-	 */
-	acl = acl_from_text(aclstring);
-	if (acl && acl_valid(acl) == 0) {
-		ret = acl_set_file(path, ACL_TYPE_ACCESS, acl);
-		if (ret)
-			fprintf(stderr, "Error assigning ACL: %s %s\n", acl_to_text(acl, NULL), strerror(errno));
-	}
-	acl_free(acl);
+		log_message("empkg: error chown() on '%s' (%s)\n", path, strerror(errno));
 
 	return ret;
 }

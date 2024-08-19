@@ -14,6 +14,7 @@
 #include "empkg_helper.h"
 #include "empkg_json.h"
 #include "empkg_lock.h"
+#include "empkg_log.h"
 #include "empkg_register.h"
 #include "empkg_tar.h"
 #include "empkg_users.h"
@@ -43,22 +44,20 @@ static int empkg_install(const char *path) {
 		property = json_object_get(json, "arch");
 		new.arch = json_string_value(property);
 	} else {
-		fprintf(stderr, "Error in reading manifest.json of %s\n", path);
+		log_message("empkg: Error in reading manifest.json of %s\n", path);
 		return ERRORCODE;
 	}
 
 	if (!empkg_is_arch_supported(new.arch)) {
-		fprintf(stderr, "Unable to install '%s': unsupported platform '%s'\n", path, new.arch);
+		log_message("empkg: Unable to install '%s': unsupported platform '%s'\n", path, new.arch);
 		return ERRORCODE;
 	}
 
 	if (appdb_is(INSTALLED, new.id)) {
 		char *version_old = appdb_get_version((char *)new.id);
-		fprintf(stderr, "Updating app: %s from %s to %s...\n", new.id, version_old, new.version);
-		syslog(LOG_NOTICE, "Updating app: %s from %s to %s...\n", new.id, version_old, new.version);
+		log_message("empkg: Updating app: %s from %s to %s...\n", new.id, version_old, new.version);
 	} else {
-		fprintf(stderr, "Installing app: %s %s...\n", new.id, new.version);
-		syslog(LOG_NOTICE, "Installing app: %s %s...\n", new.id, new.version);
+		log_message("empkg: Installing app: %s %s...\n", new.id, new.version);
 	}
 
 	/* Fill our vars with paths */
@@ -110,7 +109,7 @@ int app_install(const char *empkg) {
 	int ret;
 
 	if (!empkg_lock()) {
-		fprintf(stderr, "Could not get lock.\n");
+		log_message("empkg: Could not get lock.\n");
 		return ERRORCODE;
 	}
 
@@ -137,10 +136,10 @@ static int empkg_uninstall(const char *id) {
 	const char *appdir = appdb_get_path(P_INSTALLED, id);
 	char *uninstalldir;
 
-	fprintf(stderr, "Uninstalling %s...\n", id);
+	log_message("empkg: Uninstalling %s...\n", id);
 
 	if (!appdb_is(INSTALLED, id) && !appdb_is(ENABLED, id)) {
-		fprintf(stderr, "app '%s' not found.\n", id);
+		log_message("empkg: app '%s' not found.\n", id);
 		return ERRORCODE;
 	}
 
@@ -158,7 +157,7 @@ static int empkg_uninstall(const char *id) {
 	free(uninstalldir);
 
 	if (appdb_is(BUILTIN, id)) {
-		fprintf(stderr, "Note: '%s' is builtin, only uninstalling updates.\n", id);
+		log_message("empkg: Note: '%s' is builtin, only uninstalling updates.\n", id);
 		app_register(id);
 	}
 
@@ -174,7 +173,7 @@ int app_uninstall(const char *id) {
 	int ret;
 
 	if (!empkg_lock()) {
-		fprintf(stderr, "Could not get lock.\n");
+		log_message("empkg: Could not get lock.\n");
 		return ERRORCODE;
 	}
 

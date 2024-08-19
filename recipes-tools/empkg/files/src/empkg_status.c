@@ -9,6 +9,7 @@
 #include "empkg.h"
 #include "empkg_appdb.h"
 #include "empkg_json.h"
+#include "empkg_log.h"
 #include "empkg_status.h"
 
 /*
@@ -34,7 +35,7 @@ static int status_one(const char *id, json_t **json) {
 	const char *path = appdb_get_path(P_MANIFEST, id);
 
 	if (!appdb_is(INSTALLED, id)) {
-		fprintf(stderr, "app '%s' not found.\n", id);
+		log_message("empkg: app '%s' not found.\n", id);
 		return ERRORCODE;
 	}
 
@@ -70,6 +71,7 @@ int status(const char *id) {
 	else
 		ret = status_one(id, &g_json_output);
 
+	/* stderr: manual command 'status' should output directly */
 	fprintf(stderr, "%s\n", json_dumps(g_json_output, JSON_INDENT(2)));
 
 	return ret;
