@@ -50,6 +50,28 @@ const char *const TIME_APPS[] = {
 	NULL,
 };
 
+/* write log message to stderr and also to kernel log (requires root) */
+void log_message(const char *format, ...) {
+	FILE *kmsg;
+	va_list args;
+	va_start(args, format);
+
+	// Check if the process is running as root (UID 0)
+	if (geteuid() == 0) {
+		kmsg = fopen("/dev/kmsg", "a");
+		if (kmsg != NULL) {
+			vfprintf(kmsg, format, args);
+			fclose(kmsg);
+		} else {
+			fprintf(stderr, "Error: Unable to open /dev/kmsg\n");
+		}
+	}
+
+	vfprintf(stderr, format, args);
+
+	va_end(args);
+}
+
 char *empkg_json_get_char(const char *app, const char *key) {
 	const char *manifest_pattern = "/apps/installed/%s/manifest.json";
 	json_t *json;
@@ -82,14 +104,14 @@ bool is_core_app(const char *app) {
 	/* parse app manifest for core_app characteristic */
 	const char *appclass = empkg_json_get_char(app, "appclass");
 
-	if (appclass) {
+	if (appclass && strlen(appclass) > 0) {
 		if (strcmp(appclass, "core") == 0)
 			return true;
 
 		return false;
 	}
 
-	fprintf(stderr, "Property 'appclass' not found in manifest. Please update %s by 2025.\n", app);
+	log_message("Property 'appclass' not found in manifest. Please update %s by 2025.\n", app);
 
 	for (i = 0; CORE_APPS[i]; i++) {
 		if (strcmp(app, CORE_APPS[i]) == 0)
@@ -105,7 +127,7 @@ bool is_time_app(const char *app) {
 	/* parse app manifest for time_app characteristic */
 	const char *appclass = empkg_json_get_char(app, "appclass");
 
-	if (appclass) {
+	if (appclass && strlen(appclass) > 0) {
 		if (strcmp(appclass, "time") == 0)
 			return true;
 
