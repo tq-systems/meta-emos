@@ -1,3 +1,8 @@
+## [ 5.0.8 ] - 2024-08-19
+### Fixed
+- empkg: setfacl may fail
+- systemd: seccomp: add arm_fadvise64_64 to system-service group
+
 ## [ 5.0.7 ] - 2024-08-08
 ### Fixed
 - udev: fix teridian gpio rules
@@ -29,7 +34,6 @@
 
 ### Fixed
 - nginx: fix configuration so that all responses use appropriate content security policy headers for all requests improving cross site scripting defense
-- systemd: seccomp: add arm_fadvise64_64 to system-service group
 
 ## [ 5.0.3 ] - 2024-06-14
 ### Added
