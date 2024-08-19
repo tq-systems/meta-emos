@@ -691,7 +691,7 @@ sync_app_user_and_dirs() {
 			mkdir -p "$dir"
 			chown -R "$user:$group" "$dir"
 			# grant execution access for nginx user 'www' to display frontend
-			[ "$dir" = "$RUNDIRAPPS/$app" ] && setfacl -m "u:www:x" "$dir"
+			[ "$dir" = "$RUNDIRAPPS/$app" ] && setfacl -m "u:www:x" "$dir" || true
 		else
 			error "$app: Cannot create own-group directory: '$dir' is no own directory."
 		fi
@@ -714,7 +714,7 @@ sync_app_acl_perms() {
 
 	for dir in $(list_rw_permissions_from_manifest "$manifest"); do
 		if [ -d "$dir" ]; then
-			setfacl -Rm "u:$user:rwx" "$dir"
+			setfacl -Rm "u:$user:rwx" "$dir" || true
 		else
 			error "$app: Cannot assign rw access: '$dir' does not exist."
 		fi
@@ -722,7 +722,7 @@ sync_app_acl_perms() {
 
 	for dir in $(list_ro_permissions_from_manifest "$manifest"); do
 		if [ -d "$dir" ]; then
-			setfacl -Rm "u:$user:r-x" "$dir"
+			setfacl -Rm "u:$user:r-x" "$dir" || true
 		else
 			error "$app: Cannot assign ro access: '$dir' does not exist."
 		fi
