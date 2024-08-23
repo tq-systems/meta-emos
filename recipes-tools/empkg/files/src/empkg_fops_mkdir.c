@@ -8,6 +8,7 @@
 
 #include "empkg.h"
 #include "empkg_fops.h"
+#include "empkg_log.h"
 
 /* mode = 0755 */
 #define MKDIRMODE (S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH)

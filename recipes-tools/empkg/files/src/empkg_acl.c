@@ -6,7 +6,9 @@
  * Author: Michael Krummsdorf
  */
 
+#include "empkg_appdb.h"
 #include "empkg_acl.h"
+#include "empkg_log.h"
 
 /* Find the ACL entry in 'acl' corresponding to the tag type and
  * qualifier in 'tag' and 'qual'. Return the matching entry, or NULL
