@@ -263,6 +263,7 @@ static int sync_app_dirs(const char *id, const char *user, const char *group) {
 	pusr = getpwnam("www");
 	memcpy(&userwww, pusr, sizeof(struct passwd));
 
+	/* setfacl -m 'u:www:x' "$RUNDIRAPPS/$app" */
 	empkg_acl_setacl(rundirapp, userwww.pw_uid, false);
 
 	umask(oldmask);
@@ -316,6 +317,7 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 				pusr = getpwnam("www");
 				if (pusr) {
 					memcpy(&userwww, pusr, sizeof(struct passwd));
+					/* setfacl -m "u:www:x" "$dir" */
 					empkg_acl_setacl(appdb_get_path(P_RUNDIR, id), userwww.pw_uid, false);
 				}
 			}
@@ -335,7 +337,8 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 		const char *dirpath = json_string_value(dir);
 		dircheck = opendir(dirpath);
 		if (dircheck) {
-			empkg_acl_setacl(dirpath, usernam.pw_uid, true);
+			/* setfacl -Rm "u:$user:rwx" "$dir" */
+			empkg_acl_setacl_r(dirpath, usernam.pw_uid, true);
 		} else {
 			log_message("empkg: %s: Cannot assign rw access: '%s' does not exist.\n", id, dirpath);
 		}
@@ -347,7 +350,8 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 		const char *dirpath = json_string_value(dir);
 		dircheck = opendir(dirpath);
 		if (dircheck) {
-			empkg_acl_setacl(dirpath, usernam.pw_uid, false);
+			/* setfacl -Rm "u:$user:r-x" "$dir" */
+			empkg_acl_setacl_r(dirpath, usernam.pw_uid, false);
 		} else {
 			log_message("empkg: %s: Cannot assign ro access: '%s' does not exist.\n", id, dirpath);
 		}
