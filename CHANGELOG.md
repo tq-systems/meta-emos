@@ -1,4 +1,8 @@
-## [ 5.0.8 ] - 2024-08-19
+## [ 5.0.9 ] - 2024-08-26
+## Fixed
+- missed update of DISTRO_VERSION
+
+## [ 5.0.8 ] - 2024-08-26
 ### Fixed
 - empkg: setfacl may fail
 - systemd: seccomp: add arm_fadvise64_64 to system-service group
