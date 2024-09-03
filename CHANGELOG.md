@@ -2,6 +2,8 @@
 ### Fixed
 - nginx: disallow RSA+SHA224 signature algorithm for TLS connection for web server nginx
 - avahi: add missing mounts for device-settings
+### Changed
+- linux-em: update to 6.6.50
 
 ## [ 5.0.9 ] - 2024-08-26
 ### Fixed
