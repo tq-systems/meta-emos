@@ -11,6 +11,8 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 void log_message(const char *format, ...);
 

@@ -7,6 +7,7 @@
  */
 
 #include "empkg_lock.h"
+#include "empkg_log.h"
 #include "empkg_fops.h"
 
 /* Path to lock for running only one instance */
