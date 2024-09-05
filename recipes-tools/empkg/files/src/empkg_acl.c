@@ -6,7 +6,9 @@
  * Author: Michael Krummsdorf
  */
 
+#include "empkg_appdb.h"
 #include "empkg_acl.h"
+#include "empkg_log.h"
 
 /* Find the ACL entry in 'acl' corresponding to the tag type and
  * qualifier in 'tag' and 'qual'. Return the matching entry, or NULL
@@ -47,6 +49,49 @@ static acl_entry_t empkg_acl_find_aclentry(acl_t acl, uid_t uid)
 	return NULL;
 }
 
+/* recursive wrapper for setacl()
+ * If path is a symlink, it does not follow.
+ * If path is a directory, it gets called recursively on the path contents.
+ */
+int empkg_acl_setacl_r(const char *path, const int uid, const bool write) {
+	struct stat sb;
+	int err;
+
+	err = lstat(path, &sb);
+	if (err) {
+		log_message("empkg: Error accessing '%s'\n", path);
+		return 0;
+	}
+
+	if (S_ISDIR(sb.st_mode)) {
+		struct dirent **ent = NULL;
+		char *workpath;
+		int n, i = 0;
+
+		n = scandir(path, &ent, scandir_filter_default, alphasort);
+
+		while (i < n) {
+			if(asprintf(&workpath, "%s/%s", path, ent[i]->d_name) == -1) {
+				log_message("empkg: Error allocating memory\n");
+				free(ent[i]);
+				i++;
+				continue;
+			}
+
+			empkg_acl_setacl_r(workpath, uid, write);
+			free(workpath);
+			free(ent[i]);
+			i++;
+		}
+		free(ent);
+	}
+
+	/* dir entries done, handle other types and dir itself */
+	empkg_acl_setacl(path, uid, write);
+
+	return 0;
+}
+
 int empkg_acl_setacl(const char *path, const int uid, const bool write) {
 	acl_t acl;
 	acl_entry_t aclentry;
@@ -61,7 +106,7 @@ int empkg_acl_setacl(const char *path, const int uid, const bool write) {
 	/* get current ACL */
 	acl = acl_get_file(path, ACL_TYPE_ACCESS);
 	if (!acl) {
-		log_message("empkg: Error getting ACL.\n");
+		log_message("empkg: Error getting ACL for '%s'.\n", path);
 		return -1;
 	}
 

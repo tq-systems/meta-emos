@@ -9,6 +9,7 @@
 #include "empkg_appdb.h"
 #include "empkg_fops.h"
 #include "empkg_json.h"
+#include "empkg_log.h"
 
 struct appdb_t *appdb = NULL;
 int appdb_napps;

@@ -8,6 +8,7 @@
 
 #include "empkg.h"
 #include "empkg_json.h"
+#include "empkg_log.h"
 #include "empkg_tar.h"
 
 int info(const char *path) {
