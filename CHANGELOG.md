@@ -1,3 +1,7 @@
+## [ 5.1.1 ] - 2024-09-05
+### Fixed
+- empkg: acl: fix recursive path handling
+
 ## [ 5.1.0 ] - 2024-08-19
 ### Changed
 - empkg: ported to application written in C
