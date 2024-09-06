@@ -1,5 +1,9 @@
+## [ next ]
+### Fixed
+- nginx: disallow RSA+SHA224 signature algorithm for TLS connection for web server nginx
+
 ## [ 5.0.9 ] - 2024-08-26
-## Fixed
+### Fixed
 - missed update of DISTRO_VERSION
 
 ## [ 5.0.8 ] - 2024-08-26
