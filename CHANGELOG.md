@@ -1,6 +1,7 @@
 ## [ next ]
 ### Fixed
 - empkg: acl: fix recursive path handling
+- nginx: disallow RSA+SHA224 signature algorithm for TLS connection for web server nginx
 
 ## [ 5.1.0 ] - 2024-08-19
 ### Changed
