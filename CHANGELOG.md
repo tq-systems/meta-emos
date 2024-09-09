@@ -2,6 +2,7 @@
 ### Fixed
 - empkg: acl: fix recursive path handling
 - nginx: disallow RSA+SHA224 signature algorithm for TLS connection for web server nginx
+- avahi: add missing mounts for device-settings
 
 ## [ 5.1.0 ] - 2024-08-19
 ### Changed
