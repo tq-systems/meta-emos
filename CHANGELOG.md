@@ -1,4 +1,4 @@
-## [ next ]
+## [ 5.0.10 ] - 2024-09-10
 ### Fixed
 - nginx: disallow RSA+SHA224 signature algorithm for TLS connection for web server nginx
 - avahi: add missing mounts for device-settings
