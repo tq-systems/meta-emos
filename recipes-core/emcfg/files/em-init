@@ -9,6 +9,8 @@ DEV_DATA=/dev/mmcblk0p8
 DEV_AUTH=/dev/mmcblk0p9
 DEV_SERVICE=/dev/mmcblk0p10
 
+FILE_APPS_SQUASHFS=/opt/apps.squashfs
+
 MOUNT_OPTS_RO="nosuid,nodev,ro"
 MOUNT_OPTS_RW="nosuid,nodev,noatime"
 
@@ -283,6 +285,9 @@ if ! mount -o $MOUNT_OPTS_RW $DEV_DATA /data; then
 	mount -o $MOUNT_OPTS_RW $DEV_DATA /data || fatal '/data mount failed.'
 fi
 
+if [ -e $FILE_APPS_SQUASHFS ]; then
+	mount -o $MOUNT_OPTS_RO $FILE_APPS_SQUASHFS /opt/apps || fatal '/opt/apps mount failed.'
+fi
 mount -o $MOUNT_OPTS_RW $DEV_APPS /apps || fatal '/apps mount failed.'
 
 stop_haveged
