@@ -19,8 +19,6 @@ import yaml
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-BASE_SPEC = os.path.join(BASE_DIR, '..', 'share', 'emit', 'base.yml')
-
 
 parser = argparse.ArgumentParser(description='Build Energy Manager bundles')
 parser.add_argument('--arch', required=True, help='CPU architecture of included app packages')
@@ -158,8 +156,7 @@ class CommandCommon:
 	def __init__(self, args):
 		self.args = args
 
-		with open(BASE_SPEC, 'r') as f:
-			self.bundle_spec = yaml.safe_load(f)
+		self.bundle_spec = {}
 
 		for spec in self.args.bundle_spec:
 			with open(spec, 'r') as f:
