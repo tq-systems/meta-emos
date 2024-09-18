@@ -1,3 +1,7 @@
+## [ next ] - 2024-09-18
+### Changed
+- linux-em: reset to 6.6.28
+
 ## [ 5.0.10 ] - 2024-09-10
 ### Fixed
 - nginx: disallow RSA+SHA224 signature algorithm for TLS connection for web server nginx
