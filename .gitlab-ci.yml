@@ -1,18 +1,19 @@
+variables:
+  # INTERNAL_META_EMOS_BRANCH: $CI_COMMIT_REF_NAME
+  INTERNAL_META_EMOS_BRANCH: feature/refactor-sdk
+  OVERRIDE_LOCAL_CONF: $INTERNAL_LOCAL_CONF
 
 Trigger Integration Test:
   trigger:
     project: tq-em/build/yocto/core-qa-bundle
     strategy: depend
     branch: initial
-  rules:
-    - if: >
-        $CI_PIPELINE_SOURCE == "merge_request_event"
-          && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  # rules:
+  #   - if: >
+  #       $CI_PIPELINE_SOURCE == "merge_request_event"
+  #         && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
   variables:
-    INTERNAL_META_EMOS_BRANCH: $CI_COMMIT_REF_NAME
-    OVERRIDE_LOCAL_CONF: $INTERNAL_LOCAL_CONF
     RUN_INTEGRATION_TESTS: 'true'
-
 
 Trigger Core Snapshots:
   trigger:
@@ -22,6 +23,3 @@ Trigger Core Snapshots:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       when: never
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
-  variables:
-    INTERNAL_META_EMOS_BRANCH: $CI_COMMIT_REF_NAME
-    OVERRIDE_LOCAL_CONF: $INTERNAL_LOCAL_CONF
