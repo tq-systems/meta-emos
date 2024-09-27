@@ -262,8 +262,8 @@ if $BACKUP_RESTORE  && ! $END_OF_LIFE; then
 fi
 
 # mount service partition if it exists
+mkdir -p /cfglog/service
 if [ -e $DEV_SERVICE ]; then
-	mkdir -p /cfglog/service
 	mount -o $MOUNT_OPTS_RW $DEV_SERVICE /cfglog/service || fatal '/cfglog/service mount failed.'
 fi
 
