@@ -1,4 +1,7 @@
 ## [ next ]
+### Added
+- GitLab CI configuration for triggering core snapshots
+
 ### Fixed
 - empkg: acl: fix recursive path handling
 - nginx: disallow RSA+SHA224 signature algorithm for TLS connection for web server nginx

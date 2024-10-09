@@ -1,0 +1,21 @@
+---
+include:
+- project: tq-em/build/docker/base-ci
+  file: rules.yml
+  ref: master
+
+# Attention: Do no define variables in the global section here,
+# this leads to unexpected behavior in the triggered project,
+# e.g. the wrong gitlab-runner tag is used.
+.common-variables:
+  variables:
+    INTERNAL_META_EMOS_BRANCH: $CI_COMMIT_REF_NAME
+    OVERRIDE_LOCAL_CONF: $INTERNAL_LOCAL_CONF
+
+Trigger Core Snapshots:
+  extends:
+    - .common-variables
+    - .rule-include-default-branch
+  trigger:
+    project: tq-em/build/yocto-scripts
+    strategy: depend
