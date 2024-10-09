@@ -1,25 +1,21 @@
-variables:
-  # INTERNAL_META_EMOS_BRANCH: $CI_COMMIT_REF_NAME
-  INTERNAL_META_EMOS_BRANCH: feature/refactor-sdk
-  OVERRIDE_LOCAL_CONF: $INTERNAL_LOCAL_CONF
+---
+include:
+- project: tq-em/build/docker/base-ci
+  file: rules.yml
+  ref: master
 
-Trigger Integration Test:
-  trigger:
-    project: tq-em/build/yocto/core-qa-bundle
-    strategy: depend
-    branch: initial
-  # rules:
-  #   - if: >
-  #       $CI_PIPELINE_SOURCE == "merge_request_event"
-  #         && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+# Attention: Do no define variables in the global section here,
+# this leads to unexpected behavior in the triggered project,
+# e.g. the wrong gitlab-runner tag is used.
+.common-variables:
   variables:
-    RUN_INTEGRATION_TESTS: 'true'
+    INTERNAL_META_EMOS_BRANCH: $CI_COMMIT_REF_NAME
+    OVERRIDE_LOCAL_CONF: $INTERNAL_LOCAL_CONF
 
 Trigger Core Snapshots:
+  extends:
+    - .common-variables
+    - .rule-include-default-branch
   trigger:
     project: tq-em/build/yocto-scripts
     strategy: depend
-  rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: never
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
