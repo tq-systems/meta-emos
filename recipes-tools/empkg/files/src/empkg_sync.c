@@ -39,6 +39,7 @@ int app_sync(void) {
 	DIR *dircheck;
 	struct dirent **ent;
 	int i = 0, n;
+	int defer_count = appdb_get_n_apps();
 	char *new_apps[64];
 	char **new = new_apps, **enable_new = new_apps;
 
@@ -134,7 +135,12 @@ int app_sync(void) {
 
 	sync();
 	appdb_all(ENABLED, empkg_users_sync_app_users_and_dirs);
+	while (appdb_count_deferred() && --defer_count)
+		appdb_all(DEFERRED, empkg_users_sync_app_users_and_dirs);
 	sync();
+	if (!defer_count)
+		log_message("empkg: Warning: Maximum deferral reached.");
+
 	appdb_all(ENABLED, empkg_dbus);
 
 	/* Delay enabling apps until all new apps have been registered,

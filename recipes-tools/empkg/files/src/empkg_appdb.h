@@ -120,6 +120,7 @@ struct appdb_t {
 	int essential;
 	int systemd;
 	int installed;
+	int deferred;
 	char paths[NPATHS][APPDB_MAX_PATH];
 	md5sums_t md5sums[NSUMS];
 	struct appdb_t *next;
@@ -143,6 +144,7 @@ typedef enum appdb_prop {
 	ENABLED,
 	ESSENTIAL,
 	INSTALLED,
+	DEFERRED,
 	SYSTEMD,
 	VERSION,
 	MD5SUMS,
@@ -153,6 +155,8 @@ int appdb_scan_installed(void);
 int appdb_scan_builtin(void);
 int appdb_scan_enabled(void);
 
+int appdb_count_deferred();
+int appdb_get_n_apps();
 void appdb_check(const dbp prop, const char *id);
 
 char *appdb_get_path(const int path, const char *id);

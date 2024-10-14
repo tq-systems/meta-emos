@@ -284,6 +284,7 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 	struct passwd usernam, userwww;
 	struct group *pgrp = getgrnam(group);
 	struct group groupnam;
+	int ret = 0;
 
 	json_perm = empkg_json_get_manifest_permissions(id);
 
@@ -341,9 +342,13 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 			empkg_acl_setacl_r(dirpath, usernam.pw_uid, true);
 		} else {
 			log_message("empkg: %s: Cannot assign rw access: '%s' does not exist.\n", id, dirpath);
+			ret = ERRORDEFER;
 		}
 		closedir(dircheck);
 	}
+
+	if (ret)
+		return ret;
 
 	/* ReadOnlyPath entries */
 	json_array_foreach(json_object_get(json_perm, "ro"), notused, dir) {
@@ -351,14 +356,15 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 		dircheck = opendir(dirpath);
 		if (dircheck) {
 			/* setfacl -Rm "u:$user:r-x" "$dir" */
-			empkg_acl_setacl_r(dirpath, usernam.pw_uid, false);
+			ret = empkg_acl_setacl_r(dirpath, usernam.pw_uid, false);
 		} else {
 			log_message("empkg: %s: Cannot assign ro access: '%s' does not exist.\n", id, dirpath);
+			ret = ERRORDEFER;
 		}
 		closedir(dircheck);
 	}
 
-	return 0;
+	return ret;
 }
 
 int empkg_users_sync_app_users_and_dirs(const char *id) {
@@ -381,6 +387,14 @@ int empkg_users_sync_app_users_and_dirs(const char *id) {
 
 	free(user);
 	free(group);
+
+	if (ret == ERRORDEFER) {
+		log_message("empkg: Deferring %s\n", id);
+		appdb_set(DEFERRED, id, 1);
+		return 0;
+	} else if (ret == 0) {
+		appdb_set(DEFERRED, id, 0);
+	}
 
 	return ret;
 }

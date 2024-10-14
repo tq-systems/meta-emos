@@ -73,6 +73,7 @@ static void appdb_init(struct appdb_t *entry) {
 	entry->essential = APPDB_INIT_VAL;
 	entry->systemd = APPDB_INIT_VAL;
 	entry->installed = APPDB_INIT_VAL;
+	entry->deferred = 0;
 	entry->next = NULL;
 	memset(entry->paths, 0, NPATHS * APPDB_MAX_PATH);
 	memset(entry->md5sums, APPDB_INIT_VAL, NSUMS*sizeof(md5sums_t));
@@ -422,6 +423,8 @@ void appdb_check(const dbp prop, const char *id) {
 	case VERSION:
 		appdb_check_version(id);
 		break;
+	case DEFERRED:
+		break;
 	};
 };
 
@@ -451,6 +454,9 @@ int appdb_get(const dbp prop, const char *id) {
 		break;
 	case INSTALLED:
 		ret = a->installed;
+		break;
+	case DEFERRED:
+		ret = a->deferred;
 		break;
 	case SYSTEMD:
 		ret = a->systemd;
@@ -532,6 +538,9 @@ int appdb_set(const dbp prop, const char *id, const int value) {
 	case INSTALLED:
 		a->installed = value;
 		break;
+	case DEFERRED:
+		a->deferred = value;
+		break;
 	case SYSTEMD:
 		a->systemd = value;
 		break;
@@ -553,6 +562,27 @@ void appdb_set_version(const char *id, const char *value) {
 
 	if (a)
 		a->version = strdup(value);
+}
+
+int appdb_get_n_apps()
+{
+	return appdb_napps;
+}
+
+int appdb_count_deferred()
+{
+	struct appdb_t *entry = appdb;
+	int cnt = 0;
+
+	while (entry) {
+		if (entry->deferred)
+			cnt++;
+
+		entry = entry->next;
+	}
+
+
+	return cnt;
 }
 
 /* appdb_all_... - Tests property for all apps with appdb_get...
