@@ -10,6 +10,7 @@
 
 ### Changed
 - linux-em: update to 6.6.50
+- empkg: add deferred state
 
 ## [ 5.1.0 ] - 2024-08-19
 ### Changed
