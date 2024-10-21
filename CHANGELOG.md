@@ -4,6 +4,7 @@
 
 ### Fixed
 - empkg: acl: fix recursive path handling
+- empkg: acl: fix error messages
 - nginx: disallow RSA+SHA224 signature algorithm for TLS connection for web server nginx
 - avahi: add missing mounts for device-settings
 - em-init: create /cfglog/service unconditionally for devices without dedicated service partition
