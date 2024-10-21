@@ -106,7 +106,7 @@ int empkg_acl_setacl(const char *path, const int uid, const bool write) {
 	/* get current ACL */
 	acl = acl_get_file(path, ACL_TYPE_ACCESS);
 	if (!acl) {
-		log_message("empkg: Error getting ACL for '%s'.\n", path);
+		log_message("empkg: Error getting ACL from '%s': %s.\n", path, strerror(errno));
 		return -1;
 	}
 
@@ -136,7 +136,7 @@ int empkg_acl_setacl(const char *path, const int uid, const bool write) {
 	if (acl_valid(acl) == 0) {
 		ret = acl_set_file(path, ACL_TYPE_ACCESS, acl);
 		if (ret)
-			log_message("empkg: Error assigning ACL to '%s' (errno %d):\n%s", path, errno, acl_to_text(acl, NULL));
+			log_message("empkg: Error assigning ACL to '%s': %s.\n", path, strerror(errno));
 	} else {
 		log_message("empkg: Error validating ACL:\n%s\n", acl_to_text(acl, NULL));
 	}
