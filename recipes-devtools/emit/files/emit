@@ -6,6 +6,7 @@ import argparse
 from datetime import datetime
 import hashlib
 import json
+import lzma
 import os
 import re
 import shutil
@@ -268,6 +269,8 @@ class CommandBuild(CommandCommon):
 		self.app_install_dir = os.path.join(self.root_dir, 'opt', 'apps')
 		self.bundle_dir = os.path.join(self.args.build_dir, 'bundle')
 		self.build_image = os.path.join(self.args.build_dir, 'em-image-{}-{}.tar'.format(self.args.image_name, self.args.machine))
+		self.build_image_compressed = os.path.join(self.args.build_dir, 'em-image-{}-{}.tar.xz'.format(self.args.image_name, self.args.machine))
+		self.bundle_apps = os.path.join(self.root_dir, 'opt', 'apps.squashfs')
 
 	def prepare(self):
 		"""Prepares for the build by removing old build artifacts and creating directories."""
@@ -510,21 +513,47 @@ class CommandBuild(CommandCommon):
 		"""
 		Creates the rootfs image.
 
-		A copy of the core image tar is created, then the additional files (apps, RAUC config, product info) is
+		A copy of the core image tar is created, then the additional files
+		(apps as xz-compressed squashfs, RAUC config, product info) is
 		appended.
 		"""
 
-		def tarinfo_filter(info):
+		# Filter to exclude uncompressed apps
+		def tarinfo_filter_excl_apps(info):
 			info.uid = 0
 			info.gid = 0
 			info.uname = ''
 			info.gname = ''
-			return info
+			if '/opt/apps/' in info.name:
+				return None
+			else:
+				return info
+
+		# We copy the symlink'd archive at 'self.args.core_image'
+		# to 'build_dir/build_image' ...
 
 		shutil.copyfile(self.args.core_image, self.build_image)
 
+		# ... then we put the downloaded apps together to 'root_dir/opt/apps.squashfs'
+		# The parameters for mksquashfs are:
+		#	-b 1M			a large block size (max. 1M) allows more efficient compression
+		#	-comp xz		use xz compressor (heavy compression, easy decompression)
+		#	-Xbcj arm		improve compression for arm code
+		#	-Xdict-size 100%	percentage of block size to keep in memory when looking for repeating byte sequences
+		command = ['mksquashfs', self.app_install_dir, self.bundle_apps, '-b','1M','-comp','xz','-Xbcj','arm','-Xdict-size','100%']
+		subprocess.run(command, check=True)
+
+		# ... then we collect RAUC config, product info
+		# into the core-image copy tarfile
+
 		with tarfile.open(self.build_image, mode='a:') as tar:
-			tar.add(self.root_dir, '.', filter=tarinfo_filter)
+			tar.add(self.root_dir, '.', filter=tarinfo_filter_excl_apps)
+
+		# ... and finally the tarfile gets xz-compressed
+
+		with open(self.build_image, 'rb') as tar:
+			with lzma.open(self.build_image_compressed, 'xb', preset=9|lzma.PRESET_EXTREME) as xz:
+				shutil.copyfileobj(tar, xz)
 
 	def get_manifest(self):
 		"""Returns the RAUC manifest to be added to the bundle."""
@@ -540,7 +569,7 @@ class CommandBuild(CommandCommon):
 			hooks=install-check
 
 			[image.rootfs]
-			filename=em-image-{self.args.image_name}-{self.args.machine}.tar
+			filename=em-image-{self.args.image_name}-{self.args.machine}.tar.xz
 
 			[image.u-boot]
 			filename=bootloaders.txt
@@ -555,8 +584,15 @@ class CommandBuild(CommandCommon):
 		U-Boot is extracted from the core image.
 		"""
 
+		def tarinfo_filter(info):
+			info.uid = 0
+			info.gid = 0
+			info.uname = ''
+			info.gname = ''
+			return info
+
 		# Add rootfs to bundle
-		shutil.move(self.build_image, self.bundle_dir)
+		shutil.move(self.build_image_compressed, self.bundle_dir)
 
 		with tarfile.open(self.args.core_image, mode='r:') as tar:
 			# Check machine name
