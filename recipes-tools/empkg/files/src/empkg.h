@@ -27,6 +27,7 @@
 #define __maybe_unused	__attribute__((__unused__))
 #define ARRAY_SIZE(array)	(sizeof(array) / sizeof(array[0]))
 #define ERRORCODE 1
+#define ERRORDEFER 2
 
 #define gAPPDIR		"/apps"
 #define gBUILTINDIR	"/opt/apps"
