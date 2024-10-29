@@ -15,6 +15,7 @@ RDEPENDS:${PN} = "rauc"
 SRC_URI = " \
 	file://LICENSE \
 	file://emos-upgrade \
+	file://emos-upgrade-cleanup.service \
 	file://emos-upgrade-finalize \
 	file://emos-upgrade-finalize.service \
 	file://emos-upgrade-status \
@@ -24,7 +25,7 @@ S = "${WORKDIR}"
 
 
 FILES:${PN} += "${libdir}/emos/upgrade/emos-upgrade-finalize"
-SYSTEMD_SERVICE:${PN} = "emos-upgrade-finalize.service"
+SYSTEMD_SERVICE:${PN} = "emos-upgrade-cleanup.service emos-upgrade-finalize.service"
 
 inherit systemd
 
@@ -38,5 +39,6 @@ do_install() {
 	install -m 0755 emos-upgrade-finalize ${D}${libdir}/emos/upgrade/
 
 	install -d ${D}${systemd_unitdir}/system/
+	install -m 0644 emos-upgrade-cleanup.service  ${D}${systemd_unitdir}/system/
 	install -m 0644 emos-upgrade-finalize.service ${D}${systemd_unitdir}/system/
 }

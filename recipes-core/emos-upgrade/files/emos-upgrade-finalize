@@ -8,7 +8,6 @@ set -e
 
 cleanup() {
 	logger -t emos-upgrade-finalize 'resetting upgrade status'
-	rm -f /update/*.raucb
 	emos-upgrade-status reset
 }
 
