@@ -29,15 +29,18 @@
 #define ERRORCODE 1
 #define ERRORDEFER 2
 
-#define gAPPDIR		"/apps"
-#define gBUILTINDIR	"/opt/apps"
-#define gINSTALLEDDIR	gAPPDIR"/installed"
-#define gDBUSDIR	gAPPDIR"/dbus"
-#define gENABLEDDIR	gAPPDIR"/enabled"
-#define gCONFIGDIR	"/cfglog/apps"
-#define gRUNDIRAPPS	"/run/em/apps"
-#define gUSERDBRUNDIR	"/run/host/userdb"
-#define gUSERDBSTOREDIR	gAPPDIR"/userdb"
+#define gAPPDIR			"/apps"
+#define gBUILTINDIR		"/opt/apps"
+#define gINSTALLEDDIR		gAPPDIR"/installed"
+#define gDBUSDIR		gAPPDIR"/dbus"
+#define gENABLEDDIR		gAPPDIR"/enabled"
+#define gCONFIGDIR		"/cfglog/apps"
+#define gRUNDIRAPPS		"/run/em/apps"
+#define gUSERDBRUNDIR		"/run/host/userdb"
+#define gUSERDBSTOREDIR		gAPPDIR"/userdb"
+#define gCONFIGSYSTEMDIR	"/cfglog/system"
+#define gCONFIGAUTHDIR		"/cfglog/auth"
+#define gDATAAPPSDIR		"/data/apps"
 
 struct empkg_config {
 	unsigned enable;

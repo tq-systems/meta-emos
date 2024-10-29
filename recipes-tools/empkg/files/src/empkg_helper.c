@@ -265,6 +265,9 @@ void empkg_init_dirs(void) {
 		gRUNDIRAPPS,
 		gUSERDBRUNDIR,
 		gUSERDBSTOREDIR
+		gCONFIGSYSTEMDIR,
+		gCONFIGAUTHDIR,
+		gDATAAPPSDIR
 	};
 
 	for (unsigned int i = 0; i < ARRAY_SIZE(init_dirs); i++)
