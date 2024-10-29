@@ -260,16 +260,16 @@ char *remove_suffix(char *filename) {
 }
 
 void empkg_init_dirs(void) {
-	char *configdir = gCONFIGDIR;
-	char *rundirapps = gRUNDIRAPPS;
-	char *userdbrundir = gUSERDBRUNDIR;
-	char *userdbstoredir = gUSERDBSTOREDIR;
+	const char * const init_dirs[] = {
+		gCONFIGDIR,
+		gRUNDIRAPPS,
+		gUSERDBRUNDIR,
+		gUSERDBSTOREDIR
+	};
 
-	empkg_fops_mkdir(configdir);
-	empkg_fops_mkdir(rundirapps);
-	empkg_fops_mkdir(userdbrundir);
-	empkg_fops_mkdir(userdbstoredir);
+	for (unsigned int i = 0; i < ARRAY_SIZE(init_dirs); i++)
+		empkg_fops_mkdir(init_dirs[i]);
 
-	if (mount(userdbstoredir, userdbrundir, NULL, MS_BIND, NULL))
-		log_message("empkg: Error mounting %s to %s (%s)\n", userdbstoredir, userdbrundir, strerror(errno));
+	if (mount(gUSERDBSTOREDIR, gUSERDBRUNDIR, NULL, MS_BIND, NULL))
+		log_message("empkg: Error mounting %s to %s (%s)\n", gUSERDBSTOREDIR, gUSERDBRUNDIR, strerror(errno));
 }
