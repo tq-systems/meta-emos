@@ -39,7 +39,6 @@ SRC_URI = " \
 	file://em-keygen \
 	file://openssl-em.cnf \
 	file://journald-debug.conf \
-	file://01-emos-apps-generic.conf \
 	file://80-ttyAPP.rules \
 	file://90-gpio-teridian.rules \
 "
@@ -63,7 +62,6 @@ do_install() {
 
 	install -d ${D}${sysconfdir}/tmpfiles.d
 	install -m 0644 00-emos-log.conf ${D}${sysconfdir}/tmpfiles.d/
-	install -m 0644 01-emos-apps-generic.conf ${D}${sysconfdir}/tmpfiles.d/
 
 	install -d ${D}${sysconfdir}/sysctl.d
 	install -m 0644 sysctl.conf ${D}${sysconfdir}/sysctl.d/80-emos.conf
@@ -125,7 +123,6 @@ RDEPENDS:${PN} += "jq libubootenv-bin openssl-bin faketime em-network-config ude
 
 FILES:${PN} += " \
 	${sysconfdir}/tmpfiles.d/00-emos-log.conf \
-	${sysconfdir}/tmpfiles.d/01-emos-apps-generic.conf \
 	${systemd_unitdir}/system/ \
 	${systemd_unitdir}/system-generators/emcfg-generator \
 	${base_libdir}/udev/rules.d/ \
