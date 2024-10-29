@@ -10,6 +10,7 @@ include:
 .common-variables:
   variables:
     INTERNAL_META_EMOS_BRANCH: $CI_COMMIT_REF_NAME
+    INTERNAL_META_EMOS_REF: $CI_COMMIT_SHA
     OVERRIDE_LOCAL_CONF: $INTERNAL_LOCAL_CONF
 
 Trigger Core Snapshots:
