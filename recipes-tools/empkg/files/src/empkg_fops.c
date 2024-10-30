@@ -89,3 +89,17 @@ int empkg_fops_chown(const char *path, uid_t owner, gid_t group) {
 
 	return ret;
 }
+
+int empkg_fops_chown_name(const char *path, const char * const owner, const char * const group)
+{
+	struct passwd *pusr;
+	struct group *pgrp;
+
+	pusr = getpwnam(owner);
+	pgrp = getgrnam(group);
+
+	if (!pusr || !pgrp)
+		return ERRORCODE;
+
+	return empkg_fops_chown(path, pusr->pw_uid, pgrp->gr_gid);
+}
