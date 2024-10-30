@@ -1,0 +1,14 @@
+[Unit]
+Description=EMOS post-upgrade cleanup
+
+Wants=rauc-mark-good.service
+After=rauc-mark-good.service
+
+ConditionPathExistsGlob=/update/*.raucb
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c "rm -f /update/*.raucb"
+
+[Install]
+WantedBy=multi-user.target

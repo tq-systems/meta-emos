@@ -1,5 +1,5 @@
 [Unit]
-Description=EMOS post-upgrade cleanup
+Description=EMOS post-upgrade finalization
 
 Wants=rauc-mark-good.service
 After=rauc-mark-good.service
