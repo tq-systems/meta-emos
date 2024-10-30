@@ -135,8 +135,6 @@ int app_sync(void) {
 
 	sync();
 	appdb_all(ENABLED, empkg_users_sync_app_users_and_dirs);
-	while (appdb_count_deferred() && --defer_count)
-		appdb_all(DEFERRED, empkg_users_sync_app_users_and_dirs);
 	sync();
 	if (!defer_count)
 		log_message("empkg: Warning: Maximum deferral reached.");
@@ -151,6 +149,10 @@ int app_sync(void) {
 			empkg_enable(*enable_new);
 		enable_new++;
 	}
+
+	while (appdb_count_deferred() && --defer_count)
+		appdb_all(DEFERRED, empkg_users_sync_app_users_and_dirs);
+	sync();
 
 	/* EOL: disable non-essential apps */
 	if (config.eol)

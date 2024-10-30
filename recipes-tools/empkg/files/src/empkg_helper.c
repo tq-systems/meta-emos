@@ -260,16 +260,36 @@ char *remove_suffix(char *filename) {
 }
 
 void empkg_init_dirs(void) {
-	char *configdir = gCONFIGDIR;
-	char *rundirapps = gRUNDIRAPPS;
-	char *userdbrundir = gUSERDBRUNDIR;
-	char *userdbstoredir = gUSERDBSTOREDIR;
+	int ret = 0;
 
-	empkg_fops_mkdir(configdir);
-	empkg_fops_mkdir(rundirapps);
-	empkg_fops_mkdir(userdbrundir);
-	empkg_fops_mkdir(userdbstoredir);
+	struct init_dir_settings {
+		const char * const dirpath;
+		const char * const dirowner;
+		const char * const dirgroup;
+		mode_t mode;
+	} init_dirs[] = {
+		{gCONFIGDIR, "root", "root", 0},
+		{gRUNDIRAPPS, "root", "root", 0},
+		{gUSERDBRUNDIR, "root", "root", 0},
+		{gUSERDBSTOREDIR, "root", "root", 0},
+		{gCONFIGSYSTEMDIR, "root", "em-group-cfglog", S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP },
+		{gCONFIGAUTHDIR, "root", "em-group-cfglog", S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP },
+		{gDATAAPPSDIR, "root", "em-group-data", S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP },
+	};
 
-	if (mount(userdbstoredir, userdbrundir, NULL, MS_BIND, NULL))
-		log_message("empkg: Error mounting %s to %s (%s)\n", userdbstoredir, userdbrundir, strerror(errno));
+	for (unsigned int i = 0; i < ARRAY_SIZE(init_dirs); i++) {
+		empkg_fops_mkdir(init_dirs[i].dirpath);
+		empkg_fops_chown_name(init_dirs[i].dirpath,
+				      init_dirs[i].dirowner,
+				      init_dirs[i].dirgroup);
+
+		if (init_dirs[i].mode)
+			ret = chmod(init_dirs[i].dirpath, init_dirs[i].mode);
+
+		if (ret)
+			log_message("empkg: Error setting mode of %s to 0x%x (%s)\n", init_dirs[i].dirpath, init_dirs[i].mode, strerror(errno));
+	}
+
+	if (mount(gUSERDBSTOREDIR, gUSERDBRUNDIR, NULL, MS_BIND, NULL))
+		log_message("empkg: Error mounting %s to %s (%s)\n", gUSERDBSTOREDIR, gUSERDBRUNDIR, strerror(errno));
 }

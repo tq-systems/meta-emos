@@ -14,6 +14,7 @@
 - empkg: add deferred state
 - use commit instead of branch for downstream pipelines
 - emos-upgrade: separate cleanup
+- empkg: Create system directories /cfglog/system, /cfglog/auth and /data/apps
 
 ## [ 5.1.0 ] - 2024-08-19
 ### Changed
