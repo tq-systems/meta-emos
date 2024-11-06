@@ -16,6 +16,7 @@
 - use commit instead of branch for downstream pipelines
 - emos-upgrade: separate cleanup
 - empkg: Create system directories /cfglog/system, /cfglog/auth and /data/apps
+- emit: disable compression for em310
 
 ## [ 5.1.0 ] - 2024-08-19
 ### Changed
