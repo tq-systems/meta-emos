@@ -11,6 +11,7 @@
 
 ### Changed
 - linux-em: update to 6.6.50
+- linux-em: enable SYN_COOKIES
 - empkg: add deferred state
 - use commit instead of branch for downstream pipelines
 - emos-upgrade: separate cleanup
