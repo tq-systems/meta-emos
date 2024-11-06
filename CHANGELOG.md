@@ -1,3 +1,7 @@
+## [ next ] - 2024-11-08
+### Added
+- linux-em: enable SYN_COOKIES
+
 ## [ 5.1.2 ] - 2024-09-10
 ### Fixed
 - nginx: disallow RSA+SHA224 signature algorithm for TLS connection for web server nginx
