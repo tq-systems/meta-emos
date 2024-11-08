@@ -17,6 +17,7 @@
 - emos-upgrade: separate cleanup
 - empkg: Create system directories /cfglog/system, /cfglog/auth and /data/apps
 - emit: disable compression for em310
+- emit: select LZ4 compression for apps
 
 ## [ 5.1.0 ] - 2024-08-19
 ### Changed

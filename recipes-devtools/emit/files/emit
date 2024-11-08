@@ -555,11 +555,11 @@ class CommandBuild(CommandCommon):
 
 		# ... then we put the downloaded apps together to 'root_dir/opt/apps.squashfs'
 		# The parameters for mksquashfs are:
-		#	-b 1M			a large block size (max. 1M) allows more efficient compression
-		#	-comp xz		use xz compressor (heavy compression, easy decompression)
-		#	-Xbcj arm		improve compression for arm code
-		#	-Xdict-size 100%	percentage of block size to keep in memory when looking for repeating byte sequences
-		command = ['mksquashfs', self.app_install_dir, self.bundle_apps, '-b','1M','-comp','xz','-Xbcj','arm','-Xdict-size','100%']
+		#	-b 128K			a large block size (max. 1M) allows more efficient compression
+		#				but also requires larger blocks to decompress on read
+		#	-comp lz4		use lz4 compressor (fair compression ratio, fastest decompression read speed)
+		#	-Xhc			high compression mode
+		command = ['mksquashfs', self.app_install_dir, self.bundle_apps, '-b','128K','-comp','lz4','-Xhc']
 		subprocess.run(command, check=True)
 
 		# ... then we collect RAUC config, product info
