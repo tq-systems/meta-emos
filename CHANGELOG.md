@@ -1,6 +1,7 @@
 ## [ next ]
 ### Added
 - GitLab CI configuration for triggering core snapshots
+- em-bundle.class: size check for bundle
 
 ### Fixed
 - empkg: acl: fix recursive path handling
