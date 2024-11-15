@@ -23,6 +23,9 @@ BUNDLE_NAME ??= "${BUNDLE_BASENAME}-${TQ_DEVICE_TYPE}-sw${EM_BUNDLE_VERSION}"
 BUNDLE_NAME[vardepsexclude] = "DATETIME"
 BUNDLE_LINK_NAME ??= "${BUNDLE_BASENAME}-${TQ_DEVICE_TYPE}"
 
+# maximum bundle file size that is accepted by Updater app
+BUNDLE_SIZE_MAX ?= "176160768"
+
 do_patch[noexec] = "1"
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
@@ -126,6 +129,13 @@ do_bundle() {
     fi
 
     ${EMIT} $specs build ${EMIT_ARGUMENTS} $migration_args
+
+    FILESIZE="$(stat -c%s "${B}/bundle.raucb")"
+    if [ "${FILESIZE}" -gt "${BUNDLE_SIZE_MAX}" ]; then \
+        echo >&2 "The bundle ${B}/bundle.raucb is too large: ${FILESIZE} (max. ${BUNDLE_SIZE_MAX})"
+        exit 1;
+    fi
+
 }
 do_bundle[depends] += "${EM_BOOTLOADER}:do_deploy ${EM_CORE_IMAGE}:do_image_complete"
 do_bundle[dirs] = "${B}"

@@ -509,6 +509,25 @@ class CommandBuild(CommandCommon):
 
 		shutil.copyfile(self.args.rauc_keyring, os.path.join(raucdir, 'ca.cert.pem'))
 
+	# Filter to exclude uncompressed apps
+	# The inner function is required because the filter= callback
+	# from tarfile.add() does not support adding arbitrary parameters.
+	# Once exclude_apps_filter(True) or ...(False) is called,
+	# tarinfo() is prepared with "exclude_apps" being set,
+	# and a reference to this tarinfo() is then returned to
+	# the caller of exclude_apps_filter().
+	def exclude_apps_filter(self, exclude_apps):
+		def tarinfo(info):
+			info.uid = 0
+			info.gid = 0
+			info.uname = ''
+			info.gname = ''
+			if '/opt/apps/' in info.name and exclude_apps:
+				return None
+			else:
+				return info
+		return tarinfo
+
 	def pack_image(self):
 		"""
 		Creates the rootfs image.
@@ -518,36 +537,37 @@ class CommandBuild(CommandCommon):
 		appended.
 		"""
 
-		# Filter to exclude uncompressed apps
-		def tarinfo_filter_excl_apps(info):
-			info.uid = 0
-			info.gid = 0
-			info.uname = ''
-			info.gname = ''
-			if '/opt/apps/' in info.name:
-				return None
-			else:
-				return info
-
 		# We copy the symlink'd archive at 'self.args.core_image'
 		# to 'build_dir/build_image' ...
 
 		shutil.copyfile(self.args.core_image, self.build_image)
 
+		# For 'em310' the overhead for on-the-fly decompression is somewhat expensive.
+		# Since the CPU can hardly handle any more apps, there is no sense in
+		# providing bundle compression for it anyways.
+		# So we simply append RAUC config and product info into the archive
+		# and exit early, skipping all compression steps below
+		tarfilter = self.exclude_apps_filter(False)
+		if self.args.machine == "em310":
+			with tarfile.open(self.build_image, mode='a:') as tar:
+				tar.add(self.root_dir, '.', filter=tarfilter)
+			return
+
 		# ... then we put the downloaded apps together to 'root_dir/opt/apps.squashfs'
 		# The parameters for mksquashfs are:
-		#	-b 1M			a large block size (max. 1M) allows more efficient compression
-		#	-comp xz		use xz compressor (heavy compression, easy decompression)
-		#	-Xbcj arm		improve compression for arm code
-		#	-Xdict-size 100%	percentage of block size to keep in memory when looking for repeating byte sequences
-		command = ['mksquashfs', self.app_install_dir, self.bundle_apps, '-b','1M','-comp','xz','-Xbcj','arm','-Xdict-size','100%']
+		#	-b 128K			a large block size (max. 1M) allows more efficient compression
+		#				but also requires larger blocks to decompress on read
+		#	-comp lz4		use lz4 compressor (fair compression ratio, fastest decompression read speed)
+		#	-Xhc			high compression mode
+		command = ['mksquashfs', self.app_install_dir, self.bundle_apps, '-b','128K','-comp','lz4','-Xhc']
 		subprocess.run(command, check=True)
 
 		# ... then we collect RAUC config, product info
 		# into the core-image copy tarfile
 
+		tarfilter = self.exclude_apps_filter(True)
 		with tarfile.open(self.build_image, mode='a:') as tar:
-			tar.add(self.root_dir, '.', filter=tarinfo_filter_excl_apps)
+			tar.add(self.root_dir, '.', filter=tarfilter)
 
 		# ... and finally the tarfile gets xz-compressed
 
@@ -555,7 +575,7 @@ class CommandBuild(CommandCommon):
 			with lzma.open(self.build_image_compressed, 'xb', preset=9|lzma.PRESET_EXTREME) as xz:
 				shutil.copyfileobj(tar, xz)
 
-	def get_manifest(self):
+	def get_manifest(self, suffix):
 		"""Returns the RAUC manifest to be added to the bundle."""
 
 		return textwrap.dedent(f'''\
@@ -569,7 +589,7 @@ class CommandBuild(CommandCommon):
 			hooks=install-check
 
 			[image.rootfs]
-			filename=em-image-{self.args.image_name}-{self.args.machine}.tar.xz
+			filename=em-image-{self.args.image_name}-{self.args.machine}.{suffix}
 
 			[image.u-boot]
 			filename=bootloaders.txt
@@ -584,15 +604,11 @@ class CommandBuild(CommandCommon):
 		U-Boot is extracted from the core image.
 		"""
 
-		def tarinfo_filter(info):
-			info.uid = 0
-			info.gid = 0
-			info.uname = ''
-			info.gname = ''
-			return info
-
 		# Add rootfs to bundle
-		shutil.move(self.build_image_compressed, self.bundle_dir)
+		if self.args.machine == "em310":
+			shutil.move(self.build_image, self.bundle_dir)
+		else:
+			shutil.move(self.build_image_compressed, self.bundle_dir)
 
 		with tarfile.open(self.args.core_image, mode='r:') as tar:
 			# Check machine name
@@ -643,7 +659,10 @@ class CommandBuild(CommandCommon):
 
 		# Generate manifest
 		with open(os.path.join(self.bundle_dir, 'manifest.raucm'), 'w') as manifest:
-			manifest.write(self.get_manifest())
+			if self.args.machine == "em310":
+				manifest.write(self.get_manifest("tar"))
+			else:
+				manifest.write(self.get_manifest("tar.xz"))
 
 		subprocess.run(['rauc', '--key=' + self.args.rauc_key, '--cert=' + self.args.rauc_cert, 'bundle', self.bundle_dir, self.args.output_bundle], check=True)
 

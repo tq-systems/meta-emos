@@ -1,6 +1,7 @@
 ## [ next ]
 ### Added
 - GitLab CI configuration for triggering core snapshots
+- em-bundle.class: size check for bundle
 
 ### Fixed
 - empkg: acl: fix recursive path handling
@@ -16,6 +17,8 @@
 - use commit instead of branch for downstream pipelines
 - emos-upgrade: separate cleanup
 - empkg: Create system directories /cfglog/system, /cfglog/auth and /data/apps
+- emit: disable compression for em310
+- emit: select LZ4 compression for apps
 
 ## [ 5.1.0 ] - 2024-08-19
 ### Changed
