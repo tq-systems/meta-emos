@@ -559,7 +559,7 @@ class CommandBuild(CommandCommon):
 		#				but also requires larger blocks to decompress on read
 		#	-comp lz4		use lz4 compressor (fair compression ratio, fastest decompression read speed)
 		#	-Xhc			high compression mode
-		command = ['mksquashfs', self.app_install_dir, self.bundle_apps, '-b','128K','-comp','lz4','-Xhc']
+		command = ['mksquashfs', self.app_install_dir, self.bundle_apps, '-b','128K','-comp','lz4','-Xhc','-all-root']
 		subprocess.run(command, check=True)
 
 		# ... then we collect RAUC config, product info
