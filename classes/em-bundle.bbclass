@@ -116,6 +116,7 @@ EMIT_ARGUMENTS = " \
     --image-name '${EM_IMAGE_NAME}' \
 "
 EMIT_ARGUMENTS[vardeps] += "TQ_DEVICE_SUBTYPE TQ_MANUFACTURER_ID TQ_PRODUCT_ID EM_BUNDLE_BOOTLOADER"
+EMIT_COMPRESSION_ARG = "${@ '--compression' if bb.utils.to_boolean(d.getVar('EM_BUNDLE_COMPRESSION')) else ''}"
 
 do_bundle() {
     local specs=''
@@ -128,7 +129,7 @@ do_bundle() {
         migration_args="--migration-exec ${WORKDIR}/${EM_BUNDLE_MIGRATION_EXEC}"
     fi
 
-    ${EMIT} $specs build ${EMIT_ARGUMENTS} $migration_args
+    ${EMIT} $specs ${EMIT_COMPRESSION_ARG} build ${EMIT_ARGUMENTS} $migration_args
 
     FILESIZE="$(stat -c%s "${B}/bundle.raucb")"
     if [ "${FILESIZE}" -gt "${BUNDLE_SIZE_MAX}" ]; then \
