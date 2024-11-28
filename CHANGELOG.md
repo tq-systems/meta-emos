@@ -4,21 +4,32 @@
 - em-bundle.class: size check for bundle
 
 ### Fixed
-- empkg: acl: fix recursive path handling
 - empkg: acl: fix error messages
-- nginx: disallow RSA+SHA224 signature algorithm for TLS connection for web server nginx
-- avahi: add missing mounts for device-settings
 - em-init: create /cfglog/service unconditionally for devices without dedicated service partition
 
 ### Changed
-- linux-em: update to 6.6.50
-- linux-em: enable SYN_COOKIES
 - empkg: add deferred state
 - use commit instead of branch for downstream pipelines
 - emos-upgrade: separate cleanup
 - empkg: Create system directories /cfglog/system, /cfglog/auth and /data/apps
 - emit: make bundle compression selectable
 - emit: select LZ4 compression for apps
+
+## [ 5.1.3 ] - 2024-11-08
+### Added
+- linux-em: enable SYN_COOKIES
+
+## [ 5.1.2 ] - 2024-09-10
+### Fixed
+- nginx: disallow RSA+SHA224 signature algorithm for TLS connection for web server nginx
+- avahi: add missing mounts for device-settings
+
+### Changed
+- linux-em: update to 6.6.50
+
+## [ 5.1.1 ] - 2024-09-05
+### Fixed
+- empkg: acl: fix recursive path handling
 
 ## [ 5.1.0 ] - 2024-08-19
 ### Changed
