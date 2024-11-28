@@ -28,6 +28,7 @@ parser.add_argument('--download-dir', default='downloads', help='Directory for a
 parser.add_argument('--bundle-spec', required=True, action='append',
 	help='Bundle specification. May be passed multiple times.',
 )
+parser.add_argument('--compression', action='store_true', help='Compress rootfs and apps inside the bundles')
 
 subparsers = parser.add_subparsers(title='commands', description='valid commands')
 
@@ -542,18 +543,16 @@ class CommandBuild(CommandCommon):
 
 		shutil.copyfile(self.args.core_image, self.build_image)
 
-		# For 'em310' the overhead for on-the-fly decompression is somewhat expensive.
-		# Since the CPU can hardly handle any more apps, there is no sense in
-		# providing bundle compression for it anyways.
-		# So we simply append RAUC config and product info into the archive
+		# If no compression desired, we simply append RAUC config,
+		# product info and all uncompressed apps into the archive
 		# and exit early, skipping all compression steps below
 		tarfilter = self.exclude_apps_filter(False)
-		if self.args.machine == "em310":
+		if not self.args.compression:
 			with tarfile.open(self.build_image, mode='a:') as tar:
 				tar.add(self.root_dir, '.', filter=tarfilter)
 			return
 
-		# ... then we put the downloaded apps together to 'root_dir/opt/apps.squashfs'
+		# With compression, we compress the downloaded apps to 'root_dir/opt/apps.squashfs'
 		# The parameters for mksquashfs are:
 		#	-b 128K			a large block size (max. 1M) allows more efficient compression
 		#				but also requires larger blocks to decompress on read
@@ -562,7 +561,7 @@ class CommandBuild(CommandCommon):
 		command = ['mksquashfs', self.app_install_dir, self.bundle_apps, '-b','128K','-comp','lz4','-Xhc','-all-root']
 		subprocess.run(command, check=True)
 
-		# ... then we collect RAUC config, product info
+		# ... then we collect RAUC config, product info and the compressed apps image
 		# into the core-image copy tarfile
 
 		tarfilter = self.exclude_apps_filter(True)
@@ -605,7 +604,7 @@ class CommandBuild(CommandCommon):
 		"""
 
 		# Add rootfs to bundle
-		if self.args.machine == "em310":
+		if not self.args.compression:
 			shutil.move(self.build_image, self.bundle_dir)
 		else:
 			shutil.move(self.build_image_compressed, self.bundle_dir)
@@ -659,7 +658,7 @@ class CommandBuild(CommandCommon):
 
 		# Generate manifest
 		with open(os.path.join(self.bundle_dir, 'manifest.raucm'), 'w') as manifest:
-			if self.args.machine == "em310":
+			if not self.args.compression:
 				manifest.write(self.get_manifest("tar"))
 			else:
 				manifest.write(self.get_manifest("tar.xz"))
