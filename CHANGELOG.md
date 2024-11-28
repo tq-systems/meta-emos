@@ -1,4 +1,4 @@
-## [ next ]
+## [ 5.2.0 ] - 2024-11-28
 ### Added
 - GitLab CI configuration for triggering core snapshots
 - em-bundle.class: size check for bundle
