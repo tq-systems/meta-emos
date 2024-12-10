@@ -1,0 +1,10 @@
+apps:
+  flash-scan:
+    version: '2.2.7'
+
+  teridiand:
+    version: '1.9.3'
+
+  teridiand-fw:
+    arch: 'all'
+    version: '1.3.3'

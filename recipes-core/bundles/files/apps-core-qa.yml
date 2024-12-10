@@ -1,0 +1,23 @@
+apps:
+  button-handler:
+    version: '2.2.7'
+
+  device-settings:
+    version: '4.3.21'
+
+  health-check:
+    version: '2.2.3'
+
+  smart-meter:
+    arch: 'all'
+    version: '2.6.8'
+
+  updater:
+    version: '1.11.0'
+
+  web-application:
+    arch: 'all'
+    version: '3.4.16'
+
+  web-login:
+    version: '3.0.10'

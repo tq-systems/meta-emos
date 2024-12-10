@@ -1,0 +1,11 @@
+compatible: emcore-qa
+
+defaults:
+  url: https://packages.tq-group.com/energymanager/apps/{app}/{name}_{version}_{arch}.empkg
+
+product_info:
+  name: 'Energy Manager Core QA'
+  code: 'EMCOREQA' # This is used for the default hostname
+
+  manufacturer: 'TQ-Systems GmbH'
+  manufacturer_url: 'https://www.tq-group.com/'
