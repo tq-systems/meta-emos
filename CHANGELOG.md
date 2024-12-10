@@ -19,6 +19,7 @@
 - empkg: Create system directories /cfglog/system, /cfglog/auth and /data/apps
 - emit: make bundle compression selectable
 - emit: select LZ4 compression for apps
+- bundles: refactor bundles and split into sdk and emcore-qa bundle
 
 ## [ 5.1.0 ] - 2024-08-19
 ### Changed

@@ -1,0 +1,2 @@
+defaults:
+  url: https://packages.tq-group.com/energymanager/apps/{app}/{name}_{version}_{arch}.empkg

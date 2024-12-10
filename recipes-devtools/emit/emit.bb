@@ -12,7 +12,6 @@ SRC_URI = "\
 	file://bootloader-em310.sh \
 	file://bootloader-em-aarch64.sh \
 	file://bootloader-imx8mn-egw.sh \
-	file://base.yml \
 "
 
 do_install() {
@@ -24,8 +23,6 @@ do_install() {
 	for machine in em310 em-aarch64 imx8mn-egw; do
 		install -m644 ${WORKDIR}/bootloader-$machine.sh ${D}${datadir}/emit/
 	done
-
-	install -m644 ${WORKDIR}/base.yml ${D}${datadir}/emit/
 }
 
 BBCLASSEXTEND = "native nativesdk"

@@ -1,4 +1,0 @@
-apps:
-  # Remove apps that are not useful on the EGW
-  teridiand: null
-  teridiand-fw: null
