@@ -1,4 +1,4 @@
-## [ next ]
+## [ 6.0.0 ] - 2024-12-10
 ### Changed
 - bundles: refactor bundles and split into sdk and emcore-qa bundle
 
