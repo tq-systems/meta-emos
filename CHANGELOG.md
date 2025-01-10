@@ -2,6 +2,9 @@
 ### Changed
 - bundles: refactor bundles and split into sdk and emcore-qa bundle
 
+### Fixed
+- empkg: fix group of websockets on sync calls during runtime
+
 ## [ 5.2.0 ] - 2024-11-28
 ### Added
 - GitLab CI configuration for triggering core snapshots
