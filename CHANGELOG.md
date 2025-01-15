@@ -1,9 +1,13 @@
 ## [ next ]
+### Added
+- openvas trigger with git reference handling
+
+### Changed
+- bundles: update apps
+
+## [ 6.0.0 ] - 2024-12-10
 ### Changed
 - bundles: refactor bundles and split into sdk and emcore-qa bundle
-
-### Fixed
-- empkg: fix group of websockets on sync calls during runtime
 
 ## [ 5.2.0 ] - 2024-11-28
 ### Added

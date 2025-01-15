@@ -4,10 +4,9 @@ include:
   file: rules.yml
   ref: master
 
-# Attention: Do no define variables in the global section here,
-# this leads to unexpected behavior in the triggered project,
-# e.g. the wrong gitlab-runner tag is used.
-.common-variables:
+# Attention: Do not define trigger variables in the global section,
+# this may lead to unexpected behavior in the triggered project.
+.set-local-conf:
   variables:
     INTERNAL_META_EMOS_BRANCH: $CI_COMMIT_REF_NAME
     INTERNAL_META_EMOS_REF: $CI_COMMIT_SHA
@@ -15,26 +14,28 @@ include:
 
 Trigger Core Snapshots:
   extends:
-    - .common-variables
     - .rule-include-default-branch
+    - .set-local-conf
   trigger:
-    project: tq-em/build/yocto-scripts
+    project: tq-em/build/docker/yocto-scripts
     strategy: depend
 
 Trigger Core QA Snapshots:
   extends:
-    - .common-variables
     - .rule-include-default-branch
+    - .set-local-conf
   trigger:
     project: tq-em/build/yocto/core-qa-bundle
     strategy: depend
 
 Trigger Core QA Tests:
   extends:
-    - .common-variables
     - .rule-include-merge-request-for-default-branch
+    - .set-local-conf
   trigger:
     project: tq-em/build/yocto/core-qa-bundle
     strategy: depend
   variables:
     RUN_INTEGRATION_TESTS: 'true'
+    RUN_OPENVAS_SCAN: 'true'
+    GIT_REFERENCE: meta-emos_$CI_COMMIT_SHORT_SHA
