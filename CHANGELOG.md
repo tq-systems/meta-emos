@@ -4,6 +4,7 @@
 
 ### Changed
 - bundles: update apps
+- bundles: switch to teridiand-fw again (revert renaming)
 
 ## [ 6.0.0 ] - 2024-12-10
 ### Changed
