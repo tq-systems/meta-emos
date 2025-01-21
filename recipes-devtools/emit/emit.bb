@@ -1,5 +1,6 @@
 SUMMARY = "The Energy Manager Image Tool"
 RDEPENDS:${PN} = "python3 python3-pyyaml rauc squashfs-tools"
+RPROVIDES:${PN} += "virtual-rauc-conf"
 
 LICENSE = "TQSSLA_V1.0.2"
 LIC_FILES_CHKSUM = "file://${WORKDIR}/emit;beginline=2;endline=5;md5=0628c1a390d66a2f452e92e03fef067f"
