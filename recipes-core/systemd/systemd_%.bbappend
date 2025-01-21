@@ -2,11 +2,10 @@ FILESEXTRAPATHS:prepend:emos := "${THISDIR}/files:"
 SRC_URI:append:emos = "\
 	file://0001-shared-dropin-disable-unit-name-prefix-dropins.patch \
 	file://0002-shared-dropin-disable-support-for-toplevel-unit-type.patch \
-	file://0003-linux-if_link.h-update.patch \
+	file://0003-basic-linux-update-kernel-headers-from-v6.8-rc5.patch \
 	file://0004-network-bridge-add-support-for-IFLA_BR_FDB_MAX_LEARN.patch \
 	file://0005-networkctl-add-support-to-display-learned-fdb-entrie.patch \
-	file://0006-serialize-don-t-allocate-1M-on-the-stack-just-like-t.patch \
-	file://0007-seccomp-add-arm_fadvise64_64-to-system-service-group.patch \
+	file://0006-test-systemd-networkd-tests-add-fdb-learned-tests.patch \
 	\
 	file://read-only-rootfs.conf \
 "

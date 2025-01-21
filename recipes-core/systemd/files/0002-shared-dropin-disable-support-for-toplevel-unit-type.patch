@@ -10,6 +10,8 @@ path lookups during dropin search.
 This effectively reverts commit d272467882c9c3c3d4faca5fd7a1f44c5ef2f064
 ("shared/dropin: support -.service.d/ top level drop-in for service units").
 
+Upstream-Status: Inappropriate [disable feature]
+
 Signed-off-by: Matthias Schiffer <matthias.schiffer@tq-group.com>
 ---
  src/shared/dropin.c | 2 +-

@@ -1,66 +1,147 @@
-From e493642e71704f14d845eb5db9e4b81bb634415b Mon Sep 17 00:00:00 2001
+From b4c190ac5f3f1d84df30eebb6c514543b1b73439 Mon Sep 17 00:00:00 2001
 From: Gregor Herburger <gregor.herburger@ew.tq-group.com>
-Date: Tue, 11 Jun 2024 15:36:46 +0200
+Date: Thu, 20 Jun 2024 16:10:24 +0200
 Subject: [PATCH] network: bridge: add support for IFLA_BR_FDB_MAX_LEARNED
+
+Since Linux commit ddd1ad68826d ("net: bridge: Add netlink knobs for number
+/ max learned FDB entries") [1] it is possible to limit to number of
+dynamically learned fdb entries per bridge.
+
+Add support to the systemd netdev bridge for the new netlink attribute
+IFLA_BR_FDB_MAX_LEARNED.
+
+[1] https://lore.kernel.org/all/20231016-fdb_limit-v5-0-32cddff87758@avm.de/
+
+Upstream-Status: Backport
+		 https://github.com/systemd/systemd/commit/f379f36b1108f5c6196d91aefb1f07ee7311782a
 
 Signed-off-by: Gregor Herburger <gregor.herburger@ew.tq-group.com>
 ---
- src/libsystemd/sd-netlink/netlink-types-rtnl.c | 1 +
- src/network/netdev/bridge.c                    | 6 ++++++
- src/network/netdev/bridge.h                    | 1 +
- src/network/netdev/netdev-gperf.gperf          | 1 +
- 4 files changed, 9 insertions(+)
+ man/systemd.netdev.xml                        | 10 +++++
+ .../sd-netlink/netlink-types-rtnl.c           |  1 +
+ src/network/netdev/bridge.c                   | 40 +++++++++++++++++++
+ src/network/netdev/bridge.h                   |  3 ++
+ src/network/netdev/netdev-gperf.gperf         |  1 +
+ 5 files changed, 55 insertions(+)
 
+diff --git a/man/systemd.netdev.xml b/man/systemd.netdev.xml
+index 9cad358f1e19..322cd6eded4c 100644
+--- a/man/systemd.netdev.xml
++++ b/man/systemd.netdev.xml
+@@ -440,6 +440,16 @@
+           <xi:include href="version-info.xml" xpointer="v243"/>
+         </listitem>
+       </varlistentry>
++      <varlistentry>
++        <term><varname>FDBMaxLearned=</varname></term>
++        <listitem>
++          <para>Specifies the maximum number of learned Ethernet addresses for the bridge. When the limit is
++          reached, no more addresses are learned. When unset, the kernel's default will be used. 0 disables the limit.
++          </para>
++
++          <xi:include href="version-info.xml" xpointer="v257"/>
++        </listitem>
++      </varlistentry>
+     </variablelist>
+   </refsect1>
+ 
 diff --git a/src/libsystemd/sd-netlink/netlink-types-rtnl.c b/src/libsystemd/sd-netlink/netlink-types-rtnl.c
-index 167bbc5ccfc6..1d653fbbce8d 100644
+index 0153456d9beb..3eb25f57bbcc 100644
 --- a/src/libsystemd/sd-netlink/netlink-types-rtnl.c
 +++ b/src/libsystemd/sd-netlink/netlink-types-rtnl.c
-@@ -174,6 +174,7 @@ static const NLType rtnl_link_info_data_bridge_types[] = {
-         [IFLA_BR_MCAST_MLD_VERSION]          = { .type = NETLINK_TYPE_U8 },
-         [IFLA_BR_VLAN_STATS_PER_PORT]        = { .type = NETLINK_TYPE_U8 },
-         [IFLA_BR_MULTI_BOOLOPT]              = { .type = NETLINK_TYPE_BINARY, .size = sizeof(struct br_boolopt_multi) },
-+        [IFLA_BR_FDB_MAX_LEARNED]            = { .type = NETLINK_TYPE_U32 },
+@@ -171,6 +171,7 @@ static const NLAPolicy rtnl_link_info_data_bridge_policies[] = {
+         [IFLA_BR_MCAST_MLD_VERSION]          = BUILD_POLICY(U8),
+         [IFLA_BR_VLAN_STATS_PER_PORT]        = BUILD_POLICY(U8),
+         [IFLA_BR_MULTI_BOOLOPT]              = BUILD_POLICY_WITH_SIZE(BINARY, sizeof(struct br_boolopt_multi)),
++        [IFLA_BR_FDB_MAX_LEARNED]            = BUILD_POLICY(U32),
  };
  
- static const NLType rtnl_link_info_data_can_types[] = {
+ static const NLAPolicy rtnl_link_info_data_can_policies[] = {
 diff --git a/src/network/netdev/bridge.c b/src/network/netdev/bridge.c
-index b974f2ae0a67..5b506043fee6 100644
+index 3e394edadfd3..916d599232cd 100644
 --- a/src/network/netdev/bridge.c
 +++ b/src/network/netdev/bridge.c
-@@ -151,6 +151,12 @@ static int netdev_bridge_post_create(NetDev *netdev, Link *link, sd_netlink_mess
-                         return log_netdev_error_errno(netdev, r, "Could not append IFLA_BR_MCAST_IGMP_VERSION attribute: %m");
+@@ -136,6 +136,12 @@ static int netdev_bridge_post_create_message(NetDev *netdev, sd_netlink_message
+                         return r;
          }
  
-+        if (b->fdb_max_learned > 0) {
++        if (b->fdb_max_learned_set) {
 +                r = sd_netlink_message_append_u32(req, IFLA_BR_FDB_MAX_LEARNED, b->fdb_max_learned);
 +                if (r < 0)
-+                        return log_netdev_error_errno(netdev, r, "Could not append IFLA_BR_FDB_MAX_LEARNED attribute: %m");
++                        return r;
 +        }
 +
          r = sd_netlink_message_close_container(req);
          if (r < 0)
-                 return log_netdev_error_errno(netdev, r, "Could not append IFLA_LINKINFO attribute: %m");
+                 return r;
+@@ -229,6 +235,40 @@ int config_parse_bridge_port_priority(
+                         prio);
+ }
+ 
++int config_parse_bridge_fdb_max_learned(
++                const char *unit,
++                const char *filename,
++                unsigned line,
++                const char *section,
++                unsigned section_line,
++                const char *lvalue,
++                int ltype,
++                const char *rvalue,
++                void *data,
++                void *userdata) {
++
++        Bridge *b = ASSERT_PTR(userdata);
++        int r;
++
++        assert(filename);
++        assert(lvalue);
++        assert(rvalue);
++        assert(data);
++
++        if (isempty(rvalue)) {
++                b->fdb_max_learned_set = false;
++                return 0;
++        }
++
++        r = config_parse_uint32_bounded(unit, filename, line, section, section_line, lvalue, rvalue,
++                                        0, UINT32_MAX, true, &b->fdb_max_learned);
++        if (r <= 0)
++                return r;
++
++        b->fdb_max_learned_set = true;
++        return 1;
++}
++
+ static void bridge_init(NetDev *netdev) {
+         Bridge *b = BRIDGE(netdev);
+ 
 diff --git a/src/network/netdev/bridge.h b/src/network/netdev/bridge.h
-index a6f322404410..15ea332c3a40 100644
+index 72dd3e420590..7be00e106371 100644
 --- a/src/network/netdev/bridge.h
 +++ b/src/network/netdev/bridge.h
-@@ -19,6 +19,7 @@ typedef struct Bridge {
+@@ -19,6 +19,8 @@ typedef struct Bridge {
          uint16_t group_fwd_mask;
          uint16_t default_pvid;
          uint8_t igmp_version;
 +        uint32_t fdb_max_learned;
++        bool fdb_max_learned_set;
  
          usec_t forward_delay;
          usec_t hello_time;
+@@ -44,3 +46,4 @@ MulticastRouter multicast_router_from_string(const char *s) _pure_;
+ CONFIG_PARSER_PROTOTYPE(config_parse_multicast_router);
+ CONFIG_PARSER_PROTOTYPE(config_parse_bridge_igmp_version);
+ CONFIG_PARSER_PROTOTYPE(config_parse_bridge_port_priority);
++CONFIG_PARSER_PROTOTYPE(config_parse_bridge_fdb_max_learned);
 diff --git a/src/network/netdev/netdev-gperf.gperf b/src/network/netdev/netdev-gperf.gperf
-index a948ec2c8a0e..a8520ffbfaef 100644
+index d5aa522de8d2..86c46a7294d8 100644
 --- a/src/network/netdev/netdev-gperf.gperf
 +++ b/src/network/netdev/netdev-gperf.gperf
-@@ -221,6 +221,7 @@ Bridge.VLANFiltering,                     config_parse_tristate,
+@@ -231,6 +231,7 @@ Bridge.VLANFiltering,                     config_parse_tristate,
  Bridge.VLANProtocol,                      config_parse_vlanprotocol,                 0,                             offsetof(Bridge, vlan_protocol)
  Bridge.STP,                               config_parse_tristate,                     0,                             offsetof(Bridge, stp)
  Bridge.MulticastIGMPVersion,              config_parse_uint8,                        0,                             offsetof(Bridge, igmp_version)
-+Bridge.FDBMaxLearned,                     config_parse_uint32,                       0,                             offsetof(Bridge, fdb_max_learned)
++Bridge.FDBMaxLearned,                     config_parse_bridge_fdb_max_learned,       0,                             offsetof(Bridge, fdb_max_learned)
  VRF.TableId,                              config_parse_uint32,                       0,                             offsetof(Vrf, table) /* deprecated */
  VRF.Table,                                config_parse_uint32,                       0,                             offsetof(Vrf, table)
  BareUDP.DestinationPort,                  config_parse_ip_port,                      0,                             offsetof(BareUDP, dest_port)

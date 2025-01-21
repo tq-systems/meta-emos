@@ -1,0 +1,47 @@
+From f3ad21b4383574069b376fbda84edf5dd8144e91 Mon Sep 17 00:00:00 2001
+From: Gregor Herburger <gregor.herburger@ew.tq-group.com>
+Date: Thu, 20 Jun 2024 16:22:56 +0200
+Subject: [PATCH] test: systemd-networkd-tests: add fdb learned tests
+
+Add a test for the new bridge netlink attributes IFLA_BR_FDB_N_LEARNED and
+IFLA_BR_FDB_MAX_LEARNED.
+
+Upstream-Status: Backport
+		 https://github.com/systemd/systemd/commit/1aa74ad0487ff86fc197854aeb141261fce36c7e
+
+Signed-off-by: Gregor Herburger <gregor.herburger@ew.tq-group.com>
+---
+ test/test-network/conf/25-bridge.netdev     | 1 +
+ test/test-network/systemd-networkd-tests.py | 4 ++++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/test/test-network/conf/25-bridge.netdev b/test/test-network/conf/25-bridge.netdev
+index 46a0f78299f8..9e7fa545b24e 100644
+--- a/test/test-network/conf/25-bridge.netdev
++++ b/test/test-network/conf/25-bridge.netdev
+@@ -17,3 +17,4 @@ VLANFiltering=yes
+ VLANProtocol=802.1ad
+ STP=true
+ MulticastIGMPVersion=3
++FDBMaxLearned=4
+diff --git a/test/test-network/systemd-networkd-tests.py b/test/test-network/systemd-networkd-tests.py
+index c609f267b5a8..7301bade6eda 100755
+--- a/test/test-network/systemd-networkd-tests.py
++++ b/test/test-network/systemd-networkd-tests.py
+@@ -1453,12 +1453,16 @@ class NetworkdNetDevTests(unittest.TestCase, Utilities):
+         self.assertRegex(output, 'Priority: 9')
+         self.assertRegex(output, 'STP: yes')
+         self.assertRegex(output, 'Multicast IGMP Version: 3')
++        if 'FDB Max Learned' in output:
++            self.assertRegex(output, 'FDB Max Learned: 4')
+ 
+         output = check_output('ip -d link show bridge99')
+         print(output)
+         self.assertIn('vlan_filtering 1 ', output)
+         self.assertIn('vlan_protocol 802.1ad ', output)
+         self.assertIn('vlan_default_pvid 9 ', output)
++        if 'fdb_max_learned' in output:
++            self.assertIn('fdb_max_learned 4 ', output)
+ 
+     def test_bond(self):
+         copy_network_unit('25-bond.netdev', '25-bond-balanced-tlb.netdev')
