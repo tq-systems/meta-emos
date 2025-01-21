@@ -119,7 +119,7 @@ do_install() {
 	ln -s /cfglog/var/log ${D}${localstatedir}/log
 }
 
-RDEPENDS:${PN} += "jq libubootenv-bin openssl-bin faketime em-network-config udev"
+RDEPENDS:${PN} += "jq libubootenv-bin openssl-bin libfaketime em-network-config udev"
 
 FILES:${PN} += " \
 	${sysconfdir}/tmpfiles.d/00-emos-log.conf \
