@@ -2,5 +2,5 @@
 Name=lan0 lan1
 
 [Network]
-BindCarrier=eth0
+BindCarrier=end0
 Bridge=br0
