@@ -1,3 +1,7 @@
+## [ next ]
+### Changed
+- nginx: create ssl certs as group cfglog
+
 ## [ 5.2.0 ] - 2024-11-28
 ### Added
 - GitLab CI configuration for triggering core snapshots
