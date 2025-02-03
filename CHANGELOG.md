@@ -1,3 +1,7 @@
+## [ next ]
+### Changed
+- nginx: create ssl certs as group cfglog
+
 ## [ 5.1.3 ] - 2024-11-08
 ### Added
 - linux-em: enable SYN_COOKIES
