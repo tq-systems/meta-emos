@@ -236,6 +236,21 @@ static int sync_app_user(const char *id, const char *user, const char *group) {
 	return err;
 }
 
+/* websocket file must be owned by group 'www' as apps expect it as listengroup */
+static int fix_websocket_group(const char *rundirapp, const char *user) {
+	static char rundirapp_socket[APPDB_MAX_PATH];
+	struct stat sb;
+	int ret = 0;
+
+	if (snprintf(rundirapp_socket, APPDB_MAX_PATH, "%s/socket", rundirapp) > 0) {
+		ret = lstat(rundirapp_socket, &sb);
+		if (!ret)
+			ret = empkg_fops_chown_name(rundirapp_socket, user, "www");
+	}
+
+	return ret;
+}
+
 static int sync_app_dirs(const char *id, const char *user, const char *group) {
 	const char *rundirapp = appdb_get_path(P_RUNDIR, id);
 	const char *configdirapp = appdb_get_path(P_CONFIGDIR, id);
@@ -270,8 +285,11 @@ static int sync_app_dirs(const char *id, const char *user, const char *group) {
 
 	/* recursive chown */
 	ret = empkg_fops_chown(configdirapp, usernam.pw_uid, groupnam.gr_gid);
-	if (!ret)
+	if (!ret) {
 		ret = empkg_fops_chown(rundirapp, usernam.pw_uid, groupnam.gr_gid);
+		/* reset websocket group ownership */
+		fix_websocket_group(rundirapp, user);
+	}
 
 	return ret;
 }
@@ -320,6 +338,8 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 					memcpy(&userwww, pusr, sizeof(struct passwd));
 					/* setfacl -m "u:www:x" "$dir" */
 					empkg_acl_setacl(appdb_get_path(P_RUNDIR, id), userwww.pw_uid, false);
+					/* reset websocket group ownership */
+					fix_websocket_group(dirpath, user);
 				}
 			}
 		} else {

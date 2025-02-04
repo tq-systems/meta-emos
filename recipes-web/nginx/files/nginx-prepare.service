@@ -2,6 +2,7 @@
 Description=NGINX initial setup
 
 [Service]
+Group=em-group-cfglog
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/usr/sbin/nginx-log-setup

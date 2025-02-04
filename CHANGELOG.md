@@ -1,3 +1,15 @@
+## [ next ]
+### Added
+- openvas trigger with git reference handling
+
+### Changed
+- bundles: update apps
+- bundles: switch to teridiand-fw again (revert renaming)
+- nginx: create ssl certs as group cfglog
+
+### Fixed
+- u-boot: add CVE_PRODUCT to u-boot-em recipe to allow CVE tracking
+
 ## [ 6.0.0 ] - 2024-12-10
 ### Changed
 - bundles: refactor bundles and split into sdk and emcore-qa bundle

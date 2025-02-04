@@ -21,6 +21,8 @@ require ${COREBASE}/meta/recipes-bsp/u-boot/u-boot.inc
 
 PV:append = "+git${SRCPV}"
 
+CVE_PRODUCT = "denx:u-boot"
+
 # u-boot needs devtree compiler to parse dts files
 DEPENDS += "dtc-native bc-native lzop-native flex-native bison-native python3-setuptools-native"
 
