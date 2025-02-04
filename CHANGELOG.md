@@ -5,6 +5,7 @@
 ### Changed
 - bundles: update apps
 - bundles: switch to teridiand-fw again (revert renaming)
+- nginx: create ssl certs as group cfglog
 
 ### Fixed
 - u-boot: add CVE_PRODUCT to u-boot-em recipe to allow CVE tracking
