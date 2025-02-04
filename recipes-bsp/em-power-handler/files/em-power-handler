@@ -1,28 +1,26 @@
 #!/bin/sh
 
-# Copyright (C) 2020 TQ-Systems GmbH
-# Author: Matthias Schiffer
+# Copyright (C) 2020,2025 TQ-Systems GmbH
+# Author: Matthias Schiffer, Gregor Herburger
 #
 # Automatically disable power on fault (overcurrent), enable again after 1s
 
 set -e
 
-POWEROFF_SECS=1
+POWEROFF_TIME='1s'
 
-POWER_GPIO=$(gpiofind 'energymanager:vbus:enable')
-FAULT_GPIO=$(gpiofind 'energymanager:vbus:fault#')
-
-gpioset $POWER_GPIO=0
+POWER_GPIO='energymanager:vbus:enable'
+FAULT_GPIO='energymanager:vbus:fault#'
 
 while true; do
-	gpiomon -f -s -n 1 $FAULT_GPIO & FAULT_PID=$!
+	gpiomon -e falling -s -n 1 $FAULT_GPIO & FAULT_PID=$!
 	sleep 1
-	gpioset -m signal $POWER_GPIO=1 & POWER_PID=$!
+	gpioset $POWER_GPIO=1 & POWER_PID=$!
 
 	wait $FAULT_PID
 	echo >&2 'Power fault deteced, disabling for 1s'
-	kill $POWER_PID; wait $POWER_PID
-	gpioset -m time -s $POWEROFF_SECS $POWER_GPIO=0
+	kill $POWER_PID; wait $POWER_PID || true
+	gpioset --hold-period=$POWEROFF_TIME -t0 $POWER_GPIO=0
 
 	echo >&2 'Enabling power again'
 done
