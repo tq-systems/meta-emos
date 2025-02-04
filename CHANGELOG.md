@@ -1,4 +1,4 @@
-## [ next ]
+## [ 6.0.1 ]
 ### Added
 - openvas trigger with git reference handling
 
