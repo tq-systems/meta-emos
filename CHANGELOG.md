@@ -1,4 +1,4 @@
-## [ next ]
+## [ 5.2.1 ] - 2025-02-05
 ### Changed
 - nginx: create ssl certs as group cfglog
 
