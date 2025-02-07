@@ -6,6 +6,7 @@ SRC_URI:append:emos = "\
 	file://0004-network-bridge-add-support-for-IFLA_BR_FDB_MAX_LEARN.patch \
 	file://0005-networkctl-add-support-to-display-learned-fdb-entrie.patch \
 	file://0006-test-systemd-networkd-tests-add-fdb-learned-tests.patch \
+	file://0007-udev-builtin-net_id-add-NAMING_DEVICETREE_PORT_ALIAS.patch \
 	\
 	file://read-only-rootfs.conf \
 "
