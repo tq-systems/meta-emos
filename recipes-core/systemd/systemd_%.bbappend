@@ -36,4 +36,7 @@ do_install:append:emos() {
 
 	install -m644 ${WORKDIR}/read-only-rootfs.conf \
 		${D}${systemd_system_unitdir}/systemd-timesyncd.service.d
+
+	sed -i 's|^d /var/log .*|L /var/log - - - - /cfglog/var/log|' \
+	    ${D}${nonarch_libdir}/tmpfiles.d/var.conf
 }
