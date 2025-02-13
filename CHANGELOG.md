@@ -11,6 +11,8 @@
 - em-appctl: remove unnecessary debug output
 - nginx: expect frontend in generic root dir
 - empkg: link nginx frontend to existing frontend application
+- u-boot-em: update to v2025.01
+- treewide: update to Yocto Scarthgap
 
 ### Fixed
 - u-boot: add CVE_PRODUCT to u-boot-em recipe to allow CVE tracking
