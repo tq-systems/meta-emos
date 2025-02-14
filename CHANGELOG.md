@@ -9,6 +9,8 @@
 - nginx: create ssl certs as group cfglog
 - linux-em: update to v6.12.11
 - em-appctl: remove unnecessary debug output
+- nginx: expect frontend in generic root dir
+- empkg: link nginx frontend to existing frontend application
 
 ### Fixed
 - u-boot: add CVE_PRODUCT to u-boot-em recipe to allow CVE tracking

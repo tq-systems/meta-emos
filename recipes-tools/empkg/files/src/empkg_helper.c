@@ -130,7 +130,8 @@ int empkg_update_www(void) {
 	char *langstmp = WWWDIRTMP"/langs.plain";
 	FILE *fappstmp, *flangstmp;
 	FILE *fapps, *flangs;
-	char *wwwdir, *apps, *langs;
+	const char *webapp = NULL;
+	char *wwwdir, *apps, *langs, *webapp_index, *webapp_static;
 	char buffer[256];
 	json_t *root = json_array();
 	int ret;
@@ -140,8 +141,8 @@ int empkg_update_www(void) {
 	if (ret)
 		log_message("empkg: Error update_www()\n");
 
-	/* convert md5sums in WWWTMPDIR/ *.plain to temporary WWWTMPDIR/ *.json
-	 * move from WWWTMP to wwwdir
+	/* convert md5sums in WWWDIRTMP/ *.plain to temporary WWWDIRTMP/ *.json
+	 * move from WWWDIRTMP to wwwdir
 	 */
 	if ((asprintf(&wwwdir, "%s/www", gAPPDIR) == -1) ||
 	    (asprintf(&apps, "%s/apps.json", WWWDIRTMP) == -1) ||
@@ -174,6 +175,31 @@ int empkg_update_www(void) {
 	fclose(flangs);
 	empkg_fops_rm(langstmp);
 	json_array_clear(root);
+
+	/* Create symlinks to the following directories:
+	 * /apps/www/index.html -> /apps/installed/<webapp>/www/index.html
+	 * /apps/www/static -> /apps/installed/<webapp>/www/static
+	 *
+	 * <webapp> can be either "ui-container" or "web-application".
+	 */
+	if (appdb_is(INSTALLED, "ui-container")) {
+		webapp = "ui-container";
+	} else if (appdb_is(INSTALLED, "web-application")) {
+		webapp = "web-application";
+	}
+
+	if (webapp) {
+		if ((asprintf(&webapp_index, "%s/installed/%s/www/index.html", gAPPDIR, webapp) == -1) ||
+		    (asprintf(&webapp_static, "%s/installed/%s/www/static", gAPPDIR, webapp) == -1))
+			return ERRORCODE;
+
+		empkg_fops_symlink(webapp_index, WWWDIRTMP"/index.html");
+		empkg_fops_symlink(webapp_static, WWWDIRTMP"/static");
+		free(webapp_index);
+		free(webapp_static);
+	} else {
+		log_message("empkg: Error: No web-frontend app found\n");
+	}
 
 	/* and for moving to wwwdir do: sync; rm -rf wwwdir; mv wwwtmpdir wwwdir; sync */
 	sync();
