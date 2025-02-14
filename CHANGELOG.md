@@ -1,6 +1,7 @@
 ## [ next ]
 ### Added
 - openvas trigger with git reference handling
+- gitlab-ci: add job for pqt tests
 
 ### Changed
 - bundles: update apps
@@ -11,6 +12,7 @@
 
 ### Fixed
 - u-boot: add CVE_PRODUCT to u-boot-em recipe to allow CVE tracking
+- gitlab-ci: rename variable templates
 
 ## [ 6.0.0 ] - 2024-12-10
 ### Changed

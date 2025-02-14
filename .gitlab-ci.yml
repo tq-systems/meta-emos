@@ -6,16 +6,24 @@ include:
 
 # Attention: Do not define trigger variables in the global section,
 # this may lead to unexpected behavior in the triggered project.
-.set-local-conf:
+.internal-meta-emos-refs:
   variables:
     INTERNAL_META_EMOS_BRANCH: $CI_COMMIT_REF_NAME
     INTERNAL_META_EMOS_REF: $CI_COMMIT_SHA
+
+.internal-meta-emos-conf:
+  variables:
     OVERRIDE_LOCAL_CONF: $INTERNAL_LOCAL_CONF
+
+.product-qualification-conf:
+  variables:
+    OVERRIDE_LOCAL_CONF: $PQT_LOCAL_CONF
 
 Trigger Core Snapshots:
   extends:
     - .rule-include-default-branch
-    - .set-local-conf
+    - .internal-meta-emos-refs
+    - .internal-meta-emos-conf
   trigger:
     project: tq-em/build/docker/yocto-scripts
     strategy: depend
@@ -23,7 +31,8 @@ Trigger Core Snapshots:
 Trigger Core QA Snapshots:
   extends:
     - .rule-include-default-branch
-    - .set-local-conf
+    - .internal-meta-emos-refs
+    - .internal-meta-emos-conf
   trigger:
     project: tq-em/build/yocto/core-qa-bundle
     strategy: depend
@@ -31,7 +40,8 @@ Trigger Core QA Snapshots:
 Trigger Core QA Tests:
   extends:
     - .rule-include-merge-request-for-default-branch
-    - .set-local-conf
+    - .internal-meta-emos-refs
+    - .internal-meta-emos-conf
   trigger:
     project: tq-em/build/yocto/core-qa-bundle
     strategy: depend
@@ -39,3 +49,14 @@ Trigger Core QA Tests:
     RUN_INTEGRATION_TESTS: 'true'
     RUN_OPENVAS_SCAN: 'true'
     GIT_REFERENCE: meta-emos_$CI_COMMIT_SHORT_SHA
+
+Trigger Core PQT Tests:
+  extends:
+    - .rule-include-merge-request-for-default-branch
+    - .internal-meta-emos-refs
+    - .product-qualification-conf
+  trigger:
+    project: tq-em/build/yocto/core-pqt-bundle
+    strategy: depend
+  variables:
+    RUN_INTERFACE_TESTS: 'true'
