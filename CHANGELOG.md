@@ -13,6 +13,7 @@
 - empkg: link nginx frontend to existing frontend application
 - u-boot-em: update to v2025.01
 - treewide: update to Yocto Scarthgap
+- jq: remove backported version v1.5
 
 ### Fixed
 - u-boot: add CVE_PRODUCT to u-boot-em recipe to allow CVE tracking
