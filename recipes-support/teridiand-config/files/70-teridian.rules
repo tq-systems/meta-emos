@@ -1,1 +1,1 @@
-SUBSYSTEM=="spidev", PROGRAM="/lib/udev/teridian_symlink %p", SYMLINK+="%c"
+SUBSYSTEM=="spidev", PROGRAM="/usr/lib/udev/teridian_symlink %p", SYMLINK+="%c"

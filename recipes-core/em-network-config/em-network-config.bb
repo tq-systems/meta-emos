@@ -8,7 +8,7 @@ SRC_URI = " \
 	file://LICENSE \
 	file://br0.netdev \
 	file://switch-br0-ports.network \
-	file://switch-eth0.network \
+	file://switch-end0.network \
 	file://single-br0-ports.network \
 	file://double-br0-ports.network \
 "
@@ -19,7 +19,7 @@ do_install() {
 
 	install -d ${D}${libdir}/emos/network-config/switch
 	install -m644 ${WORKDIR}/switch-br0-ports.network ${D}${libdir}/emos/network-config/switch/br0-ports.network
-	install -m644 ${WORKDIR}/switch-eth0.network ${D}${libdir}/emos/network-config/switch/eth0.network
+	install -m644 ${WORKDIR}/switch-end0.network ${D}${libdir}/emos/network-config/switch/end0.network
 
 	install -d ${D}${libdir}/emos/network-config/single
 	install -m644 ${WORKDIR}/single-br0-ports.network ${D}${libdir}/emos/network-config/single/br0-ports.network

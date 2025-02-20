@@ -80,12 +80,14 @@ cmd_init() {
 }
 
 cmd_update_network() {
-	local macaddr="$(cat /sys/class/net/eth0/address)"
+	#ethernet interface may be called eth0 before systemd renames it to end0
+	local macaddr="$(cat /sys/class/net/eth0/address 2>/dev/null ||
+			 cat /sys/class/net/end0/address 2>/dev/null)"
 	local config
 
 	if [ -e /sys/class/net/lan0 ]; then
 		config=switch
-	elif [ -e /sys/class/net/eth1 ]; then
+	elif [ -e /sys/class/net/end1 ] || [ -e /sys/class/net/eth1 ] ; then
 		config=double
 	else
 		config=single

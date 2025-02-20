@@ -28,7 +28,7 @@ def copy_license_depend(srcdir, destdir, dep):
         oe.path.copyhardlink(src_license, dest_license)
 
 def copy_extra_license_depends(d):
-    destdir = os.path.join(d.getVar('LICSSTATEDIR'), d.getVar('PN'))
+    destdir = os.path.join(d.getVar('LICSSTATEDIR'), d.getVar('LICENSE_DEPLOY_PATHCOMPONENT'), d.getVar('PN'))
 
     for dep in d.getVar('EXTRA_LICENSE_DEPENDS').split():
         # Limitation: virtual dependencies must have a matching PREFERRED_PROVIDER
@@ -37,7 +37,7 @@ def copy_extra_license_depends(d):
             dep = d.getVar('PREFERRED_PROVIDER_' + dep)
 
         licdir = d.getVar('LICENSE_DIRECTORY')
-        srcdir = os.path.join(licdir, dep)
+        srcdir = os.path.join(licdir, d.getVar('LICENSE_DEPLOY_PATHCOMPONENT'), dep)
 
         copy_license_depend(srcdir, destdir, dep)
 
@@ -59,7 +59,7 @@ def copy_extra_license_depends(d):
             dep = d.getVar(f'PREFERRED_PROVIDER_{dep}_MC_{toconfig}')
 
         licdir = d.getVar(f'LICENSE_DIRECTORY_MC_{toconfig}')
-        srcdir = os.path.join(licdir, dep)
+        srcdir = os.path.join(licdir, toconfig.replace('-', '_'), dep)
 
         copy_license_depend(srcdir, destdir, f'mc:{toconfig}:{dep}')
 

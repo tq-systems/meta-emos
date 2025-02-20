@@ -1,0 +1,2262 @@
+From 9a214163594761a2cf9c36831462fcf30391930f Mon Sep 17 00:00:00 2001
+From: Yu Watanabe <watanabe.yu+github@gmail.com>
+Date: Thu, 22 Feb 2024 04:50:18 +0900
+Subject: [PATCH] basic/linux: update kernel headers from v6.8-rc5
+
+Upstream-Status: Backport
+		 https://github.com/systemd/systemd/commit/c6939752c13160f279554a9f35b23bcd5fc9ce4a
+---
+ src/basic/linux/btrfs.h               |  19 +-
+ src/basic/linux/btrfs_tree.h          |  74 +++-
+ src/basic/linux/fou.h                 |  66 ++-
+ src/basic/linux/if_bridge.h           |  32 ++
+ src/basic/linux/if_link.h             | 568 +++++++++++++++++++++++++-
+ src/basic/linux/in.h                  |   2 +
+ src/basic/linux/netfilter/nf_tables.h |  31 +-
+ src/basic/linux/netlink.h             |   5 +
+ src/basic/linux/nl80211.h             | 351 +++++++++++++---
+ src/basic/linux/pkt_sched.h           | 152 ++-----
+ src/basic/linux/rtnetlink.h           |  18 +-
+ src/basic/linux/stddef.h              |  13 +-
+ 12 files changed, 1116 insertions(+), 215 deletions(-)
+
+diff --git a/src/basic/linux/btrfs.h b/src/basic/linux/btrfs.h
+index 74ed9088bd28..0e05d47df309 100644
+--- a/src/basic/linux/btrfs.h
++++ b/src/basic/linux/btrfs.h
+@@ -189,6 +189,7 @@ struct btrfs_scrub_progress {
+ };
+ 
+ #define BTRFS_SCRUB_READONLY	1
++#define BTRFS_SCRUB_SUPPORTED_FLAGS	(BTRFS_SCRUB_READONLY)
+ struct btrfs_ioctl_scrub_args {
+ 	__u64 devid;				/* in */
+ 	__u64 start;				/* in */
+@@ -247,7 +248,17 @@ struct btrfs_ioctl_dev_info_args {
+ 	__u8 uuid[BTRFS_UUID_SIZE];		/* in/out */
+ 	__u64 bytes_used;			/* out */
+ 	__u64 total_bytes;			/* out */
+-	__u64 unused[379];			/* pad to 4k */
++	/*
++	 * Optional, out.
++	 *
++	 * Showing the fsid of the device, allowing user space to check if this
++	 * device is a seeding one.
++	 *
++	 * Introduced in v6.3, thus user space still needs to check if kernel
++	 * changed this value.  Older kernel will not touch the values here.
++	 */
++	__u8 fsid[BTRFS_UUID_SIZE];
++	__u64 unused[377];			/* pad to 4k */
+ 	__u8 path[BTRFS_DEVICE_PATH_NAME_MAX];	/* out */
+ };
+ 
+@@ -324,6 +335,8 @@ struct btrfs_ioctl_fs_info_args {
+ #define BTRFS_FEATURE_INCOMPAT_RAID1C34		(1ULL << 11)
+ #define BTRFS_FEATURE_INCOMPAT_ZONED		(1ULL << 12)
+ #define BTRFS_FEATURE_INCOMPAT_EXTENT_TREE_V2	(1ULL << 13)
++#define BTRFS_FEATURE_INCOMPAT_RAID_STRIPE_TREE	(1ULL << 14)
++#define BTRFS_FEATURE_INCOMPAT_SIMPLE_QUOTA	(1ULL << 16)
+ 
+ struct btrfs_ioctl_feature_flags {
+ 	__u64 compat_flags;
+@@ -603,6 +616,9 @@ struct btrfs_ioctl_clone_range_args {
+  */
+ #define BTRFS_DEFRAG_RANGE_COMPRESS 1
+ #define BTRFS_DEFRAG_RANGE_START_IO 2
++#define BTRFS_DEFRAG_RANGE_FLAGS_SUPP	(BTRFS_DEFRAG_RANGE_COMPRESS |		\
++					 BTRFS_DEFRAG_RANGE_START_IO)
++
+ struct btrfs_ioctl_defrag_range_args {
+ 	/* start of the defrag operation */
+ 	__u64 start;
+@@ -744,6 +760,7 @@ struct btrfs_ioctl_get_dev_stats {
+ #define BTRFS_QUOTA_CTL_ENABLE	1
+ #define BTRFS_QUOTA_CTL_DISABLE	2
+ #define BTRFS_QUOTA_CTL_RESCAN__NOTUSED	3
++#define BTRFS_QUOTA_CTL_ENABLE_SIMPLE_QUOTA 4
+ struct btrfs_ioctl_quota_ctl_args {
+ 	__u64 cmd;
+ 	__u64 status;
+diff --git a/src/basic/linux/btrfs_tree.h b/src/basic/linux/btrfs_tree.h
+index ab38d0f411fa..d24e8e121507 100644
+--- a/src/basic/linux/btrfs_tree.h
++++ b/src/basic/linux/btrfs_tree.h
+@@ -73,6 +73,9 @@
+ /* Holds the block group items for extent tree v2. */
+ #define BTRFS_BLOCK_GROUP_TREE_OBJECTID 11ULL
+ 
++/* Tracks RAID stripes in block groups. */
++#define BTRFS_RAID_STRIPE_TREE_OBJECTID 12ULL
++
+ /* device stats in the device tree */
+ #define BTRFS_DEV_STATS_OBJECTID 0ULL
+ 
+@@ -216,11 +219,31 @@
+  */
+ #define BTRFS_METADATA_ITEM_KEY	169
+ 
++/*
++ * Special inline ref key which stores the id of the subvolume which originally
++ * created the extent. This subvolume owns the extent permanently from the
++ * perspective of simple quotas. Needed to know which subvolume to free quota
++ * usage from when the extent is deleted.
++ *
++ * Stored as an inline ref rather to avoid wasting space on a separate item on
++ * top of the existing extent item. However, unlike the other inline refs,
++ * there is one one owner ref per extent rather than one per extent.
++ *
++ * Because of this, it goes at the front of the list of inline refs, and thus
++ * must have a lower type value than any other inline ref type (to satisfy the
++ * disk format rule that inline refs have non-decreasing type).
++ */
++#define BTRFS_EXTENT_OWNER_REF_KEY	172
++
+ #define BTRFS_TREE_BLOCK_REF_KEY	176
+ 
+ #define BTRFS_EXTENT_DATA_REF_KEY	178
+ 
+-#define BTRFS_EXTENT_REF_V0_KEY		180
++/*
++ * Obsolete key. Defintion removed in 6.6, value may be reused in the future.
++ *
++ * #define BTRFS_EXTENT_REF_V0_KEY	180
++ */
+ 
+ #define BTRFS_SHARED_BLOCK_REF_KEY	182
+ 
+@@ -257,6 +280,8 @@
+ #define BTRFS_DEV_ITEM_KEY	216
+ #define BTRFS_CHUNK_ITEM_KEY	228
+ 
++#define BTRFS_RAID_STRIPE_KEY	230
++
+ /*
+  * Records the overall state of the qgroups.
+  * There's only one instance of this key present,
+@@ -715,6 +740,30 @@ struct btrfs_free_space_header {
+ 	__le64 num_bitmaps;
+ } __attribute__ ((__packed__));
+ 
++struct btrfs_raid_stride {
++	/* The id of device this raid extent lives on. */
++	__le64 devid;
++	/* The physical location on disk. */
++	__le64 physical;
++} __attribute__ ((__packed__));
++
++/* The stripe_extent::encoding, 1:1 mapping of enum btrfs_raid_types. */
++#define BTRFS_STRIPE_RAID0	1
++#define BTRFS_STRIPE_RAID1	2
++#define BTRFS_STRIPE_DUP	3
++#define BTRFS_STRIPE_RAID10	4
++#define BTRFS_STRIPE_RAID5	5
++#define BTRFS_STRIPE_RAID6	6
++#define BTRFS_STRIPE_RAID1C3	7
++#define BTRFS_STRIPE_RAID1C4	8
++
++struct btrfs_stripe_extent {
++	__u8 encoding;
++	__u8 reserved[7];
++	/* An array of raid strides this stripe is composed of. */
++	struct btrfs_raid_stride strides[];
++} __attribute__ ((__packed__));
++
+ #define BTRFS_HEADER_FLAG_WRITTEN	(1ULL << 0)
+ #define BTRFS_HEADER_FLAG_RELOC		(1ULL << 1)
+ 
+@@ -783,6 +832,10 @@ struct btrfs_shared_data_ref {
+ 	__le32 count;
+ } __attribute__ ((__packed__));
+ 
++struct btrfs_extent_owner_ref {
++	__le64 root_id;
++} __attribute__ ((__packed__));
++
+ struct btrfs_extent_inline_ref {
+ 	__u8 type;
+ 	__le64 offset;
+@@ -1200,9 +1253,17 @@ static inline __u16 btrfs_qgroup_level(__u64 qgroupid)
+  */
+ #define BTRFS_QGROUP_STATUS_FLAG_INCONSISTENT	(1ULL << 2)
+ 
++/*
++ * Whether or not this filesystem is using simple quotas.  Not exactly the
++ * incompat bit, because we support using simple quotas, disabling it, then
++ * going back to full qgroup quotas.
++ */
++#define BTRFS_QGROUP_STATUS_FLAG_SIMPLE_MODE	(1ULL << 3)
++
+ #define BTRFS_QGROUP_STATUS_FLAGS_MASK	(BTRFS_QGROUP_STATUS_FLAG_ON |		\
+ 					 BTRFS_QGROUP_STATUS_FLAG_RESCAN |	\
+-					 BTRFS_QGROUP_STATUS_FLAG_INCONSISTENT)
++					 BTRFS_QGROUP_STATUS_FLAG_INCONSISTENT | \
++					 BTRFS_QGROUP_STATUS_FLAG_SIMPLE_MODE)
+ 
+ #define BTRFS_QGROUP_STATUS_VERSION        1
+ 
+@@ -1224,6 +1285,15 @@ struct btrfs_qgroup_status_item {
+ 	 * of the scan. It contains a logical address
+ 	 */
+ 	__le64 rescan;
++
++	/*
++	 * The generation when quotas were last enabled. Used by simple quotas to
++	 * avoid decrementing when freeing an extent that was written before
++	 * enable.
++	 *
++	 * Set only if flags contain BTRFS_QGROUP_STATUS_FLAG_SIMPLE_MODE.
++	 */
++	__le64 enable_gen;
+ } __attribute__ ((__packed__));
+ 
+ struct btrfs_qgroup_info_item {
+diff --git a/src/basic/linux/fou.h b/src/basic/linux/fou.h
+index 87c2c9f08803..b5cd3e7b3775 100644
+--- a/src/basic/linux/fou.h
++++ b/src/basic/linux/fou.h
+@@ -1,41 +1,13 @@
+-/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+-/* fou.h - FOU Interface */
++/* SPDX-License-Identifier: ((GPL-2.0 WITH Linux-syscall-note) OR BSD-3-Clause) */
++/* Do not edit directly, auto-generated from: */
++/*	Documentation/netlink/specs/fou.yaml */
++/* YNL-GEN uapi header */
+ 
+ #ifndef _UAPI_LINUX_FOU_H
+ #define _UAPI_LINUX_FOU_H
+ 
+-/* NETLINK_GENERIC related info
+- */
+ #define FOU_GENL_NAME		"fou"
+-#define FOU_GENL_VERSION	0x1
+-
+-enum {
+-	FOU_ATTR_UNSPEC,
+-	FOU_ATTR_PORT,				/* u16 */
+-	FOU_ATTR_AF,				/* u8 */
+-	FOU_ATTR_IPPROTO,			/* u8 */
+-	FOU_ATTR_TYPE,				/* u8 */
+-	FOU_ATTR_REMCSUM_NOPARTIAL,		/* flag */
+-	FOU_ATTR_LOCAL_V4,			/* u32 */
+-	FOU_ATTR_LOCAL_V6,			/* in6_addr */
+-	FOU_ATTR_PEER_V4,			/* u32 */
+-	FOU_ATTR_PEER_V6,			/* in6_addr */
+-	FOU_ATTR_PEER_PORT,			/* u16 */
+-	FOU_ATTR_IFINDEX,			/* s32 */
+-
+-	__FOU_ATTR_MAX,
+-};
+-
+-#define FOU_ATTR_MAX		(__FOU_ATTR_MAX - 1)
+-
+-enum {
+-	FOU_CMD_UNSPEC,
+-	FOU_CMD_ADD,
+-	FOU_CMD_DEL,
+-	FOU_CMD_GET,
+-
+-	__FOU_CMD_MAX,
+-};
++#define FOU_GENL_VERSION	1
+ 
+ enum {
+ 	FOU_ENCAP_UNSPEC,
+@@ -43,6 +15,32 @@ enum {
+ 	FOU_ENCAP_GUE,
+ };
+ 
+-#define FOU_CMD_MAX	(__FOU_CMD_MAX - 1)
++enum {
++	FOU_ATTR_UNSPEC,
++	FOU_ATTR_PORT,
++	FOU_ATTR_AF,
++	FOU_ATTR_IPPROTO,
++	FOU_ATTR_TYPE,
++	FOU_ATTR_REMCSUM_NOPARTIAL,
++	FOU_ATTR_LOCAL_V4,
++	FOU_ATTR_LOCAL_V6,
++	FOU_ATTR_PEER_V4,
++	FOU_ATTR_PEER_V6,
++	FOU_ATTR_PEER_PORT,
++	FOU_ATTR_IFINDEX,
++
++	__FOU_ATTR_MAX
++};
++#define FOU_ATTR_MAX (__FOU_ATTR_MAX - 1)
++
++enum {
++	FOU_CMD_UNSPEC,
++	FOU_CMD_ADD,
++	FOU_CMD_DEL,
++	FOU_CMD_GET,
++
++	__FOU_CMD_MAX
++};
++#define FOU_CMD_MAX (__FOU_CMD_MAX - 1)
+ 
+ #endif /* _UAPI_LINUX_FOU_H */
+diff --git a/src/basic/linux/if_bridge.h b/src/basic/linux/if_bridge.h
+index d9de241d90f9..a5b743a2f775 100644
+--- a/src/basic/linux/if_bridge.h
++++ b/src/basic/linux/if_bridge.h
+@@ -523,6 +523,9 @@ enum {
+ 	BRIDGE_VLANDB_ENTRY_TUNNEL_INFO,
+ 	BRIDGE_VLANDB_ENTRY_STATS,
+ 	BRIDGE_VLANDB_ENTRY_MCAST_ROUTER,
++	BRIDGE_VLANDB_ENTRY_MCAST_N_GROUPS,
++	BRIDGE_VLANDB_ENTRY_MCAST_MAX_GROUPS,
++	BRIDGE_VLANDB_ENTRY_NEIGH_SUPPRESS,
+ 	__BRIDGE_VLANDB_ENTRY_MAX,
+ };
+ #define BRIDGE_VLANDB_ENTRY_MAX (__BRIDGE_VLANDB_ENTRY_MAX - 1)
+@@ -631,6 +634,11 @@ enum {
+ 	MDBA_MDB_EATTR_GROUP_MODE,
+ 	MDBA_MDB_EATTR_SOURCE,
+ 	MDBA_MDB_EATTR_RTPROT,
++	MDBA_MDB_EATTR_DST,
++	MDBA_MDB_EATTR_DST_PORT,
++	MDBA_MDB_EATTR_VNI,
++	MDBA_MDB_EATTR_IFINDEX,
++	MDBA_MDB_EATTR_SRC_VNI,
+ 	__MDBA_MDB_EATTR_MAX
+ };
+ #define MDBA_MDB_EATTR_MAX (__MDBA_MDB_EATTR_MAX - 1)
+@@ -715,6 +723,24 @@ enum {
+ };
+ #define MDBA_SET_ENTRY_MAX (__MDBA_SET_ENTRY_MAX - 1)
+ 
++/* [MDBA_GET_ENTRY] = {
++ *    struct br_mdb_entry
++ *    [MDBA_GET_ENTRY_ATTRS] = {
++ *       [MDBE_ATTR_SOURCE]
++ *          struct in_addr / struct in6_addr
++ *       [MDBE_ATTR_SRC_VNI]
++ *          u32
++ *    }
++ * }
++ */
++enum {
++	MDBA_GET_ENTRY_UNSPEC,
++	MDBA_GET_ENTRY,
++	MDBA_GET_ENTRY_ATTRS,
++	__MDBA_GET_ENTRY_MAX,
++};
++#define MDBA_GET_ENTRY_MAX (__MDBA_GET_ENTRY_MAX - 1)
++
+ /* [MDBA_SET_ENTRY_ATTRS] = {
+  *    [MDBE_ATTR_xxx]
+  *    ...
+@@ -726,6 +752,12 @@ enum {
+ 	MDBE_ATTR_SRC_LIST,
+ 	MDBE_ATTR_GROUP_MODE,
+ 	MDBE_ATTR_RTPROT,
++	MDBE_ATTR_DST,
++	MDBE_ATTR_DST_PORT,
++	MDBE_ATTR_VNI,
++	MDBE_ATTR_IFINDEX,
++	MDBE_ATTR_SRC_VNI,
++	MDBE_ATTR_STATE_MASK,
+ 	__MDBE_ATTR_MAX,
+ };
+ #define MDBE_ATTR_MAX (__MDBE_ATTR_MAX - 1)
+diff --git a/src/basic/linux/if_link.h b/src/basic/linux/if_link.h
+index 1021a7e47a86..ab9bcff96e4d 100644
+--- a/src/basic/linux/if_link.h
++++ b/src/basic/linux/if_link.h
+@@ -374,6 +374,9 @@ enum {
+ 
+ 	IFLA_DEVLINK_PORT,
+ 
++	IFLA_GSO_IPV4_MAX_SIZE,
++	IFLA_GRO_IPV4_MAX_SIZE,
++	IFLA_DPLL_PIN,
+ 	__IFLA_MAX
+ };
+ 
+@@ -458,6 +461,286 @@ enum in6_addr_gen_mode {
+ 
+ /* Bridge section */
+ 
++/**
++ * DOC: Bridge enum definition
++ *
++ * Please *note* that the timer values in the following section are expected
++ * in clock_t format, which is seconds multiplied by USER_HZ (generally
++ * defined as 100).
++ *
++ * @IFLA_BR_FORWARD_DELAY
++ *   The bridge forwarding delay is the time spent in LISTENING state
++ *   (before moving to LEARNING) and in LEARNING state (before moving
++ *   to FORWARDING). Only relevant if STP is enabled.
++ *
++ *   The valid values are between (2 * USER_HZ) and (30 * USER_HZ).
++ *   The default value is (15 * USER_HZ).
++ *
++ * @IFLA_BR_HELLO_TIME
++ *   The time between hello packets sent by the bridge, when it is a root
++ *   bridge or a designated bridge. Only relevant if STP is enabled.
++ *
++ *   The valid values are between (1 * USER_HZ) and (10 * USER_HZ).
++ *   The default value is (2 * USER_HZ).
++ *
++ * @IFLA_BR_MAX_AGE
++ *   The hello packet timeout is the time until another bridge in the
++ *   spanning tree is assumed to be dead, after reception of its last hello
++ *   message. Only relevant if STP is enabled.
++ *
++ *   The valid values are between (6 * USER_HZ) and (40 * USER_HZ).
++ *   The default value is (20 * USER_HZ).
++ *
++ * @IFLA_BR_AGEING_TIME
++ *   Configure the bridge's FDB entries aging time. It is the time a MAC
++ *   address will be kept in the FDB after a packet has been received from
++ *   that address. After this time has passed, entries are cleaned up.
++ *   Allow values outside the 802.1 standard specification for special cases:
++ *
++ *     * 0 - entry never ages (all permanent)
++ *     * 1 - entry disappears (no persistence)
++ *
++ *   The default value is (300 * USER_HZ).
++ *
++ * @IFLA_BR_STP_STATE
++ *   Turn spanning tree protocol on (*IFLA_BR_STP_STATE* > 0) or off
++ *   (*IFLA_BR_STP_STATE* == 0) for this bridge.
++ *
++ *   The default value is 0 (disabled).
++ *
++ * @IFLA_BR_PRIORITY
++ *   Set this bridge's spanning tree priority, used during STP root bridge
++ *   election.
++ *
++ *   The valid values are between 0 and 65535.
++ *
++ * @IFLA_BR_VLAN_FILTERING
++ *   Turn VLAN filtering on (*IFLA_BR_VLAN_FILTERING* > 0) or off
++ *   (*IFLA_BR_VLAN_FILTERING* == 0). When disabled, the bridge will not
++ *   consider the VLAN tag when handling packets.
++ *
++ *   The default value is 0 (disabled).
++ *
++ * @IFLA_BR_VLAN_PROTOCOL
++ *   Set the protocol used for VLAN filtering.
++ *
++ *   The valid values are 0x8100(802.1Q) or 0x88A8(802.1AD). The default value
++ *   is 0x8100(802.1Q).
++ *
++ * @IFLA_BR_GROUP_FWD_MASK
++ *   The group forwarding mask. This is the bitmask that is applied to
++ *   decide whether to forward incoming frames destined to link-local
++ *   addresses (of the form 01:80:C2:00:00:0X).
++ *
++ *   The default value is 0, which means the bridge does not forward any
++ *   link-local frames coming on this port.
++ *
++ * @IFLA_BR_ROOT_ID
++ *   The bridge root id, read only.
++ *
++ * @IFLA_BR_BRIDGE_ID
++ *   The bridge id, read only.
++ *
++ * @IFLA_BR_ROOT_PORT
++ *   The bridge root port, read only.
++ *
++ * @IFLA_BR_ROOT_PATH_COST
++ *   The bridge root path cost, read only.
++ *
++ * @IFLA_BR_TOPOLOGY_CHANGE
++ *   The bridge topology change, read only.
++ *
++ * @IFLA_BR_TOPOLOGY_CHANGE_DETECTED
++ *   The bridge topology change detected, read only.
++ *
++ * @IFLA_BR_HELLO_TIMER
++ *   The bridge hello timer, read only.
++ *
++ * @IFLA_BR_TCN_TIMER
++ *   The bridge tcn timer, read only.
++ *
++ * @IFLA_BR_TOPOLOGY_CHANGE_TIMER
++ *   The bridge topology change timer, read only.
++ *
++ * @IFLA_BR_GC_TIMER
++ *   The bridge gc timer, read only.
++ *
++ * @IFLA_BR_GROUP_ADDR
++ *   Set the MAC address of the multicast group this bridge uses for STP.
++ *   The address must be a link-local address in standard Ethernet MAC address
++ *   format. It is an address of the form 01:80:C2:00:00:0X, with X in [0, 4..f].
++ *
++ *   The default value is 0.
++ *
++ * @IFLA_BR_FDB_FLUSH
++ *   Flush bridge's fdb dynamic entries.
++ *
++ * @IFLA_BR_MCAST_ROUTER
++ *   Set bridge's multicast router if IGMP snooping is enabled.
++ *   The valid values are:
++ *
++ *     * 0 - disabled.
++ *     * 1 - automatic (queried).
++ *     * 2 - permanently enabled.
++ *
++ *   The default value is 1.
++ *
++ * @IFLA_BR_MCAST_SNOOPING
++ *   Turn multicast snooping on (*IFLA_BR_MCAST_SNOOPING* > 0) or off
++ *   (*IFLA_BR_MCAST_SNOOPING* == 0).
++ *
++ *   The default value is 1.
++ *
++ * @IFLA_BR_MCAST_QUERY_USE_IFADDR
++ *   If enabled use the bridge's own IP address as source address for IGMP
++ *   queries (*IFLA_BR_MCAST_QUERY_USE_IFADDR* > 0) or the default of 0.0.0.0
++ *   (*IFLA_BR_MCAST_QUERY_USE_IFADDR* == 0).
++ *
++ *   The default value is 0 (disabled).
++ *
++ * @IFLA_BR_MCAST_QUERIER
++ *   Enable (*IFLA_BR_MULTICAST_QUERIER* > 0) or disable
++ *   (*IFLA_BR_MULTICAST_QUERIER* == 0) IGMP querier, ie sending of multicast
++ *   queries by the bridge.
++ *
++ *   The default value is 0 (disabled).
++ *
++ * @IFLA_BR_MCAST_HASH_ELASTICITY
++ *   Set multicast database hash elasticity, It is the maximum chain length in
++ *   the multicast hash table. This attribute is *deprecated* and the value
++ *   is always 16.
++ *
++ * @IFLA_BR_MCAST_HASH_MAX
++ *   Set maximum size of the multicast hash table
++ *
++ *   The default value is 4096, the value must be a power of 2.
++ *
++ * @IFLA_BR_MCAST_LAST_MEMBER_CNT
++ *   The Last Member Query Count is the number of Group-Specific Queries
++ *   sent before the router assumes there are no local members. The Last
++ *   Member Query Count is also the number of Group-and-Source-Specific
++ *   Queries sent before the router assumes there are no listeners for a
++ *   particular source.
++ *
++ *   The default value is 2.
++ *
++ * @IFLA_BR_MCAST_STARTUP_QUERY_CNT
++ *   The Startup Query Count is the number of Queries sent out on startup,
++ *   separated by the Startup Query Interval.
++ *
++ *   The default value is 2.
++ *
++ * @IFLA_BR_MCAST_LAST_MEMBER_INTVL
++ *   The Last Member Query Interval is the Max Response Time inserted into
++ *   Group-Specific Queries sent in response to Leave Group messages, and
++ *   is also the amount of time between Group-Specific Query messages.
++ *
++ *   The default value is (1 * USER_HZ).
++ *
++ * @IFLA_BR_MCAST_MEMBERSHIP_INTVL
++ *   The interval after which the bridge will leave a group, if no membership
++ *   reports for this group are received.
++ *
++ *   The default value is (260 * USER_HZ).
++ *
++ * @IFLA_BR_MCAST_QUERIER_INTVL
++ *   The interval between queries sent by other routers. if no queries are
++ *   seen after this delay has passed, the bridge will start to send its own
++ *   queries (as if *IFLA_BR_MCAST_QUERIER_INTVL* was enabled).
++ *
++ *   The default value is (255 * USER_HZ).
++ *
++ * @IFLA_BR_MCAST_QUERY_INTVL
++ *   The Query Interval is the interval between General Queries sent by
++ *   the Querier.
++ *
++ *   The default value is (125 * USER_HZ). The minimum value is (1 * USER_HZ).
++ *
++ * @IFLA_BR_MCAST_QUERY_RESPONSE_INTVL
++ *   The Max Response Time used to calculate the Max Resp Code inserted
++ *   into the periodic General Queries.
++ *
++ *   The default value is (10 * USER_HZ).
++ *
++ * @IFLA_BR_MCAST_STARTUP_QUERY_INTVL
++ *   The interval between queries in the startup phase.
++ *
++ *   The default value is (125 * USER_HZ) / 4. The minimum value is (1 * USER_HZ).
++ *
++ * @IFLA_BR_NF_CALL_IPTABLES
++ *   Enable (*NF_CALL_IPTABLES* > 0) or disable (*NF_CALL_IPTABLES* == 0)
++ *   iptables hooks on the bridge.
++ *
++ *   The default value is 0 (disabled).
++ *
++ * @IFLA_BR_NF_CALL_IP6TABLES
++ *   Enable (*NF_CALL_IP6TABLES* > 0) or disable (*NF_CALL_IP6TABLES* == 0)
++ *   ip6tables hooks on the bridge.
++ *
++ *   The default value is 0 (disabled).
++ *
++ * @IFLA_BR_NF_CALL_ARPTABLES
++ *   Enable (*NF_CALL_ARPTABLES* > 0) or disable (*NF_CALL_ARPTABLES* == 0)
++ *   arptables hooks on the bridge.
++ *
++ *   The default value is 0 (disabled).
++ *
++ * @IFLA_BR_VLAN_DEFAULT_PVID
++ *   VLAN ID applied to untagged and priority-tagged incoming packets.
++ *
++ *   The default value is 1. Setting to the special value 0 makes all ports of
++ *   this bridge not have a PVID by default, which means that they will
++ *   not accept VLAN-untagged traffic.
++ *
++ * @IFLA_BR_PAD
++ *   Bridge attribute padding type for netlink message.
++ *
++ * @IFLA_BR_VLAN_STATS_ENABLED
++ *   Enable (*IFLA_BR_VLAN_STATS_ENABLED* == 1) or disable
++ *   (*IFLA_BR_VLAN_STATS_ENABLED* == 0) per-VLAN stats accounting.
++ *
++ *   The default value is 0 (disabled).
++ *
++ * @IFLA_BR_MCAST_STATS_ENABLED
++ *   Enable (*IFLA_BR_MCAST_STATS_ENABLED* > 0) or disable
++ *   (*IFLA_BR_MCAST_STATS_ENABLED* == 0) multicast (IGMP/MLD) stats
++ *   accounting.
++ *
++ *   The default value is 0 (disabled).
++ *
++ * @IFLA_BR_MCAST_IGMP_VERSION
++ *   Set the IGMP version.
++ *
++ *   The valid values are 2 and 3. The default value is 2.
++ *
++ * @IFLA_BR_MCAST_MLD_VERSION
++ *   Set the MLD version.
++ *
++ *   The valid values are 1 and 2. The default value is 1.
++ *
++ * @IFLA_BR_VLAN_STATS_PER_PORT
++ *   Enable (*IFLA_BR_VLAN_STATS_PER_PORT* == 1) or disable
++ *   (*IFLA_BR_VLAN_STATS_PER_PORT* == 0) per-VLAN per-port stats accounting.
++ *   Can be changed only when there are no port VLANs configured.
++ *
++ *   The default value is 0 (disabled).
++ *
++ * @IFLA_BR_MULTI_BOOLOPT
++ *   The multi_boolopt is used to control new boolean options to avoid adding
++ *   new netlink attributes. You can look at ``enum br_boolopt_id`` for those
++ *   options.
++ *
++ * @IFLA_BR_MCAST_QUERIER_STATE
++ *   Bridge mcast querier states, read only.
++ *
++ * @IFLA_BR_FDB_N_LEARNED
++ *   The number of dynamically learned FDB entries for the current bridge,
++ *   read only.
++ *
++ * @IFLA_BR_FDB_MAX_LEARNED
++ *   Set the number of max dynamically learned FDB entries for the current
++ *   bridge.
++ */
+ enum {
+ 	IFLA_BR_UNSPEC,
+ 	IFLA_BR_FORWARD_DELAY,
+@@ -507,6 +790,8 @@ enum {
+ 	IFLA_BR_VLAN_STATS_PER_PORT,
+ 	IFLA_BR_MULTI_BOOLOPT,
+ 	IFLA_BR_MCAST_QUERIER_STATE,
++	IFLA_BR_FDB_N_LEARNED,
++	IFLA_BR_FDB_MAX_LEARNED,
+ 	__IFLA_BR_MAX,
+ };
+ 
+@@ -517,11 +802,252 @@ struct ifla_bridge_id {
+ 	__u8	addr[6]; /* ETH_ALEN */
+ };
+ 
++/**
++ * DOC: Bridge mode enum definition
++ *
++ * @BRIDGE_MODE_HAIRPIN
++ *   Controls whether traffic may be sent back out of the port on which it
++ *   was received. This option is also called reflective relay mode, and is
++ *   used to support basic VEPA (Virtual Ethernet Port Aggregator)
++ *   capabilities. By default, this flag is turned off and the bridge will
++ *   not forward traffic back out of the receiving port.
++ */
+ enum {
+ 	BRIDGE_MODE_UNSPEC,
+ 	BRIDGE_MODE_HAIRPIN,
+ };
+ 
++/**
++ * DOC: Bridge port enum definition
++ *
++ * @IFLA_BRPORT_STATE
++ *   The operation state of the port. Here are the valid values.
++ *
++ *     * 0 - port is in STP *DISABLED* state. Make this port completely
++ *       inactive for STP. This is also called BPDU filter and could be used
++ *       to disable STP on an untrusted port, like a leaf virtual device.
++ *       The traffic forwarding is also stopped on this port.
++ *     * 1 - port is in STP *LISTENING* state. Only valid if STP is enabled
++ *       on the bridge. In this state the port listens for STP BPDUs and
++ *       drops all other traffic frames.
++ *     * 2 - port is in STP *LEARNING* state. Only valid if STP is enabled on
++ *       the bridge. In this state the port will accept traffic only for the
++ *       purpose of updating MAC address tables.
++ *     * 3 - port is in STP *FORWARDING* state. Port is fully active.
++ *     * 4 - port is in STP *BLOCKING* state. Only valid if STP is enabled on
++ *       the bridge. This state is used during the STP election process.
++ *       In this state, port will only process STP BPDUs.
++ *
++ * @IFLA_BRPORT_PRIORITY
++ *   The STP port priority. The valid values are between 0 and 255.
++ *
++ * @IFLA_BRPORT_COST
++ *   The STP path cost of the port. The valid values are between 1 and 65535.
++ *
++ * @IFLA_BRPORT_MODE
++ *   Set the bridge port mode. See *BRIDGE_MODE_HAIRPIN* for more details.
++ *
++ * @IFLA_BRPORT_GUARD
++ *   Controls whether STP BPDUs will be processed by the bridge port. By
++ *   default, the flag is turned off to allow BPDU processing. Turning this
++ *   flag on will disable the bridge port if a STP BPDU packet is received.
++ *
++ *   If the bridge has Spanning Tree enabled, hostile devices on the network
++ *   may send BPDU on a port and cause network failure. Setting *guard on*
++ *   will detect and stop this by disabling the port. The port will be
++ *   restarted if the link is brought down, or removed and reattached.
++ *
++ * @IFLA_BRPORT_PROTECT
++ *   Controls whether a given port is allowed to become a root port or not.
++ *   Only used when STP is enabled on the bridge. By default the flag is off.
++ *
++ *   This feature is also called root port guard. If BPDU is received from a
++ *   leaf (edge) port, it should not be elected as root port. This could
++ *   be used if using STP on a bridge and the downstream bridges are not fully
++ *   trusted; this prevents a hostile guest from rerouting traffic.
++ *
++ * @IFLA_BRPORT_FAST_LEAVE
++ *   This flag allows the bridge to immediately stop multicast traffic
++ *   forwarding on a port that receives an IGMP Leave message. It is only used
++ *   when IGMP snooping is enabled on the bridge. By default the flag is off.
++ *
++ * @IFLA_BRPORT_LEARNING
++ *   Controls whether a given port will learn *source* MAC addresses from
++ *   received traffic or not. Also controls whether dynamic FDB entries
++ *   (which can also be added by software) will be refreshed by incoming
++ *   traffic. By default this flag is on.
++ *
++ * @IFLA_BRPORT_UNICAST_FLOOD
++ *   Controls whether unicast traffic for which there is no FDB entry will
++ *   be flooded towards this port. By default this flag is on.
++ *
++ * @IFLA_BRPORT_PROXYARP
++ *   Enable proxy ARP on this port.
++ *
++ * @IFLA_BRPORT_LEARNING_SYNC
++ *   Controls whether a given port will sync MAC addresses learned on device
++ *   port to bridge FDB.
++ *
++ * @IFLA_BRPORT_PROXYARP_WIFI
++ *   Enable proxy ARP on this port which meets extended requirements by
++ *   IEEE 802.11 and Hotspot 2.0 specifications.
++ *
++ * @IFLA_BRPORT_ROOT_ID
++ *
++ * @IFLA_BRPORT_BRIDGE_ID
++ *
++ * @IFLA_BRPORT_DESIGNATED_PORT
++ *
++ * @IFLA_BRPORT_DESIGNATED_COST
++ *
++ * @IFLA_BRPORT_ID
++ *
++ * @IFLA_BRPORT_NO
++ *
++ * @IFLA_BRPORT_TOPOLOGY_CHANGE_ACK
++ *
++ * @IFLA_BRPORT_CONFIG_PENDING
++ *
++ * @IFLA_BRPORT_MESSAGE_AGE_TIMER
++ *
++ * @IFLA_BRPORT_FORWARD_DELAY_TIMER
++ *
++ * @IFLA_BRPORT_HOLD_TIMER
++ *
++ * @IFLA_BRPORT_FLUSH
++ *   Flush bridge ports' fdb dynamic entries.
++ *
++ * @IFLA_BRPORT_MULTICAST_ROUTER
++ *   Configure the port's multicast router presence. A port with
++ *   a multicast router will receive all multicast traffic.
++ *   The valid values are:
++ *
++ *     * 0 disable multicast routers on this port
++ *     * 1 let the system detect the presence of routers (default)
++ *     * 2 permanently enable multicast traffic forwarding on this port
++ *     * 3 enable multicast routers temporarily on this port, not depending
++ *         on incoming queries.
++ *
++ * @IFLA_BRPORT_PAD
++ *
++ * @IFLA_BRPORT_MCAST_FLOOD
++ *   Controls whether a given port will flood multicast traffic for which
++ *   there is no MDB entry. By default this flag is on.
++ *
++ * @IFLA_BRPORT_MCAST_TO_UCAST
++ *   Controls whether a given port will replicate packets using unicast
++ *   instead of multicast. By default this flag is off.
++ *
++ *   This is done by copying the packet per host and changing the multicast
++ *   destination MAC to a unicast one accordingly.
++ *
++ *   *mcast_to_unicast* works on top of the multicast snooping feature of the
++ *   bridge. Which means unicast copies are only delivered to hosts which
++ *   are interested in unicast and signaled this via IGMP/MLD reports previously.
++ *
++ *   This feature is intended for interface types which have a more reliable
++ *   and/or efficient way to deliver unicast packets than broadcast ones
++ *   (e.g. WiFi).
++ *
++ *   However, it should only be enabled on interfaces where no IGMPv2/MLDv1
++ *   report suppression takes place. IGMP/MLD report suppression issue is
++ *   usually overcome by the network daemon (supplicant) enabling AP isolation
++ *   and by that separating all STAs.
++ *
++ *   Delivery of STA-to-STA IP multicast is made possible again by enabling
++ *   and utilizing the bridge hairpin mode, which considers the incoming port
++ *   as a potential outgoing port, too (see *BRIDGE_MODE_HAIRPIN* option).
++ *   Hairpin mode is performed after multicast snooping, therefore leading
++ *   to only deliver reports to STAs running a multicast router.
++ *
++ * @IFLA_BRPORT_VLAN_TUNNEL
++ *   Controls whether vlan to tunnel mapping is enabled on the port.
++ *   By default this flag is off.
++ *
++ * @IFLA_BRPORT_BCAST_FLOOD
++ *   Controls flooding of broadcast traffic on the given port. By default
++ *   this flag is on.
++ *
++ * @IFLA_BRPORT_GROUP_FWD_MASK
++ *   Set the group forward mask. This is a bitmask that is applied to
++ *   decide whether to forward incoming frames destined to link-local
++ *   addresses. The addresses of the form are 01:80:C2:00:00:0X (defaults
++ *   to 0, which means the bridge does not forward any link-local frames
++ *   coming on this port).
++ *
++ * @IFLA_BRPORT_NEIGH_SUPPRESS
++ *   Controls whether neighbor discovery (arp and nd) proxy and suppression
++ *   is enabled on the port. By default this flag is off.
++ *
++ * @IFLA_BRPORT_ISOLATED
++ *   Controls whether a given port will be isolated, which means it will be
++ *   able to communicate with non-isolated ports only. By default this
++ *   flag is off.
++ *
++ * @IFLA_BRPORT_BACKUP_PORT
++ *   Set a backup port. If the port loses carrier all traffic will be
++ *   redirected to the configured backup port. Set the value to 0 to disable
++ *   it.
++ *
++ * @IFLA_BRPORT_MRP_RING_OPEN
++ *
++ * @IFLA_BRPORT_MRP_IN_OPEN
++ *
++ * @IFLA_BRPORT_MCAST_EHT_HOSTS_LIMIT
++ *   The number of per-port EHT hosts limit. The default value is 512.
++ *   Setting to 0 is not allowed.
++ *
++ * @IFLA_BRPORT_MCAST_EHT_HOSTS_CNT
++ *   The current number of tracked hosts, read only.
++ *
++ * @IFLA_BRPORT_LOCKED
++ *   Controls whether a port will be locked, meaning that hosts behind the
++ *   port will not be able to communicate through the port unless an FDB
++ *   entry with the unit's MAC address is in the FDB. The common use case is
++ *   that hosts are allowed access through authentication with the IEEE 802.1X
++ *   protocol or based on whitelists. By default this flag is off.
++ *
++ *   Please note that secure 802.1X deployments should always use the
++ *   *BR_BOOLOPT_NO_LL_LEARN* flag, to not permit the bridge to populate its
++ *   FDB based on link-local (EAPOL) traffic received on the port.
++ *
++ * @IFLA_BRPORT_MAB
++ *   Controls whether a port will use MAC Authentication Bypass (MAB), a
++ *   technique through which select MAC addresses may be allowed on a locked
++ *   port, without using 802.1X authentication. Packets with an unknown source
++ *   MAC address generates a "locked" FDB entry on the incoming bridge port.
++ *   The common use case is for user space to react to these bridge FDB
++ *   notifications and optionally replace the locked FDB entry with a normal
++ *   one, allowing traffic to pass for whitelisted MAC addresses.
++ *
++ *   Setting this flag also requires *IFLA_BRPORT_LOCKED* and
++ *   *IFLA_BRPORT_LEARNING*. *IFLA_BRPORT_LOCKED* ensures that unauthorized
++ *   data packets are dropped, and *IFLA_BRPORT_LEARNING* allows the dynamic
++ *   FDB entries installed by user space (as replacements for the locked FDB
++ *   entries) to be refreshed and/or aged out.
++ *
++ * @IFLA_BRPORT_MCAST_N_GROUPS
++ *
++ * @IFLA_BRPORT_MCAST_MAX_GROUPS
++ *   Sets the maximum number of MDB entries that can be registered for a
++ *   given port. Attempts to register more MDB entries at the port than this
++ *   limit allows will be rejected, whether they are done through netlink
++ *   (e.g. the bridge tool), or IGMP or MLD membership reports. Setting a
++ *   limit of 0 disables the limit. The default value is 0.
++ *
++ * @IFLA_BRPORT_NEIGH_VLAN_SUPPRESS
++ *   Controls whether neighbor discovery (arp and nd) proxy and suppression is
++ *   enabled for a given port. By default this flag is off.
++ *
++ *   Note that this option only takes effect when *IFLA_BRPORT_NEIGH_SUPPRESS*
++ *   is enabled for a given port.
++ *
++ * @IFLA_BRPORT_BACKUP_NHID
++ *   The FDB nexthop object ID to attach to packets being redirected to a
++ *   backup port that has VLAN tunnel mapping enabled (via the
++ *   *IFLA_BRPORT_VLAN_TUNNEL* option). Setting a value of 0 (default) has
++ *   the effect of not attaching any ID.
++ */
+ enum {
+ 	IFLA_BRPORT_UNSPEC,
+ 	IFLA_BRPORT_STATE,	/* Spanning tree state     */
+@@ -564,6 +1090,10 @@ enum {
+ 	IFLA_BRPORT_MCAST_EHT_HOSTS_CNT,
+ 	IFLA_BRPORT_LOCKED,
+ 	IFLA_BRPORT_MAB,
++	IFLA_BRPORT_MCAST_N_GROUPS,
++	IFLA_BRPORT_MCAST_MAX_GROUPS,
++	IFLA_BRPORT_NEIGH_VLAN_SUPPRESS,
++	IFLA_BRPORT_BACKUP_NHID,
+ 	__IFLA_BRPORT_MAX
+ };
+ #define IFLA_BRPORT_MAX (__IFLA_BRPORT_MAX - 1)
+@@ -630,6 +1160,7 @@ enum {
+ 	IFLA_MACVLAN_MACADDR_COUNT,
+ 	IFLA_MACVLAN_BC_QUEUE_LEN,
+ 	IFLA_MACVLAN_BC_QUEUE_LEN_USED,
++	IFLA_MACVLAN_BC_CUTOFF,
+ 	__IFLA_MACVLAN_MAX,
+ };
+ 
+@@ -748,6 +1279,30 @@ struct tunnel_msg {
+ 	__u32 ifindex;
+ };
+ 
++/* netkit section */
++enum netkit_action {
++	NETKIT_NEXT	= -1,
++	NETKIT_PASS	= 0,
++	NETKIT_DROP	= 2,
++	NETKIT_REDIRECT	= 7,
++};
++
++enum netkit_mode {
++	NETKIT_L2,
++	NETKIT_L3,
++};
++
++enum {
++	IFLA_NETKIT_UNSPEC,
++	IFLA_NETKIT_PEER_INFO,
++	IFLA_NETKIT_PRIMARY,
++	IFLA_NETKIT_POLICY,
++	IFLA_NETKIT_PEER_POLICY,
++	IFLA_NETKIT_MODE,
++	__IFLA_NETKIT_MAX,
++};
++#define IFLA_NETKIT_MAX	(__IFLA_NETKIT_MAX - 1)
++
+ /* VXLAN section */
+ 
+ /* include statistics in the dump */
+@@ -821,6 +1376,8 @@ enum {
+ 	IFLA_VXLAN_TTL_INHERIT,
+ 	IFLA_VXLAN_DF,
+ 	IFLA_VXLAN_VNIFILTER, /* only applicable with COLLECT_METADATA mode */
++	IFLA_VXLAN_LOCALBYPASS,
++	IFLA_VXLAN_LABEL_POLICY, /* IPv6 flow label policy; ifla_vxlan_label_policy */
+ 	__IFLA_VXLAN_MAX
+ };
+ #define IFLA_VXLAN_MAX	(__IFLA_VXLAN_MAX - 1)
+@@ -838,6 +1395,13 @@ enum ifla_vxlan_df {
+ 	VXLAN_DF_MAX = __VXLAN_DF_END - 1,
+ };
+ 
++enum ifla_vxlan_label_policy {
++	VXLAN_LABEL_FIXED = 0,
++	VXLAN_LABEL_INHERIT = 1,
++	__VXLAN_LABEL_END,
++	VXLAN_LABEL_MAX = __VXLAN_LABEL_END - 1,
++};
++
+ /* GENEVE section */
+ enum {
+ 	IFLA_GENEVE_UNSPEC,
+@@ -1383,7 +1947,9 @@ enum {
+ 
+ enum {
+ 	IFLA_DSA_UNSPEC,
+-	IFLA_DSA_MASTER,
++	IFLA_DSA_CONDUIT,
++	/* Deprecated, use IFLA_DSA_CONDUIT instead */
++	IFLA_DSA_MASTER = IFLA_DSA_CONDUIT,
+ 	__IFLA_DSA_MAX,
+ };
+ 
+diff --git a/src/basic/linux/in.h b/src/basic/linux/in.h
+index 07a4cb149305..e682ab628dfa 100644
+--- a/src/basic/linux/in.h
++++ b/src/basic/linux/in.h
+@@ -162,6 +162,8 @@ struct in_addr {
+ #define MCAST_MSFILTER			48
+ #define IP_MULTICAST_ALL		49
+ #define IP_UNICAST_IF			50
++#define IP_LOCAL_PORT_RANGE		51
++#define IP_PROTOCOL			52
+ 
+ #define MCAST_EXCLUDE	0
+ #define MCAST_INCLUDE	1
+diff --git a/src/basic/linux/netfilter/nf_tables.h b/src/basic/linux/netfilter/nf_tables.h
+index cfa844da1ce6..117c6a9b845b 100644
+--- a/src/basic/linux/netfilter/nf_tables.h
++++ b/src/basic/linux/netfilter/nf_tables.h
+@@ -98,6 +98,14 @@ enum nft_verdicts {
+  * @NFT_MSG_GETFLOWTABLE: get flow table (enum nft_flowtable_attributes)
+  * @NFT_MSG_DELFLOWTABLE: delete flow table (enum nft_flowtable_attributes)
+  * @NFT_MSG_GETRULE_RESET: get rules and reset stateful expressions (enum nft_obj_attributes)
++ * @NFT_MSG_DESTROYTABLE: destroy a table (enum nft_table_attributes)
++ * @NFT_MSG_DESTROYCHAIN: destroy a chain (enum nft_chain_attributes)
++ * @NFT_MSG_DESTROYRULE: destroy a rule (enum nft_rule_attributes)
++ * @NFT_MSG_DESTROYSET: destroy a set (enum nft_set_attributes)
++ * @NFT_MSG_DESTROYSETELEM: destroy a set element (enum nft_set_elem_attributes)
++ * @NFT_MSG_DESTROYOBJ: destroy a stateful object (enum nft_object_attributes)
++ * @NFT_MSG_DESTROYFLOWTABLE: destroy flow table (enum nft_flowtable_attributes)
++ * @NFT_MSG_GETSETELEM_RESET: get set elements and reset attached stateful expressions (enum nft_set_elem_attributes)
+  */
+ enum nf_tables_msg_types {
+ 	NFT_MSG_NEWTABLE,
+@@ -126,6 +134,14 @@ enum nf_tables_msg_types {
+ 	NFT_MSG_GETFLOWTABLE,
+ 	NFT_MSG_DELFLOWTABLE,
+ 	NFT_MSG_GETRULE_RESET,
++	NFT_MSG_DESTROYTABLE,
++	NFT_MSG_DESTROYCHAIN,
++	NFT_MSG_DESTROYRULE,
++	NFT_MSG_DESTROYSET,
++	NFT_MSG_DESTROYSETELEM,
++	NFT_MSG_DESTROYOBJ,
++	NFT_MSG_DESTROYFLOWTABLE,
++	NFT_MSG_GETSETELEM_RESET,
+ 	NFT_MSG_MAX,
+ };
+ 
+@@ -247,6 +263,7 @@ enum nft_chain_attributes {
+  * @NFTA_RULE_USERDATA: user data (NLA_BINARY, NFT_USERDATA_MAXLEN)
+  * @NFTA_RULE_ID: uniquely identifies a rule in a transaction (NLA_U32)
+  * @NFTA_RULE_POSITION_ID: transaction unique identifier of the previous rule (NLA_U32)
++ * @NFTA_RULE_CHAIN_ID: add the rule to chain by ID, alternative to @NFTA_RULE_CHAIN (NLA_U32)
+  */
+ enum nft_rule_attributes {
+ 	NFTA_RULE_UNSPEC,
+@@ -268,9 +285,11 @@ enum nft_rule_attributes {
+ /**
+  * enum nft_rule_compat_flags - nf_tables rule compat flags
+  *
++ * @NFT_RULE_COMPAT_F_UNUSED: unused
+  * @NFT_RULE_COMPAT_F_INV: invert the check result
+  */
+ enum nft_rule_compat_flags {
++	NFT_RULE_COMPAT_F_UNUSED = (1 << 0),
+ 	NFT_RULE_COMPAT_F_INV	= (1 << 1),
+ 	NFT_RULE_COMPAT_F_MASK	= NFT_RULE_COMPAT_F_INV,
+ };
+@@ -671,7 +690,7 @@ enum nft_range_ops {
+  * enum nft_range_attributes - nf_tables range expression netlink attributes
+  *
+  * @NFTA_RANGE_SREG: source register of data to compare (NLA_U32: nft_registers)
+- * @NFTA_RANGE_OP: cmp operation (NLA_U32: nft_cmp_ops)
++ * @NFTA_RANGE_OP: cmp operation (NLA_U32: nft_range_ops)
+  * @NFTA_RANGE_FROM_DATA: data range from (NLA_NESTED: nft_data_attributes)
+  * @NFTA_RANGE_TO_DATA: data range to (NLA_NESTED: nft_data_attributes)
+  */
+@@ -845,12 +864,14 @@ enum nft_exthdr_flags {
+  * @NFT_EXTHDR_OP_TCP: match against tcp options
+  * @NFT_EXTHDR_OP_IPV4: match against ipv4 options
+  * @NFT_EXTHDR_OP_SCTP: match against sctp chunks
++ * @NFT_EXTHDR_OP_DCCP: match against dccp otions
+  */
+ enum nft_exthdr_op {
+ 	NFT_EXTHDR_OP_IPV6,
+ 	NFT_EXTHDR_OP_TCPOPT,
+ 	NFT_EXTHDR_OP_IPV4,
+ 	NFT_EXTHDR_OP_SCTP,
++	NFT_EXTHDR_OP_DCCP,
+ 	__NFT_EXTHDR_OP_MAX
+ };
+ #define NFT_EXTHDR_OP_MAX	(__NFT_EXTHDR_OP_MAX - 1)
+@@ -864,7 +885,7 @@ enum nft_exthdr_op {
+  * @NFTA_EXTHDR_LEN: extension header length (NLA_U32)
+  * @NFTA_EXTHDR_FLAGS: extension header flags (NLA_U32)
+  * @NFTA_EXTHDR_OP: option match type (NLA_U32)
+- * @NFTA_EXTHDR_SREG: option match type (NLA_U32)
++ * @NFTA_EXTHDR_SREG: source register (NLA_U32: nft_registers)
+  */
+ enum nft_exthdr_attributes {
+ 	NFTA_EXTHDR_UNSPEC,
+@@ -917,6 +938,7 @@ enum nft_exthdr_attributes {
+  * @NFT_META_TIME_HOUR: hour of day (in seconds)
+  * @NFT_META_SDIF: slave device interface index
+  * @NFT_META_SDIFNAME: slave device interface name
++ * @NFT_META_BRI_BROUTE: packet br_netfilter_broute bit
+  */
+ enum nft_meta_keys {
+ 	NFT_META_LEN,
+@@ -955,6 +977,7 @@ enum nft_meta_keys {
+ 	NFT_META_TIME_HOUR,
+ 	NFT_META_SDIF,
+ 	NFT_META_SDIFNAME,
++	NFT_META_BRI_BROUTE,
+ 	__NFT_META_IIFTYPE,
+ };
+ 
+@@ -1246,10 +1269,10 @@ enum nft_last_attributes {
+ /**
+  * enum nft_log_attributes - nf_tables log expression netlink attributes
+  *
+- * @NFTA_LOG_GROUP: netlink group to send messages to (NLA_U32)
++ * @NFTA_LOG_GROUP: netlink group to send messages to (NLA_U16)
+  * @NFTA_LOG_PREFIX: prefix to prepend to log messages (NLA_STRING)
+  * @NFTA_LOG_SNAPLEN: length of payload to include in netlink message (NLA_U32)
+- * @NFTA_LOG_QTHRESHOLD: queue threshold (NLA_U32)
++ * @NFTA_LOG_QTHRESHOLD: queue threshold (NLA_U16)
+  * @NFTA_LOG_LEVEL: log level (NLA_U32)
+  * @NFTA_LOG_FLAGS: logging flags (NLA_U32)
+  */
+diff --git a/src/basic/linux/netlink.h b/src/basic/linux/netlink.h
+index e2ae82e3f9f7..f87aaf28a649 100644
+--- a/src/basic/linux/netlink.h
++++ b/src/basic/linux/netlink.h
+@@ -298,6 +298,8 @@ struct nla_bitfield32 {
+  *	entry has attributes again, the policy for those inner ones
+  *	and the corresponding maxtype may be specified.
+  * @NL_ATTR_TYPE_BITFIELD32: &struct nla_bitfield32 attribute
++ * @NL_ATTR_TYPE_SINT: 32-bit or 64-bit signed attribute, aligned to 4B
++ * @NL_ATTR_TYPE_UINT: 32-bit or 64-bit unsigned attribute, aligned to 4B
+  */
+ enum netlink_attribute_type {
+ 	NL_ATTR_TYPE_INVALID,
+@@ -322,6 +324,9 @@ enum netlink_attribute_type {
+ 	NL_ATTR_TYPE_NESTED_ARRAY,
+ 
+ 	NL_ATTR_TYPE_BITFIELD32,
++
++	NL_ATTR_TYPE_SINT,
++	NL_ATTR_TYPE_UINT,
+ };
+ 
+ /**
+diff --git a/src/basic/linux/nl80211.h b/src/basic/linux/nl80211.h
+index c14a91bbca7c..1ccdcae24372 100644
+--- a/src/basic/linux/nl80211.h
++++ b/src/basic/linux/nl80211.h
+@@ -11,7 +11,7 @@
+  * Copyright 2008 Jouni Malinen <jouni.malinen@atheros.com>
+  * Copyright 2008 Colin McCabe <colin@cozybit.com>
+  * Copyright 2015-2017	Intel Deutschland GmbH
+- * Copyright (C) 2018-2022 Intel Corporation
++ * Copyright (C) 2018-2023 Intel Corporation
+  *
+  * Permission to use, copy, modify, and/or distribute this software for any
+  * purpose with or without fee is hereby granted, provided that the above
+@@ -72,7 +72,7 @@
+  * For drivers supporting TDLS with external setup (WIPHY_FLAG_SUPPORTS_TDLS
+  * and WIPHY_FLAG_TDLS_EXTERNAL_SETUP), the station lifetime is as follows:
+  *  - a setup station entry is added, not yet authorized, without any rate
+- *    or capability information, this just exists to avoid race conditions
++ *    or capability information; this just exists to avoid race conditions
+  *  - when the TDLS setup is done, a single NL80211_CMD_SET_STATION is valid
+  *    to add rate and capability information to the station and at the same
+  *    time mark it authorized.
+@@ -87,7 +87,7 @@
+  * DOC: Frame transmission/registration support
+  *
+  * Frame transmission and registration support exists to allow userspace
+- * management entities such as wpa_supplicant react to management frames
++ * management entities such as wpa_supplicant to react to management frames
+  * that are not being handled by the kernel. This includes, for example,
+  * certain classes of action frames that cannot be handled in the kernel
+  * for various reasons.
+@@ -113,7 +113,7 @@
+  *
+  * Frame transmission allows userspace to send for example the required
+  * responses to action frames. It is subject to some sanity checking,
+- * but many frames can be transmitted. When a frame was transmitted, its
++ * but many frames can be transmitted. When a frame is transmitted, its
+  * status is indicated to the sending socket.
+  *
+  * For more technical details, see the corresponding command descriptions
+@@ -123,7 +123,7 @@
+ /**
+  * DOC: Virtual interface / concurrency capabilities
+  *
+- * Some devices are able to operate with virtual MACs, they can have
++ * Some devices are able to operate with virtual MACs; they can have
+  * more than one virtual interface. The capability handling for this
+  * is a bit complex though, as there may be a number of restrictions
+  * on the types of concurrency that are supported.
+@@ -135,7 +135,7 @@
+  * Once concurrency is desired, more attributes must be observed:
+  * To start with, since some interface types are purely managed in
+  * software, like the AP-VLAN type in mac80211 for example, there's
+- * an additional list of these, they can be added at any time and
++ * an additional list of these; they can be added at any time and
+  * are only restricted by some semantic restrictions (e.g. AP-VLAN
+  * cannot be added without a corresponding AP interface). This list
+  * is exported in the %NL80211_ATTR_SOFTWARE_IFTYPES attribute.
+@@ -164,17 +164,17 @@
+  * Packet coalesce feature helps to reduce number of received interrupts
+  * to host by buffering these packets in firmware/hardware for some
+  * predefined time. Received interrupt will be generated when one of the
+- * following events occur.
++ * following events occurs.
+  * a) Expiration of hardware timer whose expiration time is set to maximum
+  * coalescing delay of matching coalesce rule.
+- * b) Coalescing buffer in hardware reaches it's limit.
++ * b) Coalescing buffer in hardware reaches its limit.
+  * c) Packet doesn't match any of the configured coalesce rules.
+  *
+  * User needs to configure following parameters for creating a coalesce
+  * rule.
+  * a) Maximum coalescing delay
+  * b) List of packet patterns which needs to be matched
+- * c) Condition for coalescence. pattern 'match' or 'no match'
++ * c) Condition for coalescence: pattern 'match' or 'no match'
+  * Multiple such rules can be created.
+  */
+ 
+@@ -213,7 +213,7 @@
+ /**
+  * DOC: FILS shared key authentication offload
+  *
+- * FILS shared key authentication offload can be advertized by drivers by
++ * FILS shared key authentication offload can be advertised by drivers by
+  * setting @NL80211_EXT_FEATURE_FILS_SK_OFFLOAD flag. The drivers that support
+  * FILS shared key authentication offload should be able to construct the
+  * authentication and association frames for FILS shared key authentication and
+@@ -239,7 +239,7 @@
+  * The PMKSA can be maintained in userspace persistently so that it can be used
+  * later after reboots or wifi turn off/on also.
+  *
+- * %NL80211_ATTR_FILS_CACHE_ID is the cache identifier advertized by a FILS
++ * %NL80211_ATTR_FILS_CACHE_ID is the cache identifier advertised by a FILS
+  * capable AP supporting PMK caching. It specifies the scope within which the
+  * PMKSAs are cached in an ESS. %NL80211_CMD_SET_PMKSA and
+  * %NL80211_CMD_DEL_PMKSA are enhanced to allow support for PMKSA caching based
+@@ -290,12 +290,12 @@
+  * If the configuration needs to be applied for specific peer then the MAC
+  * address of the peer needs to be passed in %NL80211_ATTR_MAC, otherwise the
+  * configuration will be applied for all the connected peers in the vif except
+- * any peers that have peer specific configuration for the TID by default; if
+- * the %NL80211_TID_CONFIG_ATTR_OVERRIDE flag is set, peer specific values
++ * any peers that have peer-specific configuration for the TID by default; if
++ * the %NL80211_TID_CONFIG_ATTR_OVERRIDE flag is set, peer-specific values
+  * will be overwritten.
+  *
+- * All this configuration is valid only for STA's current connection
+- * i.e. the configuration will be reset to default when the STA connects back
++ * All this configuration is valid only for STA's current connection,
++ * i.e., the configuration will be reset to default when the STA connects back
+  * after disconnection/roaming, and this configuration will be cleared when
+  * the interface goes down.
+  */
+@@ -326,7 +326,7 @@
+ /**
+  * DOC: Multi-Link Operation
+  *
+- * In Multi-Link Operation, a connection between to MLDs utilizes multiple
++ * In Multi-Link Operation, a connection between two MLDs utilizes multiple
+  * links. To use this in nl80211, various commands and responses now need
+  * to or will include the new %NL80211_ATTR_MLO_LINKS attribute.
+  * Additionally, various commands that need to operate on a specific link
+@@ -334,6 +334,15 @@
+  * use %NL80211_CMD_START_AP or similar functions.
+  */
+ 
++/**
++ * DOC: OWE DH IE handling offload
++ *
++ * By setting @NL80211_EXT_FEATURE_OWE_OFFLOAD flag, drivers can indicate
++ * kernel/application space to avoid DH IE handling. When this flag is
++ * advertised, the driver/device will take care of DH IE inclusion and
++ * processing of peer DH IE to generate PMK.
++ */
++
+ /**
+  * enum nl80211_commands - supported nl80211 commands
+  *
+@@ -424,7 +433,8 @@
+  *	interface identified by %NL80211_ATTR_IFINDEX.
+  * @NL80211_CMD_DEL_STATION: Remove a station identified by %NL80211_ATTR_MAC
+  *	or, if no MAC address given, all stations, on the interface identified
+- *	by %NL80211_ATTR_IFINDEX. %NL80211_ATTR_MGMT_SUBTYPE and
++ *	by %NL80211_ATTR_IFINDEX. For MLD station, MLD address is used in
++ *	%NL80211_ATTR_MAC. %NL80211_ATTR_MGMT_SUBTYPE and
+  *	%NL80211_ATTR_REASON_CODE can optionally be used to specify which type
+  *	of disconnection indication should be sent to the station
+  *	(Deauthentication or Disassociation frame and reason code for that
+@@ -511,7 +521,7 @@
+  *	%NL80211_ATTR_SCHED_SCAN_PLANS. If %NL80211_ATTR_SCHED_SCAN_PLANS is
+  *	not specified and only %NL80211_ATTR_SCHED_SCAN_INTERVAL is specified,
+  *	scheduled scan will run in an infinite loop with the specified interval.
+- *	These attributes are mutually exculsive,
++ *	These attributes are mutually exclusive,
+  *	i.e. NL80211_ATTR_SCHED_SCAN_INTERVAL must not be passed if
+  *	NL80211_ATTR_SCHED_SCAN_PLANS is defined.
+  *	If for some reason scheduled scan is aborted by the driver, all scan
+@@ -542,7 +552,7 @@
+  *	%NL80211_CMD_STOP_SCHED_SCAN command is received or when the interface
+  *	is brought down while a scheduled scan was running.
+  *
+- * @NL80211_CMD_GET_SURVEY: get survey resuls, e.g. channel occupation
++ * @NL80211_CMD_GET_SURVEY: get survey results, e.g. channel occupation
+  *      or noise level
+  * @NL80211_CMD_NEW_SURVEY_RESULTS: survey data notification (as a reply to
+  *	NL80211_CMD_GET_SURVEY and on the "scan" multicast group)
+@@ -553,12 +563,13 @@
+  *	using %NL80211_ATTR_SSID, %NL80211_ATTR_FILS_CACHE_ID,
+  *	%NL80211_ATTR_PMKID, and %NL80211_ATTR_PMK in case of FILS
+  *	authentication where %NL80211_ATTR_FILS_CACHE_ID is the identifier
+- *	advertized by a FILS capable AP identifying the scope of PMKSA in an
++ *	advertised by a FILS capable AP identifying the scope of PMKSA in an
+  *	ESS.
+  * @NL80211_CMD_DEL_PMKSA: Delete a PMKSA cache entry, using %NL80211_ATTR_MAC
+  *	(for the BSSID) and %NL80211_ATTR_PMKID or using %NL80211_ATTR_SSID,
+  *	%NL80211_ATTR_FILS_CACHE_ID, and %NL80211_ATTR_PMKID in case of FILS
+- *	authentication.
++ *	authentication. Additionally in case of SAE offload and OWE offloads
++ *	PMKSA entry can be deleted using %NL80211_ATTR_SSID.
+  * @NL80211_CMD_FLUSH_PMKSA: Flush all PMKSA cache entries.
+  *
+  * @NL80211_CMD_REG_CHANGE: indicates to userspace the regulatory domain
+@@ -597,7 +608,7 @@
+  *	BSSID in case of station mode). %NL80211_ATTR_SSID is used to specify
+  *	the SSID (mainly for association, but is included in authentication
+  *	request, too, to help BSS selection. %NL80211_ATTR_WIPHY_FREQ +
+- *	%NL80211_ATTR_WIPHY_FREQ_OFFSET is used to specify the frequence of the
++ *	%NL80211_ATTR_WIPHY_FREQ_OFFSET is used to specify the frequency of the
+  *	channel in MHz. %NL80211_ATTR_AUTH_TYPE is used to specify the
+  *	authentication type. %NL80211_ATTR_IE is used to define IEs
+  *	(VendorSpecificInfo, but also including RSN IE and FT IEs) to be added
+@@ -806,7 +817,7 @@
+  *	reached.
+  * @NL80211_CMD_SET_CHANNEL: Set the channel (using %NL80211_ATTR_WIPHY_FREQ
+  *	and the attributes determining channel width) the given interface
+- *	(identifed by %NL80211_ATTR_IFINDEX) shall operate on.
++ *	(identified by %NL80211_ATTR_IFINDEX) shall operate on.
+  *	In case multiple channels are supported by the device, the mechanism
+  *	with which it switches channels is implementation-defined.
+  *	When a monitor interface is given, it can only switch channel while
+@@ -878,7 +889,7 @@
+  *	inform userspace of the new replay counter.
+  *
+  * @NL80211_CMD_PMKSA_CANDIDATE: This is used as an event to inform userspace
+- *	of PMKSA caching dandidates.
++ *	of PMKSA caching candidates.
+  *
+  * @NL80211_CMD_TDLS_OPER: Perform a high-level TDLS command (e.g. link setup).
+  *	In addition, this can be used as an event to request userspace to take
+@@ -914,7 +925,7 @@
+  *
+  * @NL80211_CMD_PROBE_CLIENT: Probe an associated station on an AP interface
+  *	by sending a null data frame to it and reporting when the frame is
+- *	acknowleged. This is used to allow timing out inactive clients. Uses
++ *	acknowledged. This is used to allow timing out inactive clients. Uses
+  *	%NL80211_ATTR_IFINDEX and %NL80211_ATTR_MAC. The command returns a
+  *	direct reply with an %NL80211_ATTR_COOKIE that is later used to match
+  *	up the event with the request. The event includes the same data and
+@@ -1125,11 +1136,15 @@
+  * @NL80211_CMD_DEL_PMK: For offloaded 4-Way handshake, delete the previously
+  *	configured PMK for the authenticator address identified by
+  *	%NL80211_ATTR_MAC.
+- * @NL80211_CMD_PORT_AUTHORIZED: An event that indicates an 802.1X FT roam was
+- *	completed successfully. Drivers that support 4 way handshake offload
+- *	should send this event after indicating 802.1X FT assocation with
+- *	%NL80211_CMD_ROAM. If the 4 way handshake failed %NL80211_CMD_DISCONNECT
+- *	should be indicated instead.
++ * @NL80211_CMD_PORT_AUTHORIZED: An event that indicates port is authorized and
++ *	open for regular data traffic. For STA/P2P-client, this event is sent
++ *	with AP MAC address and for AP/P2P-GO, the event carries the STA/P2P-
++ *	client MAC address.
++ *	Drivers that support 4 way handshake offload should send this event for
++ *	STA/P2P-client after successful 4-way HS or after 802.1X FT following
++ *	NL80211_CMD_CONNECT or NL80211_CMD_ROAM. Drivers using AP/P2P-GO 4-way
++ *	handshake offload should send this event on successful completion of
++ *	4-way handshake with the peer (STA/P2P-client).
+  * @NL80211_CMD_CONTROL_PORT_FRAME: Control Port (e.g. PAE) frame TX request
+  *	and RX notification.  This command is used both as a request to transmit
+  *	a control port frame and as a notification that a control port frame
+@@ -1166,6 +1181,23 @@
+  *	%NL80211_ATTR_STATUS_CODE attribute in %NL80211_CMD_EXTERNAL_AUTH
+  *	command interface.
+  *
++ *	Host driver sends MLD address of the AP with %NL80211_ATTR_MLD_ADDR in
++ *	%NL80211_CMD_EXTERNAL_AUTH event to indicate user space to enable MLO
++ *	during the authentication offload in STA mode while connecting to MLD
++ *	APs. Host driver should check %NL80211_ATTR_MLO_SUPPORT flag capability
++ *	in %NL80211_CMD_CONNECT to know whether the user space supports enabling
++ *	MLO during the authentication offload or not.
++ *	User space should enable MLO during the authentication only when it
++ *	receives the AP MLD address in authentication offload request. User
++ *	space shouldn't enable MLO when the authentication offload request
++ *	doesn't indicate the AP MLD address even if the AP is MLO capable.
++ *	User space should use %NL80211_ATTR_MLD_ADDR as peer's MLD address and
++ *	interface address identified by %NL80211_ATTR_IFINDEX as self MLD
++ *	address. User space and host driver to use MLD addresses in RA, TA and
++ *	BSSID fields of the frames between them, and host driver translates the
++ *	MLD addresses to/from link addresses based on the link chosen for the
++ *	authentication.
++ *
+  *	Host driver reports this status on an authentication failure to the
+  *	user space through the connect result as the user space would have
+  *	initiated the connection through the connect request.
+@@ -1281,6 +1313,26 @@
+  * @NL80211_CMD_MODIFY_LINK_STA: Modify a link of an MLD station
+  * @NL80211_CMD_REMOVE_LINK_STA: Remove a link of an MLD station
+  *
++ * @NL80211_CMD_SET_HW_TIMESTAMP: Enable/disable HW timestamping of Timing
++ *	measurement and Fine timing measurement frames. If %NL80211_ATTR_MAC
++ *	is included, enable/disable HW timestamping only for frames to/from the
++ *	specified MAC address. Otherwise enable/disable HW timestamping for
++ *	all TM/FTM frames (including ones that were enabled with specific MAC
++ *	address). If %NL80211_ATTR_HW_TIMESTAMP_ENABLED is not included, disable
++ *	HW timestamping.
++ *	The number of peers that HW timestamping can be enabled for concurrently
++ *	is indicated by %NL80211_ATTR_MAX_HW_TIMESTAMP_PEERS.
++ *
++ * @NL80211_CMD_LINKS_REMOVED: Notify userspace about the removal of STA MLD
++ *	setup links due to AP MLD removing the corresponding affiliated APs with
++ *	Multi-Link reconfiguration. %NL80211_ATTR_MLO_LINKS is used to provide
++ *	information about the removed STA MLD setup links.
++ *
++ * @NL80211_CMD_SET_TID_TO_LINK_MAPPING: Set the TID to Link Mapping for a
++ *      non-AP MLD station. The %NL80211_ATTR_MLO_TTLM_DLINK and
++ *      %NL80211_ATTR_MLO_TTLM_ULINK attributes are used to specify the
++ *      TID to Link mapping for downlink/uplink traffic.
++ *
+  * @NL80211_CMD_MAX: highest used command number
+  * @__NL80211_CMD_AFTER_LAST: internal use
+  */
+@@ -1532,6 +1584,12 @@ enum nl80211_commands {
+ 	NL80211_CMD_MODIFY_LINK_STA,
+ 	NL80211_CMD_REMOVE_LINK_STA,
+ 
++	NL80211_CMD_SET_HW_TIMESTAMP,
++
++	NL80211_CMD_LINKS_REMOVED,
++
++	NL80211_CMD_SET_TID_TO_LINK_MAPPING,
++
+ 	/* add new commands above here */
+ 
+ 	/* used to define NL80211_CMD_MAX below */
+@@ -1789,7 +1847,7 @@ enum nl80211_commands {
+  *	using %CMD_CONTROL_PORT_FRAME.  If control port routing over NL80211 is
+  *	to be used then userspace must also use the %NL80211_ATTR_SOCKET_OWNER
+  *	flag. When used with %NL80211_ATTR_CONTROL_PORT_NO_PREAUTH, pre-auth
+- *	frames are not forwared over the control port.
++ *	frames are not forwarded over the control port.
+  *
+  * @NL80211_ATTR_TESTDATA: Testmode data blob, passed through to the driver.
+  *	We recommend using nested, driver-specific attributes within this.
+@@ -1926,10 +1984,10 @@ enum nl80211_commands {
+  *	bit. Depending on which antennas are selected in the bitmap, 802.11n
+  *	drivers can derive which chainmasks to use (if all antennas belonging to
+  *	a particular chain are disabled this chain should be disabled) and if
+- *	a chain has diversity antennas wether diversity should be used or not.
++ *	a chain has diversity antennas whether diversity should be used or not.
+  *	HT capabilities (STBC, TX Beamforming, Antenna selection) can be
+  *	derived from the available chains after applying the antenna mask.
+- *	Non-802.11n drivers can derive wether to use diversity or not.
++ *	Non-802.11n drivers can derive whether to use diversity or not.
+  *	Drivers may reject configurations or RX/TX mask combinations they cannot
+  *	support by returning -EINVAL.
+  *
+@@ -2499,7 +2557,7 @@ enum nl80211_commands {
+  *	from successful FILS authentication and is used with
+  *	%NL80211_CMD_CONNECT.
+  *
+- * @NL80211_ATTR_FILS_CACHE_ID: A 2-octet identifier advertized by a FILS AP
++ * @NL80211_ATTR_FILS_CACHE_ID: A 2-octet identifier advertised by a FILS AP
+  *	identifying the scope of PMKSAs. This is used with
+  *	@NL80211_CMD_SET_PMKSA and @NL80211_CMD_DEL_PMKSA.
+  *
+@@ -2653,11 +2711,13 @@ enum nl80211_commands {
+  *
+  * @NL80211_ATTR_FILS_DISCOVERY: Optional parameter to configure FILS
+  *	discovery. It is a nested attribute, see
+- *	&enum nl80211_fils_discovery_attributes.
++ *	&enum nl80211_fils_discovery_attributes. Userspace should pass an empty
++ *	nested attribute to disable this feature and delete the templates.
+  *
+  * @NL80211_ATTR_UNSOL_BCAST_PROBE_RESP: Optional parameter to configure
+  *	unsolicited broadcast probe response. It is a nested attribute, see
+- *	&enum nl80211_unsol_bcast_probe_resp_attributes.
++ *	&enum nl80211_unsol_bcast_probe_resp_attributes. Userspace should pass an empty
++ *	nested attribute to disable this feature and delete the templates.
+  *
+  * @NL80211_ATTR_S1G_CAPABILITY: S1G Capability information element (from
+  *	association request when used with NL80211_CMD_NEW_STATION)
+@@ -2751,6 +2811,46 @@ enum nl80211_commands {
+  *	the incoming frame RX timestamp.
+  * @NL80211_ATTR_TD_BITMAP: Transition Disable bitmap, for subsequent
+  *	(re)associations.
++ *
++ * @NL80211_ATTR_PUNCT_BITMAP: (u32) Preamble puncturing bitmap, lowest
++ *	bit corresponds to the lowest 20 MHz channel. Each bit set to 1
++ *	indicates that the sub-channel is punctured. Higher 16 bits are
++ *	reserved.
++ *
++ * @NL80211_ATTR_MAX_HW_TIMESTAMP_PEERS: Maximum number of peers that HW
++ *	timestamping can be enabled for concurrently (u16), a wiphy attribute.
++ *	A value of 0xffff indicates setting for all peers (i.e. not specifying
++ *	an address with %NL80211_CMD_SET_HW_TIMESTAMP) is supported.
++ * @NL80211_ATTR_HW_TIMESTAMP_ENABLED: Indicates whether HW timestamping should
++ *	be enabled or not (flag attribute).
++ *
++ * @NL80211_ATTR_EMA_RNR_ELEMS: Optional nested attribute for
++ *	reduced neighbor report (RNR) elements. This attribute can be used
++ *	only when NL80211_MBSSID_CONFIG_ATTR_EMA is enabled.
++ *	Userspace is responsible for splitting the RNR into multiple
++ *	elements such that each element excludes the non-transmitting
++ *	profiles already included in the MBSSID element
++ *	(%NL80211_ATTR_MBSSID_ELEMS) at the same index. Each EMA beacon
++ *	will be generated by adding MBSSID and RNR elements at the same
++ *	index. If the userspace includes more RNR elements than number of
++ *	MBSSID elements then these will be added in every EMA beacon.
++ *
++ * @NL80211_ATTR_MLO_LINK_DISABLED: Flag attribute indicating that the link is
++ *	disabled.
++ *
++ * @NL80211_ATTR_BSS_DUMP_INCLUDE_USE_DATA: Include BSS usage data, i.e.
++ *	include BSSes that can only be used in restricted scenarios and/or
++ *	cannot be used at all.
++ *
++ * @NL80211_ATTR_MLO_TTLM_DLINK: Binary attribute specifying the downlink TID to
++ *      link mapping. The length is 8 * sizeof(u16). For each TID the link
++ *      mapping is as defined in section 9.4.2.314 (TID-To-Link Mapping element)
++ *      in Draft P802.11be_D4.0.
++ * @NL80211_ATTR_MLO_TTLM_ULINK: Binary attribute specifying the uplink TID to
++ *      link mapping. The length is 8 * sizeof(u16). For each TID the link
++ *      mapping is as defined in section 9.4.2.314 (TID-To-Link Mapping element)
++ *      in Draft P802.11be_D4.0.
++ *
+  * @NUM_NL80211_ATTR: total number of nl80211_attrs available
+  * @NL80211_ATTR_MAX: highest attribute number currently defined
+  * @__NL80211_ATTR_AFTER_LAST: internal use
+@@ -3280,6 +3380,20 @@ enum nl80211_attrs {
+ 	NL80211_ATTR_RX_HW_TIMESTAMP,
+ 	NL80211_ATTR_TD_BITMAP,
+ 
++	NL80211_ATTR_PUNCT_BITMAP,
++
++	NL80211_ATTR_MAX_HW_TIMESTAMP_PEERS,
++	NL80211_ATTR_HW_TIMESTAMP_ENABLED,
++
++	NL80211_ATTR_EMA_RNR_ELEMS,
++
++	NL80211_ATTR_MLO_LINK_DISABLED,
++
++	NL80211_ATTR_BSS_DUMP_INCLUDE_USE_DATA,
++
++	NL80211_ATTR_MLO_TTLM_DLINK,
++	NL80211_ATTR_MLO_TTLM_ULINK,
++
+ 	/* add attributes here, update the policy in nl80211.c */
+ 
+ 	__NL80211_ATTR_AFTER_LAST,
+@@ -3606,6 +3720,13 @@ enum nl80211_eht_ru_alloc {
+  *	(u8, see &enum nl80211_eht_gi)
+  * @NL80211_RATE_INFO_EHT_RU_ALLOC: EHT RU allocation, if not present then
+  *	non-OFDMA was used (u8, see &enum nl80211_eht_ru_alloc)
++ * @NL80211_RATE_INFO_S1G_MCS: S1G MCS index (u8, 0-10)
++ * @NL80211_RATE_INFO_S1G_NSS: S1G NSS value (u8, 1-4)
++ * @NL80211_RATE_INFO_1_MHZ_WIDTH: 1 MHz S1G rate
++ * @NL80211_RATE_INFO_2_MHZ_WIDTH: 2 MHz S1G rate
++ * @NL80211_RATE_INFO_4_MHZ_WIDTH: 4 MHz S1G rate
++ * @NL80211_RATE_INFO_8_MHZ_WIDTH: 8 MHz S1G rate
++ * @NL80211_RATE_INFO_16_MHZ_WIDTH: 16 MHz S1G rate
+  * @__NL80211_RATE_INFO_AFTER_LAST: internal use
+  */
+ enum nl80211_rate_info {
+@@ -3632,6 +3753,13 @@ enum nl80211_rate_info {
+ 	NL80211_RATE_INFO_EHT_NSS,
+ 	NL80211_RATE_INFO_EHT_GI,
+ 	NL80211_RATE_INFO_EHT_RU_ALLOC,
++	NL80211_RATE_INFO_S1G_MCS,
++	NL80211_RATE_INFO_S1G_NSS,
++	NL80211_RATE_INFO_1_MHZ_WIDTH,
++	NL80211_RATE_INFO_2_MHZ_WIDTH,
++	NL80211_RATE_INFO_4_MHZ_WIDTH,
++	NL80211_RATE_INFO_8_MHZ_WIDTH,
++	NL80211_RATE_INFO_16_MHZ_WIDTH,
+ 
+ 	/* keep last */
+ 	__NL80211_RATE_INFO_AFTER_LAST,
+@@ -4000,6 +4128,10 @@ enum nl80211_band_iftype_attr {
+  * @NL80211_BAND_ATTR_EDMG_BW_CONFIG: Channel BW Configuration subfield encodes
+  *	the allowed channel bandwidth configurations.
+  *	Defined by IEEE P802.11ay/D4.0 section 9.4.2.251, Table 13.
++ * @NL80211_BAND_ATTR_S1G_MCS_NSS_SET: S1G capabilities, supported S1G-MCS and NSS
++ *	set subfield, as in the S1G information IE, 5 bytes
++ * @NL80211_BAND_ATTR_S1G_CAPA: S1G capabilities information subfield as in the
++ *	S1G information IE, 10 bytes
+  * @NL80211_BAND_ATTR_MAX: highest band attribute currently defined
+  * @__NL80211_BAND_ATTR_AFTER_LAST: internal use
+  */
+@@ -4020,6 +4152,9 @@ enum nl80211_band_attr {
+ 	NL80211_BAND_ATTR_EDMG_CHANNELS,
+ 	NL80211_BAND_ATTR_EDMG_BW_CONFIG,
+ 
++	NL80211_BAND_ATTR_S1G_MCS_NSS_SET,
++	NL80211_BAND_ATTR_S1G_CAPA,
++
+ 	/* keep last */
+ 	__NL80211_BAND_ATTR_AFTER_LAST,
+ 	NL80211_BAND_ATTR_MAX = __NL80211_BAND_ATTR_AFTER_LAST - 1
+@@ -4065,7 +4200,7 @@ enum nl80211_wmm_rule {
+  *	(100 * dBm).
+  * @NL80211_FREQUENCY_ATTR_DFS_STATE: current state for DFS
+  *	(enum nl80211_dfs_state)
+- * @NL80211_FREQUENCY_ATTR_DFS_TIME: time in miliseconds for how long
++ * @NL80211_FREQUENCY_ATTR_DFS_TIME: time in milliseconds for how long
+  *	this channel is in this DFS state.
+  * @NL80211_FREQUENCY_ATTR_NO_HT40_MINUS: HT40- isn't possible with this
+  *	channel as the control channel
+@@ -4119,6 +4254,16 @@ enum nl80211_wmm_rule {
+  *	as the primary or any of the secondary channels isn't possible
+  * @NL80211_FREQUENCY_ATTR_NO_EHT: EHT operation is not allowed on this channel
+  *	in current regulatory domain.
++ * @NL80211_FREQUENCY_ATTR_PSD: Power spectral density (in dBm) that
++ *	is allowed on this channel in current regulatory domain.
++ * @NL80211_FREQUENCY_ATTR_DFS_CONCURRENT: Operation on this channel is
++ *	allowed for peer-to-peer or adhoc communication under the control
++ *	of a DFS master which operates on the same channel (FCC-594280 D01
++ *	Section B.3). Should be used together with %NL80211_RRF_DFS only.
++ * @NL80211_FREQUENCY_ATTR_NO_UHB_VLP_CLIENT: Client connection to VLP AP
++ *	not allowed using this channel
++ * @NL80211_FREQUENCY_ATTR_NO_UHB_AFC_CLIENT: Client connection to AFC AP
++ *	not allowed using this channel
+  * @NL80211_FREQUENCY_ATTR_MAX: highest frequency attribute number
+  *	currently defined
+  * @__NL80211_FREQUENCY_ATTR_AFTER_LAST: internal use
+@@ -4157,6 +4302,10 @@ enum nl80211_frequency_attr {
+ 	NL80211_FREQUENCY_ATTR_16MHZ,
+ 	NL80211_FREQUENCY_ATTR_NO_320MHZ,
+ 	NL80211_FREQUENCY_ATTR_NO_EHT,
++	NL80211_FREQUENCY_ATTR_PSD,
++	NL80211_FREQUENCY_ATTR_DFS_CONCURRENT,
++	NL80211_FREQUENCY_ATTR_NO_UHB_VLP_CLIENT,
++	NL80211_FREQUENCY_ATTR_NO_UHB_AFC_CLIENT,
+ 
+ 	/* keep last */
+ 	__NL80211_FREQUENCY_ATTR_AFTER_LAST,
+@@ -4257,6 +4406,8 @@ enum nl80211_reg_type {
+  * 	a given frequency range. The value is in mBm (100 * dBm).
+  * @NL80211_ATTR_DFS_CAC_TIME: DFS CAC time in milliseconds.
+  *	If not present or 0 default CAC time will be used.
++ * @NL80211_ATTR_POWER_RULE_PSD: power spectral density (in dBm).
++ *	This could be negative.
+  * @NL80211_REG_RULE_ATTR_MAX: highest regulatory rule attribute number
+  *	currently defined
+  * @__NL80211_REG_RULE_ATTR_AFTER_LAST: internal use
+@@ -4274,6 +4425,8 @@ enum nl80211_reg_rule_attr {
+ 
+ 	NL80211_ATTR_DFS_CAC_TIME,
+ 
++	NL80211_ATTR_POWER_RULE_PSD,
++
+ 	/* keep last */
+ 	__NL80211_REG_RULE_ATTR_AFTER_LAST,
+ 	NL80211_REG_RULE_ATTR_MAX = __NL80211_REG_RULE_ATTR_AFTER_LAST - 1
+@@ -4356,6 +4509,14 @@ enum nl80211_sched_scan_match_attr {
+  * @NL80211_RRF_NO_160MHZ: 160MHz operation not allowed
+  * @NL80211_RRF_NO_HE: HE operation not allowed
+  * @NL80211_RRF_NO_320MHZ: 320MHz operation not allowed
++ * @NL80211_RRF_NO_EHT: EHT operation not allowed
++ * @NL80211_RRF_PSD: Ruleset has power spectral density value
++ * @NL80211_RRF_DFS_CONCURRENT: Operation on this channel is allowed for
++	peer-to-peer or adhoc communication under the control of a DFS master
++	which operates on the same channel (FCC-594280 D01 Section B.3).
++	Should be used together with %NL80211_RRF_DFS only.
++ * @NL80211_RRF_NO_UHB_VLP_CLIENT: Client connection to VLP AP not allowed
++ * @NL80211_RRF_NO_UHB_AFC_CLIENT: Client connection to AFC AP not allowed
+  */
+ enum nl80211_reg_rule_flags {
+ 	NL80211_RRF_NO_OFDM		= 1<<0,
+@@ -4375,6 +4536,11 @@ enum nl80211_reg_rule_flags {
+ 	NL80211_RRF_NO_160MHZ		= 1<<16,
+ 	NL80211_RRF_NO_HE		= 1<<17,
+ 	NL80211_RRF_NO_320MHZ		= 1<<18,
++	NL80211_RRF_NO_EHT		= 1<<19,
++	NL80211_RRF_PSD			= 1<<20,
++	NL80211_RRF_DFS_CONCURRENT	= 1<<21,
++	NL80211_RRF_NO_UHB_VLP_CLIENT	= 1<<22,
++	NL80211_RRF_NO_UHB_AFC_CLIENT	= 1<<23,
+ };
+ 
+ #define NL80211_RRF_PASSIVE_SCAN	NL80211_RRF_NO_IR
+@@ -4911,6 +5077,33 @@ enum nl80211_bss_scan_width {
+ 	NL80211_BSS_CHAN_WIDTH_2,
+ };
+ 
++/**
++ * enum nl80211_bss_use_for - bitmap indicating possible BSS use
++ * @NL80211_BSS_USE_FOR_NORMAL: Use this BSS for normal "connection",
++ *	including IBSS/MBSS depending on the type.
++ * @NL80211_BSS_USE_FOR_MLD_LINK: This BSS can be used as a link in an
++ *	MLO connection. Note that for an MLO connection, all links including
++ *	the assoc link must have this flag set, and the assoc link must
++ *	additionally have %NL80211_BSS_USE_FOR_NORMAL set.
++ */
++enum nl80211_bss_use_for {
++	NL80211_BSS_USE_FOR_NORMAL = 1 << 0,
++	NL80211_BSS_USE_FOR_MLD_LINK = 1 << 1,
++};
++
++/**
++ * enum nl80211_bss_cannot_use_reasons - reason(s) connection to a
++ *	BSS isn't possible
++ * @NL80211_BSS_CANNOT_USE_NSTR_NONPRIMARY: NSTR nonprimary links aren't
++ *	supported by the device, and this BSS entry represents one.
++ * @NL80211_BSS_CANNOT_USE_UHB_PWR_MISMATCH: STA is not supporting
++ *	the AP power type (SP, VLP, AP) that the AP uses.
++ */
++enum nl80211_bss_cannot_use_reasons {
++	NL80211_BSS_CANNOT_USE_NSTR_NONPRIMARY	= 1 << 0,
++	NL80211_BSS_CANNOT_USE_UHB_PWR_MISMATCH	= 1 << 1,
++};
++
+ /**
+  * enum nl80211_bss - netlink attributes for a BSS
+  *
+@@ -4942,7 +5135,7 @@ enum nl80211_bss_scan_width {
+  *	elements from a Beacon frame (bin); not present if no Beacon frame has
+  *	yet been received
+  * @NL80211_BSS_CHAN_WIDTH: channel width of the control channel
+- *	(u32, enum nl80211_bss_scan_width)
++ *	(u32, enum nl80211_bss_scan_width) - No longer used!
+  * @NL80211_BSS_BEACON_TSF: TSF of the last received beacon (u64)
+  *	(not present if no beacon frame has been received yet)
+  * @NL80211_BSS_PRESP_DATA: the data in @NL80211_BSS_INFORMATION_ELEMENTS and
+@@ -4963,6 +5156,14 @@ enum nl80211_bss_scan_width {
+  * @NL80211_BSS_FREQUENCY_OFFSET: frequency offset in KHz
+  * @NL80211_BSS_MLO_LINK_ID: MLO link ID of the BSS (u8).
+  * @NL80211_BSS_MLD_ADDR: MLD address of this BSS if connected to it.
++ * @NL80211_BSS_USE_FOR: u32 bitmap attribute indicating what the BSS can be
++ *	used for, see &enum nl80211_bss_use_for.
++ * @NL80211_BSS_CANNOT_USE_REASONS: Indicates the reason that this BSS cannot
++ *	be used for all or some of the possible uses by the device reporting it,
++ *	even though its presence was detected.
++ *	This is a u64 attribute containing a bitmap of values from
++ *	&enum nl80211_cannot_use_reasons, note that the attribute may be missing
++ *	if no reasons are specified.
+  * @__NL80211_BSS_AFTER_LAST: internal
+  * @NL80211_BSS_MAX: highest BSS attribute
+  */
+@@ -4990,6 +5191,8 @@ enum nl80211_bss {
+ 	NL80211_BSS_FREQUENCY_OFFSET,
+ 	NL80211_BSS_MLO_LINK_ID,
+ 	NL80211_BSS_MLD_ADDR,
++	NL80211_BSS_USE_FOR,
++	NL80211_BSS_CANNOT_USE_REASONS,
+ 
+ 	/* keep last */
+ 	__NL80211_BSS_AFTER_LAST,
+@@ -5338,7 +5541,7 @@ enum nl80211_tx_rate_setting {
+  *	(%NL80211_TID_CONFIG_ATTR_TIDS, %NL80211_TID_CONFIG_ATTR_OVERRIDE).
+  * @NL80211_TID_CONFIG_ATTR_PEER_SUPP: same as the previous per-vif one, but
+  *	per peer instead.
+- * @NL80211_TID_CONFIG_ATTR_OVERRIDE: flag attribue, if set indicates
++ * @NL80211_TID_CONFIG_ATTR_OVERRIDE: flag attribute, if set indicates
+  *	that the new configuration overrides all previous peer
+  *	configurations, otherwise previous peer specific configurations
+  *	should be left untouched.
+@@ -5721,7 +5924,7 @@ enum nl80211_attr_coalesce_rule {
+ 
+ /**
+  * enum nl80211_coalesce_condition - coalesce rule conditions
+- * @NL80211_COALESCE_CONDITION_MATCH: coalaesce Rx packets when patterns
++ * @NL80211_COALESCE_CONDITION_MATCH: coalesce Rx packets when patterns
+  *	in a rule are matched.
+  * @NL80211_COALESCE_CONDITION_NO_MATCH: coalesce Rx packets when patterns
+  *	in a rule are not matched.
+@@ -5820,7 +6023,7 @@ enum nl80211_if_combination_attrs {
+  * enum nl80211_plink_state - state of a mesh peer link finite state machine
+  *
+  * @NL80211_PLINK_LISTEN: initial state, considered the implicit
+- *	state of non existent mesh peer links
++ *	state of non-existent mesh peer links
+  * @NL80211_PLINK_OPN_SNT: mesh plink open frame has been sent to
+  *	this mesh peer
+  * @NL80211_PLINK_OPN_RCVD: mesh plink open frame has been received
+@@ -5869,6 +6072,7 @@ enum plink_actions {
+ #define NL80211_KEK_LEN			16
+ #define NL80211_KCK_EXT_LEN		24
+ #define NL80211_KEK_EXT_LEN		32
++#define NL80211_KCK_EXT_LEN_32		32
+ #define NL80211_REPLAY_CTR_LEN		8
+ 
+ /**
+@@ -6112,7 +6316,7 @@ enum nl80211_feature_flags {
+  *	request to use RRM (see %NL80211_ATTR_USE_RRM) with
+  *	%NL80211_CMD_ASSOCIATE and %NL80211_CMD_CONNECT requests, which will set
+  *	the ASSOC_REQ_USE_RRM flag in the association request even if
+- *	NL80211_FEATURE_QUIET is not advertized.
++ *	NL80211_FEATURE_QUIET is not advertised.
+  * @NL80211_EXT_FEATURE_MU_MIMO_AIR_SNIFFER: This device supports MU-MIMO air
+  *	sniffer which means that it can be configured to hear packets from
+  *	certain groups which can be configured by the
+@@ -6124,13 +6328,15 @@ enum nl80211_feature_flags {
+  *	the BSS that the interface that requested the scan is connected to
+  *	(if available).
+  * @NL80211_EXT_FEATURE_BSS_PARENT_TSF: Per BSS, this driver reports the
+- *	time the last beacon/probe was received. The time is the TSF of the
+- *	BSS that the interface that requested the scan is connected to
+- *	(if available).
++ *	time the last beacon/probe was received. For a non-MLO connection, the
++ *	time is the TSF of the BSS that the interface that requested the scan is
++ *	connected to (if available). For an MLO connection, the time is the TSF
++ *	of the BSS corresponding with link ID specified in the scan request (if
++ *	specified).
+  * @NL80211_EXT_FEATURE_SET_SCAN_DWELL: This driver supports configuration of
+  *	channel dwell time.
+  * @NL80211_EXT_FEATURE_BEACON_RATE_LEGACY: Driver supports beacon rate
+- *	configuration (AP/mesh), supporting a legacy (non HT/VHT) rate.
++ *	configuration (AP/mesh), supporting a legacy (non-HT/VHT) rate.
+  * @NL80211_EXT_FEATURE_BEACON_RATE_HT: Driver supports beacon rate
+  *	configuration (AP/mesh) with HT rates.
+  * @NL80211_EXT_FEATURE_BEACON_RATE_VHT: Driver supports beacon rate
+@@ -6294,6 +6500,26 @@ enum nl80211_feature_flags {
+  *	might apply, e.g. no scans in progress, no offchannel operations
+  *	in progress, and no active connections.
+  *
++ * @NL80211_EXT_FEATURE_PUNCT: Driver supports preamble puncturing in AP mode.
++ *
++ * @NL80211_EXT_FEATURE_SECURE_NAN: Device supports NAN Pairing which enables
++ *	authentication, data encryption and message integrity.
++ *
++ * @NL80211_EXT_FEATURE_AUTH_AND_DEAUTH_RANDOM_TA: Device supports randomized TA
++ *	in authentication and deauthentication frames sent to unassociated peer
++ *	using @NL80211_CMD_FRAME.
++ *
++ * @NL80211_EXT_FEATURE_OWE_OFFLOAD: Driver/Device wants to do OWE DH IE
++ *	handling in station mode.
++ *
++ * @NL80211_EXT_FEATURE_OWE_OFFLOAD_AP: Driver/Device wants to do OWE DH IE
++ *	handling in AP mode.
++ *
++ * @NL80211_EXT_FEATURE_DFS_CONCURRENT: The device supports peer-to-peer or
++ *	ad hoc operation on DFS channels under the control of a concurrent
++ *	DFS master on the same channel as described in FCC-594280 D01
++ *	(Section B.3). This, for example, allows P2P GO and P2P clients to
++ *	operate on DFS channels as long as there's a concurrent BSS connection.
+  * @NUM_NL80211_EXT_FEATURES: number of extended features.
+  * @MAX_NL80211_EXT_FEATURES: highest extended feature index.
+  */
+@@ -6362,6 +6588,12 @@ enum nl80211_ext_feature_index {
+ 	NL80211_EXT_FEATURE_FILS_CRYPTO_OFFLOAD,
+ 	NL80211_EXT_FEATURE_RADAR_BACKGROUND,
+ 	NL80211_EXT_FEATURE_POWERED_ADDR_CHANGE,
++	NL80211_EXT_FEATURE_PUNCT,
++	NL80211_EXT_FEATURE_SECURE_NAN,
++	NL80211_EXT_FEATURE_AUTH_AND_DEAUTH_RANDOM_TA,
++	NL80211_EXT_FEATURE_OWE_OFFLOAD,
++	NL80211_EXT_FEATURE_OWE_OFFLOAD_AP,
++	NL80211_EXT_FEATURE_DFS_CONCURRENT,
+ 
+ 	/* add new features before the definition below */
+ 	NUM_NL80211_EXT_FEATURES,
+@@ -6446,7 +6678,7 @@ enum nl80211_timeout_reason {
+  *	request parameters IE in the probe request
+  * @NL80211_SCAN_FLAG_ACCEPT_BCAST_PROBE_RESP: accept broadcast probe responses
+  * @NL80211_SCAN_FLAG_OCE_PROBE_REQ_HIGH_TX_RATE: send probe request frames at
+- *	rate of at least 5.5M. In case non OCE AP is discovered in the channel,
++ *	rate of at least 5.5M. In case non-OCE AP is discovered in the channel,
+  *	only the first probe req in the channel will be sent in high rate.
+  * @NL80211_SCAN_FLAG_OCE_PROBE_REQ_DEFERRAL_SUPPRESSION: allow probe request
+  *	tx deferral (dot11FILSProbeDelay shall be set to 15ms)
+@@ -6476,8 +6708,16 @@ enum nl80211_timeout_reason {
+  * @NL80211_SCAN_FLAG_FREQ_KHZ: report scan results with
+  *	%NL80211_ATTR_SCAN_FREQ_KHZ. This also means
+  *	%NL80211_ATTR_SCAN_FREQUENCIES will not be included.
+- * @NL80211_SCAN_FLAG_COLOCATED_6GHZ: scan for colocated APs reported by
+- *	2.4/5 GHz APs
++ * @NL80211_SCAN_FLAG_COLOCATED_6GHZ: scan for collocated APs reported by
++ *	2.4/5 GHz APs. When the flag is set, the scan logic will use the
++ *	information from the RNR element found in beacons/probe responses
++ *	received on the 2.4/5 GHz channels to actively scan only the 6GHz
++ *	channels on which APs are expected to be found. Note that when not set,
++ *	the scan logic would scan all 6GHz channels, but since transmission of
++ *	probe requests on non-PSC channels is limited, it is highly likely that
++ *	these channels would passively be scanned. Also note that when the flag
++ *	is set, in addition to the colocated APs, PSC channels would also be
++ *	scanned if the user space has asked for it.
+  */
+ enum nl80211_scan_flags {
+ 	NL80211_SCAN_FLAG_LOW_PRIORITY				= 1<<0,
+@@ -6806,7 +7046,7 @@ enum nl80211_nan_func_term_reason {
+  *	The instance ID for the follow up Service Discovery Frame. This is u8.
+  * @NL80211_NAN_FUNC_FOLLOW_UP_REQ_ID: relevant if the function's type
+  *	is follow up. This is a u8.
+- *	The requestor instance ID for the follow up Service Discovery Frame.
++ *	The requester instance ID for the follow up Service Discovery Frame.
+  * @NL80211_NAN_FUNC_FOLLOW_UP_DEST: the MAC address of the recipient of the
+  *	follow up Service Discovery Frame. This is a binary attribute.
+  * @NL80211_NAN_FUNC_CLOSE_RANGE: is this function limited for devices in a
+@@ -7196,7 +7436,7 @@ enum nl80211_peer_measurement_attrs {
+  * @NL80211_PMSR_FTM_CAPA_ATTR_TRIGGER_BASED: flag attribute indicating if
+  *	trigger based ranging measurement is supported
+  * @NL80211_PMSR_FTM_CAPA_ATTR_NON_TRIGGER_BASED: flag attribute indicating
+- *	if non trigger based ranging measurement is supported
++ *	if non-trigger-based ranging measurement is supported
+  *
+  * @NUM_NL80211_PMSR_FTM_CAPA_ATTR: internal
+  * @NL80211_PMSR_FTM_CAPA_ATTR_MAX: highest attribute number
+@@ -7250,7 +7490,7 @@ enum nl80211_peer_measurement_ftm_capa {
+  *      if neither %NL80211_PMSR_FTM_REQ_ATTR_TRIGGER_BASED nor
+  *	%NL80211_PMSR_FTM_REQ_ATTR_NON_TRIGGER_BASED is set, EDCA based
+  *	ranging will be used.
+- * @NL80211_PMSR_FTM_REQ_ATTR_NON_TRIGGER_BASED: request non trigger based
++ * @NL80211_PMSR_FTM_REQ_ATTR_NON_TRIGGER_BASED: request non-trigger-based
+  *	ranging measurement (flag)
+  *	This attribute and %NL80211_PMSR_FTM_REQ_ATTR_TRIGGER_BASED are
+  *	mutually exclusive.
+@@ -7328,7 +7568,7 @@ enum nl80211_peer_measurement_ftm_failure_reasons {
+  * @NL80211_PMSR_FTM_RESP_ATTR_NUM_FTMR_ATTEMPTS: number of FTM Request frames
+  *	transmitted (u32, optional)
+  * @NL80211_PMSR_FTM_RESP_ATTR_NUM_FTMR_SUCCESSES: number of FTM Request frames
+- *	that were acknowleged (u32, optional)
++ *	that were acknowledged (u32, optional)
+  * @NL80211_PMSR_FTM_RESP_ATTR_BUSY_RETRY_TIME: retry time received from the
+  *	busy peer (u32, seconds)
+  * @NL80211_PMSR_FTM_RESP_ATTR_NUM_BURSTS_EXP: actual number of bursts exponent
+@@ -7489,7 +7729,7 @@ enum nl80211_iftype_akm_attributes {
+  * @NL80211_FILS_DISCOVERY_ATTR_INT_MIN: Minimum packet interval (u32, TU).
+  *	Allowed range: 0..10000 (TU = Time Unit)
+  * @NL80211_FILS_DISCOVERY_ATTR_INT_MAX: Maximum packet interval (u32, TU).
+- *	Allowed range: 0..10000 (TU = Time Unit)
++ *	Allowed range: 0..10000 (TU = Time Unit). If set to 0, the feature is disabled.
+  * @NL80211_FILS_DISCOVERY_ATTR_TMPL: Template data for FILS discovery action
+  *	frame including the headers.
+  *
+@@ -7522,7 +7762,8 @@ enum nl80211_fils_discovery_attributes {
+  *
+  * @NL80211_UNSOL_BCAST_PROBE_RESP_ATTR_INT: Maximum packet interval (u32, TU).
+  *	Allowed range: 0..20 (TU = Time Unit). IEEE P802.11ax/D6.0
+- *	26.17.2.3.2 (AP behavior for fast passive scanning).
++ *	26.17.2.3.2 (AP behavior for fast passive scanning). If set to 0, the feature is
++ *	disabled.
+  * @NL80211_UNSOL_BCAST_PROBE_RESP_ATTR_TMPL: Unsolicited broadcast probe response
+  *	frame template (binary).
+  *
+diff --git a/src/basic/linux/pkt_sched.h b/src/basic/linux/pkt_sched.h
+index 000eec106856..a3cd0c2dc995 100644
+--- a/src/basic/linux/pkt_sched.h
++++ b/src/basic/linux/pkt_sched.h
+@@ -477,115 +477,6 @@ enum {
+ 
+ #define TCA_HFSC_MAX (__TCA_HFSC_MAX - 1)
+ 
+-
+-/* CBQ section */
+-
+-#define TC_CBQ_MAXPRIO		8
+-#define TC_CBQ_MAXLEVEL		8
+-#define TC_CBQ_DEF_EWMA		5
+-
+-struct tc_cbq_lssopt {
+-	unsigned char	change;
+-	unsigned char	flags;
+-#define TCF_CBQ_LSS_BOUNDED	1
+-#define TCF_CBQ_LSS_ISOLATED	2
+-	unsigned char  	ewma_log;
+-	unsigned char  	level;
+-#define TCF_CBQ_LSS_FLAGS	1
+-#define TCF_CBQ_LSS_EWMA	2
+-#define TCF_CBQ_LSS_MAXIDLE	4
+-#define TCF_CBQ_LSS_MINIDLE	8
+-#define TCF_CBQ_LSS_OFFTIME	0x10
+-#define TCF_CBQ_LSS_AVPKT	0x20
+-	__u32		maxidle;
+-	__u32		minidle;
+-	__u32		offtime;
+-	__u32		avpkt;
+-};
+-
+-struct tc_cbq_wrropt {
+-	unsigned char	flags;
+-	unsigned char	priority;
+-	unsigned char	cpriority;
+-	unsigned char	__reserved;
+-	__u32		allot;
+-	__u32		weight;
+-};
+-
+-struct tc_cbq_ovl {
+-	unsigned char	strategy;
+-#define	TC_CBQ_OVL_CLASSIC	0
+-#define	TC_CBQ_OVL_DELAY	1
+-#define	TC_CBQ_OVL_LOWPRIO	2
+-#define	TC_CBQ_OVL_DROP		3
+-#define	TC_CBQ_OVL_RCLASSIC	4
+-	unsigned char	priority2;
+-	__u16		pad;
+-	__u32		penalty;
+-};
+-
+-struct tc_cbq_police {
+-	unsigned char	police;
+-	unsigned char	__res1;
+-	unsigned short	__res2;
+-};
+-
+-struct tc_cbq_fopt {
+-	__u32		split;
+-	__u32		defmap;
+-	__u32		defchange;
+-};
+-
+-struct tc_cbq_xstats {
+-	__u32		borrows;
+-	__u32		overactions;
+-	__s32		avgidle;
+-	__s32		undertime;
+-};
+-
+-enum {
+-	TCA_CBQ_UNSPEC,
+-	TCA_CBQ_LSSOPT,
+-	TCA_CBQ_WRROPT,
+-	TCA_CBQ_FOPT,
+-	TCA_CBQ_OVL_STRATEGY,
+-	TCA_CBQ_RATE,
+-	TCA_CBQ_RTAB,
+-	TCA_CBQ_POLICE,
+-	__TCA_CBQ_MAX,
+-};
+-
+-#define TCA_CBQ_MAX	(__TCA_CBQ_MAX - 1)
+-
+-/* dsmark section */
+-
+-enum {
+-	TCA_DSMARK_UNSPEC,
+-	TCA_DSMARK_INDICES,
+-	TCA_DSMARK_DEFAULT_INDEX,
+-	TCA_DSMARK_SET_TC_INDEX,
+-	TCA_DSMARK_MASK,
+-	TCA_DSMARK_VALUE,
+-	__TCA_DSMARK_MAX,
+-};
+-
+-#define TCA_DSMARK_MAX (__TCA_DSMARK_MAX - 1)
+-
+-/* ATM  section */
+-
+-enum {
+-	TCA_ATM_UNSPEC,
+-	TCA_ATM_FD,		/* file/socket descriptor */
+-	TCA_ATM_PTR,		/* pointer to descriptor - later */
+-	TCA_ATM_HDR,		/* LL header */
+-	TCA_ATM_EXCESS,		/* excess traffic class (0 for CLP)  */
+-	TCA_ATM_ADDR,		/* PVC address (for output only) */
+-	TCA_ATM_STATE,		/* VC state (ATM_VS_*; for output only) */
+-	__TCA_ATM_MAX,
+-};
+-
+-#define TCA_ATM_MAX	(__TCA_ATM_MAX - 1)
+-
+ /* Network emulator */
+ 
+ enum {
+@@ -603,6 +494,7 @@ enum {
+ 	TCA_NETEM_JITTER64,
+ 	TCA_NETEM_SLOT,
+ 	TCA_NETEM_SLOT_DIST,
++	TCA_NETEM_PRNG_SEED,
+ 	__TCA_NETEM_MAX,
+ };
+ 
+@@ -719,6 +611,11 @@ enum {
+ 
+ #define __TC_MQPRIO_SHAPER_MAX (__TC_MQPRIO_SHAPER_MAX - 1)
+ 
++enum {
++	TC_FP_EXPRESS = 1,
++	TC_FP_PREEMPTIBLE = 2,
++};
++
+ struct tc_mqprio_qopt {
+ 	__u8	num_tc;
+ 	__u8	prio_tc_map[TC_QOPT_BITMASK + 1];
+@@ -732,12 +629,23 @@ struct tc_mqprio_qopt {
+ #define TC_MQPRIO_F_MIN_RATE		0x4
+ #define TC_MQPRIO_F_MAX_RATE		0x8
+ 
++enum {
++	TCA_MQPRIO_TC_ENTRY_UNSPEC,
++	TCA_MQPRIO_TC_ENTRY_INDEX,		/* u32 */
++	TCA_MQPRIO_TC_ENTRY_FP,			/* u32 */
++
++	/* add new constants above here */
++	__TCA_MQPRIO_TC_ENTRY_CNT,
++	TCA_MQPRIO_TC_ENTRY_MAX = (__TCA_MQPRIO_TC_ENTRY_CNT - 1)
++};
++
+ enum {
+ 	TCA_MQPRIO_UNSPEC,
+ 	TCA_MQPRIO_MODE,
+ 	TCA_MQPRIO_SHAPER,
+ 	TCA_MQPRIO_MIN_RATE64,
+ 	TCA_MQPRIO_MAX_RATE64,
++	TCA_MQPRIO_TC_ENTRY,
+ 	__TCA_MQPRIO_MAX,
+ };
+ 
+@@ -924,15 +832,22 @@ enum {
+ 
+ 	TCA_FQ_HORIZON_DROP,	/* drop packets beyond horizon, or cap their EDT */
+ 
++	TCA_FQ_PRIOMAP,		/* prio2band */
++
++	TCA_FQ_WEIGHTS,		/* Weights for each band */
++
+ 	__TCA_FQ_MAX
+ };
+ 
+ #define TCA_FQ_MAX	(__TCA_FQ_MAX - 1)
+ 
++#define FQ_BANDS 3
++#define FQ_MIN_WEIGHT 16384
++
+ struct tc_fq_qd_stats {
+ 	__u64	gc_flows;
+-	__u64	highprio_packets;
+-	__u64	tcp_retrans;
++	__u64	highprio_packets;	/* obsolete */
++	__u64	tcp_retrans;		/* obsolete */
+ 	__u64	throttled;
+ 	__u64	flows_plimit;
+ 	__u64	pkts_too_long;
+@@ -945,6 +860,10 @@ struct tc_fq_qd_stats {
+ 	__u64	ce_mark;		/* packets above ce_threshold */
+ 	__u64	horizon_drops;
+ 	__u64	horizon_caps;
++	__u64	fastpath_packets;
++	__u64	band_drops[FQ_BANDS];
++	__u32	band_pkt_count[FQ_BANDS];
++	__u32	pad;
+ };
+ 
+ /* Heavy-Hitter Filter */
+@@ -1236,12 +1155,23 @@ enum {
+ 	TCA_TAPRIO_TC_ENTRY_UNSPEC,
+ 	TCA_TAPRIO_TC_ENTRY_INDEX,		/* u32 */
+ 	TCA_TAPRIO_TC_ENTRY_MAX_SDU,		/* u32 */
++	TCA_TAPRIO_TC_ENTRY_FP,			/* u32 */
+ 
+ 	/* add new constants above here */
+ 	__TCA_TAPRIO_TC_ENTRY_CNT,
+ 	TCA_TAPRIO_TC_ENTRY_MAX = (__TCA_TAPRIO_TC_ENTRY_CNT - 1)
+ };
+ 
++enum {
++	TCA_TAPRIO_OFFLOAD_STATS_PAD = 1,	/* u64 */
++	TCA_TAPRIO_OFFLOAD_STATS_WINDOW_DROPS,	/* u64 */
++	TCA_TAPRIO_OFFLOAD_STATS_TX_OVERRUNS,	/* u64 */
++
++	/* add new constants above here */
++	__TCA_TAPRIO_OFFLOAD_STATS_CNT,
++	TCA_TAPRIO_OFFLOAD_STATS_MAX = (__TCA_TAPRIO_OFFLOAD_STATS_CNT - 1)
++};
++
+ enum {
+ 	TCA_TAPRIO_ATTR_UNSPEC,
+ 	TCA_TAPRIO_ATTR_PRIOMAP, /* struct tc_mqprio_qopt */
+diff --git a/src/basic/linux/rtnetlink.h b/src/basic/linux/rtnetlink.h
+index eb2747d58a81..3b687d20c9ed 100644
+--- a/src/basic/linux/rtnetlink.h
++++ b/src/basic/linux/rtnetlink.h
+@@ -502,13 +502,17 @@ enum {
+ 
+ #define RTAX_MAX (__RTAX_MAX - 1)
+ 
+-#define RTAX_FEATURE_ECN	(1 << 0)
+-#define RTAX_FEATURE_SACK	(1 << 1)
+-#define RTAX_FEATURE_TIMESTAMP	(1 << 2)
+-#define RTAX_FEATURE_ALLFRAG	(1 << 3)
++#define RTAX_FEATURE_ECN		(1 << 0)
++#define RTAX_FEATURE_SACK		(1 << 1) /* unused */
++#define RTAX_FEATURE_TIMESTAMP		(1 << 2) /* unused */
++#define RTAX_FEATURE_ALLFRAG		(1 << 3) /* unused */
++#define RTAX_FEATURE_TCP_USEC_TS	(1 << 4)
+ 
+-#define RTAX_FEATURE_MASK	(RTAX_FEATURE_ECN | RTAX_FEATURE_SACK | \
+-				 RTAX_FEATURE_TIMESTAMP | RTAX_FEATURE_ALLFRAG)
++#define RTAX_FEATURE_MASK	(RTAX_FEATURE_ECN |		\
++				 RTAX_FEATURE_SACK |		\
++				 RTAX_FEATURE_TIMESTAMP |	\
++				 RTAX_FEATURE_ALLFRAG |		\
++				 RTAX_FEATURE_TCP_USEC_TS)
+ 
+ struct rta_session {
+ 	__u8	proto;
+@@ -635,6 +639,7 @@ enum {
+ 	TCA_INGRESS_BLOCK,
+ 	TCA_EGRESS_BLOCK,
+ 	TCA_DUMP_FLAGS,
++	TCA_EXT_WARN_MSG,
+ 	__TCA_MAX
+ };
+ 
+@@ -788,6 +793,7 @@ enum {
+ 	TCA_ROOT_FLAGS,
+ 	TCA_ROOT_COUNT,
+ 	TCA_ROOT_TIME_DELTA, /* in msecs */
++	TCA_ROOT_EXT_WARN_MSG,
+ 	__TCA_ROOT_MAX,
+ #define	TCA_ROOT_MAX (__TCA_ROOT_MAX - 1)
+ };
+diff --git a/src/basic/linux/stddef.h b/src/basic/linux/stddef.h
+index 1a739631b91c..b888a83a106f 100644
+--- a/src/basic/linux/stddef.h
++++ b/src/basic/linux/stddef.h
+@@ -26,8 +26,13 @@
+ 	union { \
+ 		struct { MEMBERS } ATTRS; \
+ 		struct TAG { MEMBERS } ATTRS NAME; \
+-	}
++	} ATTRS
+ 
++#ifdef __cplusplus
++/* sizeof(struct{}) is 1 in C++, not 0, can't use C version of the macro. */
++#define __DECLARE_FLEX_ARRAY(T, member)	\
++	T member[0]
++#else
+ /**
+  * __DECLARE_FLEX_ARRAY() - Declare a flexible array usable in a union
+  *
+@@ -44,3 +49,9 @@
+ 		TYPE NAME[]; \
+ 	}
+ #endif
++
++#ifndef __counted_by
++#define __counted_by(m)
++#endif
++
++#endif /* _UAPI_LINUX_STDDEF_H */

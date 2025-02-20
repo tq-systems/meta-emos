@@ -14,7 +14,7 @@ do_install () {
 	install -d ${D}${sysconfdir}
 	install -m 0644 ${WORKDIR}/teridiand_hw.conf ${D}${sysconfdir}/teridiand_hw.conf
 
-	install -d ${D}/lib/udev/rules.d/
-	install -m 0755 ${WORKDIR}/teridian_symlink ${D}/lib/udev/
-	install -m 0644 ${WORKDIR}/70-teridian.rules ${D}/lib/udev/rules.d/
+	install -d ${D}${base_libdir}/udev/rules.d/
+	install -m 0755 ${WORKDIR}/teridian_symlink ${D}${base_libdir}/udev/
+	install -m 0644 ${WORKDIR}/70-teridian.rules ${D}${base_libdir}/udev/rules.d/
 }

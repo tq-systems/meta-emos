@@ -9,6 +9,8 @@ non-existing paths takes a lot of time during daemon-reload.
 This effectively reverts commit 5396624506e155c4bc10c0ee65b939600860ab67
 ("dropin: when looking for dropins for a unit, also look within "-" prefix unit dirs").
 
+Upstream-Status: Inappropriate [disable feature]
+
 Signed-off-by: Matthias Schiffer <matthias.schiffer@tq-group.com>
 ---
  src/shared/dropin.c | 3 +++

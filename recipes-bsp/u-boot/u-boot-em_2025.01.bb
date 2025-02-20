@@ -33,8 +33,8 @@ SRC_URI:remove:k3r5 = " \
     file://fw_env.config \
 "
 
-SRCBRANCH = "em-v2024.01"
-SRCREV = "4b20ef5dae16471e2e452285cfe754e9b2e91de5"
+SRCBRANCH = "em-v2025.01"
+SRCREV = "c0b2e81d522070bd9d07883208c93d798ec3c77f"
 
 do_compile:prepend:mx8m() {
 	if [ -n "${UBOOT_CONFIG}" ]; then

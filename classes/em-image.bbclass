@@ -65,9 +65,12 @@ BAD_RECOMMENDATIONS += " \
 		udev-hwdb \
 		"
 
+PACKAGE_EXCLUDE = "python*"
+
 IMAGE_LINGUAS = ""
 IMAGE_FSTYPES = "tar"
 
+IMAGE_NAME_SUFFIX = ""
 
 dropbear_rsakey_dir_hook () {
 	if [ -d ${IMAGE_ROOTFS}/etc/dropbear ]; then

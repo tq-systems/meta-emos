@@ -10,6 +10,7 @@ LIC_FILES_CHKSUM = "file://${WORKDIR}/README;md5=2b18c23e5a347668fe60a6b3a3105c7
 DESCRIPTION = "Bootloader images for all hardware supported by the em-aarch64 machine"
 
 PROVIDES = "virtual/bootloader"
+RPROVIDES:${PN}-env= "u-boot-default-env"
 
 inherit deploy extra-license-depends
 EXTRA_LICENSE_MCDEPENDS = ""
