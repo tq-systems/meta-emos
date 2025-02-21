@@ -18,6 +18,7 @@
 ### Fixed
 - u-boot: add CVE_PRODUCT to u-boot-em recipe to allow CVE tracking
 - gitlab-ci: rename variable templates
+- add python to sdk to fix sdk build error
 
 ## [ 6.0.0 ] - 2024-12-10
 ### Changed
