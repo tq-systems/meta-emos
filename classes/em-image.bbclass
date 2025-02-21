@@ -65,7 +65,7 @@ BAD_RECOMMENDATIONS += " \
 		udev-hwdb \
 		"
 
-PACKAGE_EXCLUDE = "python*"
+PACKAGE_EXCLUDE:task-rootfs += "python*"
 
 IMAGE_LINGUAS = ""
 IMAGE_FSTYPES = "tar"
