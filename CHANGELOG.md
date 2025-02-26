@@ -1,4 +1,4 @@
-## [ next ]
+## [ 7.0.0 ] - 2025-02-26
 ### Added
 - openvas trigger with git reference handling
 - gitlab-ci: add job for pqt tests
