@@ -1,3 +1,7 @@
+## [ next ]
+### Fixed
+- em-image.class: fix file name suffix
+
 ## [ 7.0.2 ] - 2025-06-27
 ### Fixed
 - udevd: fix race at ttyAPP1/2 link target
