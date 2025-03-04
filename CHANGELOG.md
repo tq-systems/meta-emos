@@ -19,6 +19,7 @@
 - u-boot: add CVE_PRODUCT to u-boot-em recipe to allow CVE tracking
 - gitlab-ci: rename variable templates
 - add python to sdk to fix sdk build error
+- em-image.class: fix file name suffix
 
 ## [ 6.0.0 ] - 2024-12-10
 ### Changed
