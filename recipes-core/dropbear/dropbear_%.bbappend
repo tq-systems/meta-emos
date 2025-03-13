@@ -8,7 +8,7 @@ SRC_URI:append:emos = " \
 do_install:append:emos() {
 	sed -r -i \
 		-e '/^ConditionPathExists=!\/etc/d' \
-		-e 's@^(ConditionPathExists=!)(/var/lib/dropbear/dropbear_rsa_host_key)$@\1/cfglog\2@' \
+		-e 's@^(ConditionPathExists=!)(/var/lib/dropbear/dropbear_ed25519_host_key)$@\1/cfglog\2@' \
 		${D}${systemd_unitdir}/system/dropbearkey.service
 
 	install -d ${D}${systemd_unitdir}/system/dropbearkey.service.d/
