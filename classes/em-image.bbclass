@@ -73,10 +73,10 @@ IMAGE_FSTYPES = "tar"
 IMAGE_NAME_SUFFIX = ""
 IMAGE_VERSION_SUFFIX = "-${DISTRO_VERSION}.rootfs"
 
-dropbear_rsakey_dir_hook () {
+dropbear_sshkey_dir_hook () {
 	if [ -d ${IMAGE_ROOTFS}/etc/dropbear ]; then
-		sed -i '/^DROPBEAR_RSAKEY_DIR=/d' ${IMAGE_ROOTFS}/etc/default/dropbear
-		echo "DROPBEAR_RSAKEY_DIR=/cfglog/var/lib/dropbear" >> ${IMAGE_ROOTFS}/etc/default/dropbear
+		sed -i '/^DROPBEAR_SSHKEY_DIR=/d' ${IMAGE_ROOTFS}/etc/default/dropbear
+		echo "DROPBEAR_SSHKEY_DIR=/cfglog/var/lib/dropbear" >> ${IMAGE_ROOTFS}/etc/default/dropbear
 	fi
 }
 
@@ -84,7 +84,7 @@ os_machine_hook () {
 	echo "${MACHINE}" > ${IMAGE_ROOTFS}/etc/os-machine
 }
 
-ROOTFS_POSTPROCESS_COMMAND += "dropbear_rsakey_dir_hook; os_machine_hook;"
+ROOTFS_POSTPROCESS_COMMAND += "dropbear_sshkey_dir_hook; os_machine_hook;"
 
 IMAGE_FEATURES += "read-only-rootfs allow-root-login"
 SYSTEMD_DEFAULT_TARGET = "emos.target"

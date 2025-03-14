@@ -14,6 +14,7 @@
 - u-boot-em: update to v2025.01
 - treewide: update to Yocto Scarthgap
 - jq: remove backported version v1.5
+- dropbear: switch key algorithm to ed25519
 
 ### Fixed
 - u-boot: add CVE_PRODUCT to u-boot-em recipe to allow CVE tracking
