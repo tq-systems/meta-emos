@@ -53,6 +53,7 @@ IMAGE_INSTALL += " \
 		libevdev \
 		libdeviceinfo \
 		mosquitto \
+		nftables \
 		nginx \
 		ca-certificates \
 		glibc-utils \
