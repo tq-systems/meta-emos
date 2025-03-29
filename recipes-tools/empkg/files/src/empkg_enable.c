@@ -31,10 +31,8 @@ int empkg_enable(const char *id) {
 
 	ret = empkg_fops_mkdir(gENABLEDDIR);
 
-	if (!ret) {
-		empkg_fops_rm(link);
+	if (!ret)
 		ret = empkg_fops_symlink(installedtarget, link);
-	}
 	free(installedtarget);
 
 	if (!ret) {
