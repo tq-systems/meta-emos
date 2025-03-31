@@ -6,6 +6,7 @@
  */
 
 #include "em-app-generator.h"
+#include "empkg_appdb.h"
 #include "empkg_json.h"
 #include "empkg_log.h"
 
@@ -210,6 +211,8 @@ int em_app_generator(int argc, char *argv[]) {
 		perror("mkdir");
 		return 1;
 	}
+
+	appdb_scan_enabled();
 
 	dir = opendir("/apps/enabled");
 	if (!dir) {
