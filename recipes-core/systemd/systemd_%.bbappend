@@ -9,6 +9,7 @@ SRC_URI:append:emos = "\
 	file://0007-udev-builtin-net_id-add-NAMING_DEVICETREE_PORT_ALIAS.patch \
 	\
 	file://read-only-rootfs.conf \
+	file://set-timeout-stop.conf \
 "
 
 pkg_postinst:${PN}:libc-glibc:append:emos () {
@@ -35,6 +36,8 @@ do_install:append:emos() {
 		${D}${systemd_system_unitdir}/systemd-logind.service.d
 
 	install -m644 ${WORKDIR}/read-only-rootfs.conf \
+		${D}${systemd_system_unitdir}/systemd-timesyncd.service.d
+	install -m644 ${WORKDIR}/set-timeout-stop.conf \
 		${D}${systemd_system_unitdir}/systemd-timesyncd.service.d
 
 	sed -i 's|^d /var/log .*|L /var/log - - - - /cfglog/var/log|' \
