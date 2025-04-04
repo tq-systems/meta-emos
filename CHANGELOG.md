@@ -16,6 +16,7 @@
 - jq: remove backported version v1.5
 - dropbear: switch key algorithm to ed25519
 - bundle: apps: update app versions
+- systemd-timesyncd: reduce stop timeout
 
 ### Fixed
 - u-boot: add CVE_PRODUCT to u-boot-em recipe to allow CVE tracking
