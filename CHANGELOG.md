@@ -1,3 +1,7 @@
+## [ next ]
+### Changed
+- libmodbus: update to v3.1.11
+
 ## [ 5.1.4 ] - 2025-02-04
 ### Changed
 - nginx: create ssl certs as group cfglog
