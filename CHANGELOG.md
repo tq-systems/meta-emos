@@ -1,3 +1,7 @@
+## [ next ]
+### Changed
+- libmodbus: update to v3.1.11
+
 ## [ 7.0.0 ] - 2025-02-26
 ### Added
 - openvas trigger with git reference handling
