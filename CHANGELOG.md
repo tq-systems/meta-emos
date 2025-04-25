@@ -1,4 +1,4 @@
-## [ next ]
+## [ 5.1.5 ] - 2025-04-25
 ### Changed
 - libmodbus: update to v3.1.11
 
