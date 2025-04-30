@@ -1,6 +1,7 @@
 ## [ next ]
 ### Changed
 - dropbear: switch key algorithm to ed25519
+- bundle: apps: update app versions
 - systemd-timesyncd: reduce stop timeout
 - libmodbus: update to v3.1.11
 - linux-em: update to v6.12.26
