@@ -3,6 +3,7 @@
 - dropbear: switch key algorithm to ed25519
 - systemd-timesyncd: reduce stop timeout
 - libmodbus: update to v3.1.11
+- linux-em: update to v6.12.26
 
 ### Fixed
 - em-image.class: fix file name suffix
