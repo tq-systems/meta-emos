@@ -31,10 +31,8 @@ int empkg_enable(const char *id) {
 
 	ret = empkg_fops_mkdir(gENABLEDDIR);
 
-	if (!ret) {
-		empkg_fops_rm(link);
+	if (!ret)
 		ret = empkg_fops_symlink(installedtarget, link);
-	}
 	free(installedtarget);
 
 	if (!ret) {
@@ -65,6 +63,10 @@ int app_enable(const char *id) {
 	}
 
 	ret = empkg_enable(id);
+	if (ret)
+		return ret;
+
+	ret = empkg_update_firewall_single(id);
 	if (ret)
 		return ret;
 
@@ -124,6 +126,10 @@ int app_disable(const char *id) {
 	}
 
 	ret = empkg_disable(id);
+	if (ret)
+		return ret;
+
+	ret = empkg_update_firewall_single(id);
 	if (ret)
 		return ret;
 

@@ -21,9 +21,34 @@ char *empkg_fops_abspath(const char *root, const char *relpath) {
 }
 
 int empkg_fops_symlink(const char *target, const char *path) {
-	int ret = symlink(target, path);
+	int ret;
+	char linktarget[APPDB_MAX_PATH];
+	char *path_tmp;
 
-	if (ret)
+	/* readlink() does not append a null byte to buf, so prefill with nulls */
+	memset(linktarget, 0, APPDB_MAX_PATH);
+
+	/* Where does symlink point to? */
+	ret = readlink(path, linktarget, APPDB_MAX_PATH);
+	if ((ret < 0) && (errno != ENOENT)) /* exit when something other than NOTFOUND happened */
+		goto exit_symlink;
+	else
+		ret = 0;
+
+	/* When symlink target and desired target differ, overwrite symlink atomically */
+	if (strcmp(linktarget, target)) {
+		if (asprintf(&path_tmp, "%s.tmp", path) == -1) {
+			ret = ERRORCODE;
+		} else {
+			ret = symlink(target, path_tmp);
+			rename(path_tmp, path); /* replaces path instantly */
+			sync();
+		}
+		free(path_tmp);
+	}
+
+exit_symlink:
+	if ((ret < 0) && (errno != ENOENT))
 		log_message("empkg: Error creating symlink to %s at %s (%s)\n", target, path, strerror(errno));
 
 	return ret;

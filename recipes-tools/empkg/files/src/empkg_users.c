@@ -40,7 +40,6 @@ static int create_user_entry(const char *id, const int userid,
 	json_dumpf(root, fuser, JSON_COMPACT);
 	fclose(fuser);
 
-	empkg_fops_rm(userdbrunid);
 	empkg_fops_symlink(userfile, userdbrunid);
 	free(userdbrunid);
 
@@ -69,7 +68,6 @@ static int create_group_entry(const char *groupname, const int groupid, const ch
 	json_dumpf(root, fgroup, JSON_COMPACT);
 	fclose(fgroup);
 
-	empkg_fops_rm(groupdbrunid);
 	empkg_fops_symlink(groupfile, groupdbrunid);
 	free(groupdbrunid);
 

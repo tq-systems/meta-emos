@@ -1,0 +1,14 @@
+[Unit]
+Description=Update the firewall configuration
+Wants=network-pre.target
+Before=network-pre.target
+After=emcfg.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/sbin/em-firewall
+ExecStop=/sbin/nft delete table inet firewall
+
+[Install]
+WantedBy=multi-user.target

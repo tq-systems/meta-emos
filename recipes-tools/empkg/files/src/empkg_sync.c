@@ -158,6 +158,8 @@ int app_sync(void) {
 	if (config.eol)
 		appdb_all(ENABLED, app_sync_cb_eol);
 
+	empkg_update_firewall_all_enabled();
+
 	empkg_process_reload_request();
 
 	empkg_update_www();

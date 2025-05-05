@@ -252,6 +252,49 @@ void empkg_update_licenses(void) {
 	sync();
 }
 
+static int empkg_update_firewall(const char *id) {
+	const char *fwdir = "/run/em/etc/nftables.d";
+	const char *app_fw_conf = appdb_get_path(P_FWCONF, id);
+	char *run_fw_conf;
+	int err = 0;
+
+	if (asprintf(&run_fw_conf, "%s/20-%s.conf", fwdir, id) == -1)
+		return ERRORCODE;
+
+	/* Does the app have an em-fw.conf and is enabled? */
+	if (appdb_is(FWCONF, id) && appdb_is(ENABLED, id)) {
+		/* Yep, so link it to rundir */
+		empkg_fops_mkdir(fwdir);
+		err = empkg_fops_symlink(app_fw_conf, run_fw_conf);
+	} else {
+		/* No on either of the above, remove link from /run.. */
+		empkg_fops_rm(run_fw_conf);
+	}
+	free(run_fw_conf);
+
+	return err;
+}
+
+int empkg_update_firewall_single(const char *id) {
+	int ret;
+
+	ret = empkg_update_firewall(id);
+
+	if (config.systemd)
+		empkg_request_daemon_reload("restart", "em-firewall");
+
+	return ret;
+}
+
+int empkg_update_firewall_all_enabled(void) {
+	appdb_all(ENABLED, empkg_update_firewall);
+
+	if (config.systemd)
+		empkg_request_daemon_reload("restart", "em-firewall");
+
+	return 0;
+}
+
 /* why does empkg(bash) compare against every line in /etc/opkg/arch.conf ? */
 int empkg_is_arch_supported(const char *arch) {
 	struct utsname uts;

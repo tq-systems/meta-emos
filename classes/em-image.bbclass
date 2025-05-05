@@ -31,6 +31,7 @@ IMAGE_INSTALL += " \
 		emcfg \
 		empkg \
 		em-flash-read \
+		em-firewall \
 		em-verify \
 		iproute2 \
 		tzdata tzdata-americas tzdata-asia \
@@ -52,6 +53,7 @@ IMAGE_INSTALL += " \
 		libevdev \
 		libdeviceinfo \
 		mosquitto \
+		nftables \
 		nginx \
 		ca-certificates \
 		glibc-utils \
