@@ -1,6 +1,6 @@
 apps:
   button-handler:
-    version: '3.0.1'
+    version: '3.0.3'
 
   device-settings:
     version: '4.4.0'

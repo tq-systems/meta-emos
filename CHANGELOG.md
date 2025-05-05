@@ -1,12 +1,19 @@
 ## [ next ]
+### Changed
+- dropbear: switch key algorithm to ed25519
+- bundle: apps: update app versions
+- systemd-timesyncd: reduce stop timeout
+- libmodbus: update to v3.1.11
+- linux-em: update to v6.12.26
+
+### Fixed
+- em-image.class: fix file name suffix
+
+## [ 7.0.0 ] - 2025-02-26
 ### Added
-- openvas trigger with git reference handling
 - gitlab-ci: add job for pqt tests
 
 ### Changed
-- bundles: update apps
-- bundles: switch to teridiand-fw again (revert renaming)
-- nginx: create ssl certs as group cfglog
 - linux-em: update to v6.12.11
 - em-appctl: remove unnecessary debug output
 - nginx: expect frontend in generic root dir
@@ -14,16 +21,22 @@
 - u-boot-em: update to v2025.01
 - treewide: update to Yocto Scarthgap
 - jq: remove backported version v1.5
-- dropbear: switch key algorithm to ed25519
-- bundle: apps: update app versions
-- systemd-timesyncd: reduce stop timeout
-- libmodbus: update to v3.1.11
+
+### Fixed
+- gitlab-ci: rename variable templates
+- add python to sdk to fix sdk build error
+
+## [ 6.0.1 ] - 2025-02-04
+### Added
+- openvas trigger with git reference handling
+
+### Changed
+- bundles: update apps
+- bundles: switch to teridiand-fw again (revert renaming)
+- nginx: create ssl certs as group cfglog
 
 ### Fixed
 - u-boot: add CVE_PRODUCT to u-boot-em recipe to allow CVE tracking
-- gitlab-ci: rename variable templates
-- add python to sdk to fix sdk build error
-- em-image.class: fix file name suffix
 
 ## [ 6.0.0 ] - 2024-12-10
 ### Changed
