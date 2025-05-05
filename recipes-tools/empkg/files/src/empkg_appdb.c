@@ -23,6 +23,7 @@ const char pattern[NPATHS][APPDB_MAX_PATH] = {
 	[P_DBUSAPP]   = gINSTALLEDDIR"/%s/dbus.conf",
 	[P_DBUSCONF]  = gAPPDIR"/dbus/%s.conf",
 	[P_ENABLED]   = gENABLEDDIR"/%s",
+	[P_FWCONF]    = gINSTALLEDDIR"/%s/em-firewall.conf",
 	[P_INDEX]     = gINSTALLEDDIR"/%s/www/index.js",
 	[P_INSTALLED] = gINSTALLEDDIR"/%s",
 	[P_LANG]      = gINSTALLEDDIR"/%s/www/i18n/lang.js",
@@ -71,6 +72,7 @@ static void appdb_init(struct appdb_t *entry) {
 	entry->disabled = APPDB_INIT_VAL;
 	entry->enabled = APPDB_INIT_VAL;
 	entry->essential = APPDB_INIT_VAL;
+	entry->fwconf = APPDB_INIT_VAL;
 	entry->systemd = APPDB_INIT_VAL;
 	entry->installed = APPDB_INIT_VAL;
 	entry->deferred = 0;
@@ -218,6 +220,32 @@ static void appdb_check_essential(const char *id) {
 
 	appdb_set(ESSENTIAL, id, essential);
 
+	return;
+}
+
+/* appdb_check_fwconf -> does the app have a firewall config
+ * expects either em-firewall.conf or em-fw.conf (legacy)
+ */
+static void appdb_check_fwconf(const char *id) {
+	char *path = appdb_get_path(P_FWCONF, id);
+	struct stat sb;
+	int err;
+	int fwconf = 0;
+
+	err = lstat(path, &sb);
+	if (!err && S_ISREG(sb.st_mode))
+		fwconf = 1;
+
+	/* em-firewall.conf not found or not a file? try em-fw.conf */
+	if (!fwconf) {
+		const char *pattern = gINSTALLEDDIR"/%s/em-fw.conf";
+		snprintf(path, strlen(pattern) + strlen(id) + 1, pattern, id);
+		err = lstat(path, &sb);
+		if (!err && S_ISREG(sb.st_mode))
+			fwconf = 1;
+	}
+
+	appdb_set(FWCONF, id, fwconf);
 	return;
 }
 
@@ -411,6 +439,9 @@ void appdb_check(const dbp prop, const char *id) {
 	case ESSENTIAL:
 		appdb_check_essential(id);
 		break;
+	case FWCONF:
+		appdb_check_fwconf(id);
+		break;
 	case INSTALLED:
 		appdb_check_installed(id);
 		break;
@@ -451,6 +482,9 @@ int appdb_get(const dbp prop, const char *id) {
 		break;
 	case ESSENTIAL:
 		ret = a->essential;
+		break;
+	case FWCONF:
+		ret = a->fwconf;
 		break;
 	case INSTALLED:
 		ret = a->installed;
@@ -534,6 +568,9 @@ int appdb_set(const dbp prop, const char *id, const int value) {
 		break;
 	case ESSENTIAL:
 		a->essential = value;
+		break;
+	case FWCONF:
+		a->fwconf = value;
 		break;
 	case INSTALLED:
 		a->installed = value;

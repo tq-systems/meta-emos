@@ -68,6 +68,10 @@ int app_enable(const char *id) {
 	if (ret)
 		return ret;
 
+	ret = empkg_update_firewall_single(id);
+	if (ret)
+		return ret;
+
 	ret = empkg_process_reload_request();
 	if (ret)
 		return ret;
@@ -124,6 +128,10 @@ int app_disable(const char *id) {
 	}
 
 	ret = empkg_disable(id);
+	if (ret)
+		return ret;
+
+	ret = empkg_update_firewall_single(id);
 	if (ret)
 		return ret;
 

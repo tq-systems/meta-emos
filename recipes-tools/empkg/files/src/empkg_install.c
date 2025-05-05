@@ -96,6 +96,8 @@ static int empkg_install(const char *path) {
 		empkg_dbus(new.id);
 	}
 
+	empkg_update_firewall_single(new.id);
+
 	return 0;
 }
 
@@ -178,6 +180,10 @@ int app_uninstall(const char *id) {
 	}
 
 	ret = empkg_uninstall(id);
+	if (ret)
+		return ret;
+
+	ret = empkg_update_firewall_single(id);
 	if (ret)
 		return ret;
 

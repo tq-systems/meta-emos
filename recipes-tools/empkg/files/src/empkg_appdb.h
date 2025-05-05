@@ -78,6 +78,7 @@ enum {
 	P_DBUSAPP,
 	P_DBUSCONF,
 	P_ENABLED,
+	P_FWCONF,
 	P_INDEX,
 	P_INSTALLED,
 	P_LANG,
@@ -118,6 +119,7 @@ struct appdb_t {
 	int disabled;
 	int enabled;
 	int essential;
+	int fwconf;
 	int systemd;
 	int installed;
 	int deferred;
@@ -143,6 +145,7 @@ typedef enum appdb_prop {
 	DISABLED,
 	ENABLED,
 	ESSENTIAL,
+	FWCONF,
 	INSTALLED,
 	DEFERRED,
 	SYSTEMD,
