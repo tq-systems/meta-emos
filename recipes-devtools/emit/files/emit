@@ -74,6 +74,7 @@ parser_build.add_argument('--image-name', required=True,
 )
 parser_build.add_argument('--migration-exec', help='Pre-update migration executable')
 parser_build.add_argument('--output-bundle', required=True, help='Output bundle filename')
+parser_build.add_argument('--disable-firewall', action='store_true', help='Disable the em-firewall service in the bundle')
 
 
 def filehash(path):
@@ -526,6 +527,23 @@ class CommandBuild(CommandCommon):
 				return info
 		return tarinfo
 
+	def disable_firewall(self):
+		"""Disables the em-firewall service in the image root"""
+
+		if not self.args.disable_firewall:
+			return
+
+		# The em-firewall service is enabled by a symlink in /etc/systemd/system/multi-user.target.wants/ and
+		# disabled by removing this symlink.
+		temp_tar_path = self.build_image + ".tmp"
+		with tarfile.open(self.build_image, "r:") as tar:
+			with tarfile.open(temp_tar_path, "w:") as temp_tar:
+				for member in tar.getmembers():
+					if member.name != './etc/systemd/system/multi-user.target.wants/em-firewall.service':
+						temp_tar.addfile(member, tar.extractfile(member) if member.isfile() else None)
+
+		os.replace(temp_tar_path, self.build_image)
+
 	def pack_image(self):
 		"""
 		Creates the rootfs image.
@@ -539,6 +557,9 @@ class CommandBuild(CommandCommon):
 		# to 'build_dir/build_image' ...
 
 		shutil.copyfile(self.args.core_image, self.build_image)
+
+		# After copying the core image, we can remove the firewall service
+		self.disable_firewall()
 
 		# If no compression desired, we simply append RAUC config,
 		# product info and all uncompressed apps into the archive
