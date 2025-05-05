@@ -185,10 +185,18 @@ cmd_debug_access() {
 	systemctl --no-block start dropbear.socket
 }
 
+cmd_update_firewall() {
+	mkdir -p $RUNETC/nftables.d/
+	if [ -d /etc/nftables.d ]; then
+		ln -sf /etc/nftables.d/* $RUNETC/nftables.d/
+	fi
+}
+
 cmd_update() {
 	em-update-password
 	cmd_update_network
 	cmd_update_ntp
+	cmd_update_firewall
 
 	if [ "$(fw_printenv -n enable_ssh 2>/dev/null)" = '1' ]; then
 		cmd_debug_access
@@ -216,6 +224,7 @@ cmd_restore_backup() {
 case "$CMD" in
 init|\
 update|\
+update_firewall|\
 update_network|\
 update_ntp|\
 reset_hostname|\
