@@ -5,9 +5,13 @@
 - systemd-timesyncd: reduce stop timeout
 - libmodbus: update to v3.1.11
 - linux-em: update to v6.12.26
+- em-firewall: added service to handle firewall rules
+- empkg: implement update_firewall
 
 ### Fixed
 - em-image.class: fix file name suffix
+- empkg: fops: only write new links
+- empkg: app-generator: fix appclass evaluation
 
 ## [ 7.0.0 ] - 2025-02-26
 ### Added
