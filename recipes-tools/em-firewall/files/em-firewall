@@ -1,0 +1,15 @@
+#!/bin/sh
+set -e
+
+FIREWALL_CONFIG_DIR=/run/em/etc/nftables.d/
+
+if [ ! -d "$FIREWALL_CONFIG_DIR" ]; then
+    logger "No nftables configuration directory found: $FIREWALL_CONFIG_DIR"
+    exit 0
+fi
+
+for file in "$FIREWALL_CONFIG_DIR"/*; do
+    if [ -r "$file" ]; then
+        nft -f "$file"
+    fi
+done
