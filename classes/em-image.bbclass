@@ -59,6 +59,7 @@ IMAGE_INSTALL += " \
 		glibc-utils \
 		libnss-systemd \
 		sudo \
+		sshguard \
 		"
 
 BAD_RECOMMENDATIONS += " \
