@@ -1,11 +1,15 @@
 ## [ next ]
+### Added
+- em-firewall: added service to handle firewall rules
+- sshguard: ssh brute force protection
+
 ### Changed
 - dropbear: switch key algorithm to ed25519
+- dropbear: update to v2024.86
 - bundle: apps: update app versions
 - systemd-timesyncd: reduce stop timeout
 - libmodbus: update to v3.1.11
 - linux-em: update to v6.12.26
-- em-firewall: added service to handle firewall rules
 - empkg: implement update_firewall
 
 ### Fixed
