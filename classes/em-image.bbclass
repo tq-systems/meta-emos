@@ -62,6 +62,12 @@ IMAGE_INSTALL += " \
 		sshguard \
 		"
 
+# No new features should be added to the image for the legacy em310 hardware
+IMAGE_INSTALL:remove:em310 = " \
+		em-firewall \
+		sshguard \
+		"
+
 BAD_RECOMMENDATIONS += " \
 		busybox-syslog \
 		busybox-udhcpc \
