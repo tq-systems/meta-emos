@@ -1,0 +1,12 @@
+# sshguard.service -- sample systemd unit file
+
+[Unit]
+Description=SSHGuard - blocks brute-force login attempts
+After=em-firewall.service
+
+[Service]
+ExecStart=/usr/sbin/sshguard
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
