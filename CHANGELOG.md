@@ -2,6 +2,7 @@
 ### Added
 - em-firewall: added service to handle firewall rules
 - sshguard: ssh brute force protection
+- emit: allow single apps to remain uncompressed
 
 ### Changed
 - dropbear: switch key algorithm to ed25519

@@ -150,6 +150,7 @@ class AppData:
 		self.disabled = app_info.get('disabled')
 		self.version = app_info.get('version')
 		self.cache = app_info.get('cache')
+		self.uncompressed = app_info.get('uncompressed')
 
 class CommandCommon:
 	"""Common functions for all commands"""
@@ -266,6 +267,7 @@ class CommandBuild(CommandCommon):
 
 		self.root_dir = os.path.join(self.args.build_dir, 'root')
 		self.app_install_dir = os.path.join(self.root_dir, 'opt', 'apps')
+		self.uncompressed_app_install_dir = os.path.join(self.root_dir, 'opt')
 		self.bundle_dir = os.path.join(self.args.build_dir, 'bundle')
 		self.build_image = os.path.join(self.args.build_dir, 'em-image-{}-{}.tar'.format(self.args.image_name, self.args.machine))
 		self.build_image_compressed = os.path.join(self.args.build_dir, 'em-image-{}-{}.tar.xz'.format(self.args.image_name, self.args.machine))
@@ -284,6 +286,7 @@ class CommandBuild(CommandCommon):
 		except FileNotFoundError:
 			pass
 
+		os.makedirs(self.uncompressed_app_install_dir)
 		os.makedirs(self.app_install_dir)
 		os.makedirs(self.bundle_dir)
 
@@ -297,19 +300,43 @@ class CommandBuild(CommandCommon):
 			with empkg.extractfile('manifest.json') as manifest_json:
 				manifest = json.load(manifest_json)
 
+			# compression enabled - prepare for uncompressed apps
 			dirname = os.path.join(self.app_install_dir, manifest['id'])
-			os.mkdir(dirname)
+			if self.args.compression and app_data.uncompressed == True:
+				uncompressed_dirname = os.path.join(self.uncompressed_app_install_dir, manifest['id'])
+				os.mkdir(uncompressed_dirname)
+			else:
+				os.mkdir(dirname)
 
 			with empkg.extractfile('data.tar.xz') as data_tar:
 				with tarfile.open(fileobj=data_tar, mode='r:xz') as data:
-					data.extractall(dirname)
+					# compression enabled and this app should be uncompressed, extract it to separate folder
+					if self.args.compression and app_data.uncompressed == True:
+						data.extractall(uncompressed_dirname)
+						relpath = os.path.relpath(uncompressed_dirname, start=self.app_install_dir)
+						try:
+							os.symlink(relpath, dirname)
+						except FileExistsError:
+							if os.path.islink(dirname) and os.readlink(dirname) == relpath:
+								pass
+							else:
+								raise Exception('{} already exists and is not the expected symlink.'.format(dirname))
+					else:
+						data.extractall(dirname)
+
+			# if app is flagged as 'disabled' in the bundle_spec
+			# also flag it 'disabled' in its manifest.json in the correct appdir:
+			if self.args.compression and app_data.uncompressed == True:
+				use_dir_name = uncompressed_dirname
+			else:
+				use_dir_name = dirname
 
 			if app_data.disabled != None:
 				manifest['disabled'] = app_data.disabled
-				with open(os.path.join(dirname, 'manifest.json'), 'w') as f:
+				with open(os.path.join(use_dir_name, 'manifest.json'), 'w') as f:
 					json.dump(manifest, f, sort_keys=True)
 			else:
-				empkg.extract('manifest.json', dirname)
+				empkg.extract('manifest.json', use_dir_name)
 
 	def install_apps(self):
 		"""Unpacks all apps to the app install dir."""
