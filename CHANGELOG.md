@@ -3,6 +3,7 @@
 - em-firewall: added service to handle firewall rules
 - sshguard: ssh brute force protection
 - emit: allow single apps to remain uncompressed
+- emit: fail bundle build if rootfs too large for device
 
 ### Changed
 - dropbear: switch key algorithm to ed25519

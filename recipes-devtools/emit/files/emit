@@ -571,6 +571,20 @@ class CommandBuild(CommandCommon):
 
 		os.replace(temp_tar_path, self.build_image)
 
+	def rootfs_size_check(self):
+		"""Checks if the rootfs tarfile is larger that a given rootfs size limit"""
+
+		# size-check the tarfile
+		# Writable in filesystem: 354064 kiB (345.77 MiB) -> round to 340 MiB
+		# When user requests a different limit through rootfs_limit flag in bundle_spec defaults, respect that
+		if 'rootfs_limit' in self.defaults:
+			sizelimit = self.defaults['rootfs_limit']
+		else:
+			sizelimit = 356515840
+
+		if os.path.getsize(self.build_image) > sizelimit:
+			raise Exception('The rootfs limit ({} B) is exceeded. Actual size is {} Bytes.'.format(sizelimit, os.path.getsize(self.build_image)))
+
 	def pack_image(self):
 		"""
 		Creates the rootfs image.
@@ -595,6 +609,7 @@ class CommandBuild(CommandCommon):
 		if not self.args.compression:
 			with tarfile.open(self.build_image, mode='a:') as tar:
 				tar.add(self.root_dir, '.', filter=tarfilter)
+			self.rootfs_size_check()
 			return
 
 		# With compression, we compress the downloaded apps to 'root_dir/opt/apps.squashfs'
@@ -612,6 +627,8 @@ class CommandBuild(CommandCommon):
 		tarfilter = self.exclude_apps_filter(True)
 		with tarfile.open(self.build_image, mode='a:') as tar:
 			tar.add(self.root_dir, '.', filter=tarfilter)
+
+		self.rootfs_size_check()
 
 		# ... and finally the tarfile gets xz-compressed
 
