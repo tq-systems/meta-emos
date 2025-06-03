@@ -11,6 +11,7 @@
 - libmodbus: update to v3.1.11
 - linux-em: update to v6.12.26
 - empkg: implement update_firewall
+- firewall: allow all outgoing connections
 
 ### Fixed
 - em-image.class: fix file name suffix
