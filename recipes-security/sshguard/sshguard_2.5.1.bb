@@ -14,6 +14,7 @@ inherit systemd
 
 SRC_URI += " \
 	file://0001-Add-signature-for-dropbear-ssh-logs.patch \
+	file://0002-sshguard.in-Fix-race-condition-in-exit-trap.patch \
 	\
 	file://sshguard.service \
 	file://sshguard.conf \

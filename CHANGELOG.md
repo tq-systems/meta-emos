@@ -16,6 +16,7 @@
 - em-image.class: fix file name suffix
 - empkg: fops: only write new links
 - empkg: app-generator: fix appclass evaluation
+- sshguard: fix race condition when exiting
 
 ## [ 7.0.0 ] - 2025-02-26
 ### Added
