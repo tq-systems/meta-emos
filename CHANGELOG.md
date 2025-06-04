@@ -12,6 +12,7 @@
 - linux-em: update to v6.12.26
 - empkg: implement update_firewall
 - firewall: allow all outgoing connections
+- nginx: updated to v1.28
 
 ### Fixed
 - em-image.class: fix file name suffix
