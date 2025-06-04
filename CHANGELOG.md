@@ -13,6 +13,7 @@
 - empkg: implement update_firewall
 - firewall: allow all outgoing connections
 - nginx: updated to v1.28
+- empkg: builtin app dirs may be symlinks
 
 ### Fixed
 - em-image.class: fix file name suffix

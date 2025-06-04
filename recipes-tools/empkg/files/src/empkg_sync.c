@@ -92,7 +92,7 @@ int app_sync(void) {
 
 	/* Link builtin apps into $APPDIR/installed */
 	while (i < n) {
-		if (ent[i]->d_type == DT_DIR) {
+		if ((ent[i]->d_type == DT_DIR) || (ent[i]->d_type == DT_LNK)) {
 			struct stat sb;
 			int err;
 
