@@ -1,4 +1,4 @@
-## [ next ]
+## [ 7.0.1 ] - 2025-06-05
 ### Added
 - em-firewall: added service to handle firewall rules
 - sshguard: ssh brute force protection
