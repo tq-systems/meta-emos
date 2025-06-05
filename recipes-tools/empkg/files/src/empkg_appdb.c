@@ -168,6 +168,9 @@ static void appdb_check_builtin(const char *id) {
 	int val = 0;
 
 	err = lstat(path, &sb);
+	/* allow /opt/apps/id to be a symbolic link, check link target then */
+	if (!err && S_ISLNK(sb.st_mode))
+		err = stat(path, &sb);
 	if (!err && S_ISDIR(sb.st_mode))
 		val = 1;
 

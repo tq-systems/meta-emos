@@ -2,6 +2,8 @@
 ### Added
 - em-firewall: added service to handle firewall rules
 - sshguard: ssh brute force protection
+- emit: allow single apps to remain uncompressed
+- emit: fail bundle build if rootfs too large for device
 
 ### Changed
 - dropbear: switch key algorithm to ed25519
@@ -13,6 +15,7 @@
 - empkg: implement update_firewall
 - firewall: allow all outgoing connections
 - nginx: updated to v1.28
+- empkg: builtin app dirs may be symlinks
 
 ### Fixed
 - em-image.class: fix file name suffix
