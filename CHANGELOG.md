@@ -1,4 +1,6 @@
 ## [ next ]
+### Added
+- em-image-core: added more libraries and packages to the native-sdk host-toolchain
 
 ## [ 7.1.0 ] - 2025-06-05
 ### Added
