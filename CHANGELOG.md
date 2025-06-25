@@ -2,6 +2,9 @@
 ### Added
 - em-image-core: added more libraries and packages to the native-sdk host-toolchain
 
+### Fixed
+- udevd: fix race at ttyAPP1/2 link target
+
 ## [ 7.1.0 ] - 2025-06-05
 ### Added
 - em-firewall: added service to handle firewall rules
