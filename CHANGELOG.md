@@ -1,3 +1,7 @@
+## [ next ]
+### Fixed
+- udevd: fix race at ttyAPP1/2 link target
+
 ## [ 7.0.1 ] - 2025-05-07
 ### Changed
 - libmodbus: update to v3.1.11
