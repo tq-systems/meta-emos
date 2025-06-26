@@ -1,7 +1,7 @@
 # Provide common names for UART devices on different SoCs
 
-KERNEL=="ttymxc1", SYMLINK+="ttyAPP1"
-KERNEL=="ttymxc2", SYMLINK+="ttyAPP2"
+KERNEL=="ttymxc1", SYMLINK+="ttyAPP1", OPTIONS+="link_priority=10"
+KERNEL=="ttymxc2", SYMLINK+="ttyAPP2", OPTIONS+="link_priority=10"
 
-KERNEL=="ttyS1", SYMLINK+="ttyAPP1"
-KERNEL=="ttyS2", SYMLINK+="ttyAPP2"
+KERNEL=="ttyS1", SYMLINK+="ttyAPP1", OPTIONS+="link_priority=5"
+KERNEL=="ttyS2", SYMLINK+="ttyAPP2", OPTIONS+="link_priority=5"
