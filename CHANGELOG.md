@@ -1,4 +1,4 @@
-## [ next ]
+## [ 7.0.2 ] - 2025-06-27
 ### Fixed
 - udevd: fix race at ttyAPP1/2 link target
 
@@ -8,13 +8,9 @@
 
 ## [ 7.0.0 ] - 2025-02-26
 ### Added
-- openvas trigger with git reference handling
 - gitlab-ci: add job for pqt tests
 
 ### Changed
-- bundles: update apps
-- bundles: switch to teridiand-fw again (revert renaming)
-- nginx: create ssl certs as group cfglog
 - linux-em: update to v6.12.11
 - em-appctl: remove unnecessary debug output
 - nginx: expect frontend in generic root dir
@@ -24,9 +20,20 @@
 - jq: remove backported version v1.5
 
 ### Fixed
-- u-boot: add CVE_PRODUCT to u-boot-em recipe to allow CVE tracking
 - gitlab-ci: rename variable templates
 - add python to sdk to fix sdk build error
+
+## [ 6.0.1 ] - 2025-02-04
+### Added
+- openvas trigger with git reference handling
+
+### Changed
+- bundles: update apps
+- bundles: switch to teridiand-fw again (revert renaming)
+- nginx: create ssl certs as group cfglog
+
+### Fixed
+- u-boot: add CVE_PRODUCT to u-boot-em recipe to allow CVE tracking
 
 ## [ 6.0.0 ] - 2024-12-10
 ### Changed
