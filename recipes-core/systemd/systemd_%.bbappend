@@ -1,5 +1,3 @@
-include systemd.inc
-
 FILESEXTRAPATHS:prepend:emos := "${THISDIR}/files:"
 SRC_URI:append:emos = "\
 	file://0001-shared-dropin-disable-unit-name-prefix-dropins.patch \

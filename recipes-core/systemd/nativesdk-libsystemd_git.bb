@@ -1,7 +1,7 @@
 SUMMARY = "libsystemd shared library for nativesdk"
 HOMEPAGE = "http://www.freedesktop.org/wiki/Software/systemd"
 
-include systemd.inc
+include recipes-core/systemd/systemd.inc
 
 SECTION = "libs"
 
