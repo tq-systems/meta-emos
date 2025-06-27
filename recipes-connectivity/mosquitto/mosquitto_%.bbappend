@@ -17,3 +17,4 @@ do_install:append:emos() {
 	install -m 0644 ${WORKDIR}/mosquitto.conf		${D}${sysconfdir}/mosquitto/
 	install -m 0644 ${WORKDIR}/mosquitto.service	${D}${systemd_unitdir}/system/
 }
+BBCLASSEXTEND += "nativesdk"

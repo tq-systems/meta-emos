@@ -1,4 +1,11 @@
-## [ 7.0.1 ] - 2025-06-05
+## [ next ]
+### Added
+- em-image-core: added more libraries and packages to the native-sdk host-toolchain
+
+### Fixed
+- udevd: fix race at ttyAPP1/2 link target
+
+## [ 7.1.0 ] - 2025-06-05
 ### Added
 - em-firewall: added service to handle firewall rules
 - sshguard: ssh brute force protection
@@ -22,6 +29,10 @@
 - empkg: fops: only write new links
 - empkg: app-generator: fix appclass evaluation
 - sshguard: fix race condition when exiting
+
+## [ 7.0.1 ] - 2025-05-07
+### Changed
+- libmodbus: update to v3.1.11
 
 ## [ 7.0.0 ] - 2025-02-26
 ### Added

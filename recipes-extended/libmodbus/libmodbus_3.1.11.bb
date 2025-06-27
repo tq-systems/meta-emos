@@ -15,3 +15,4 @@ inherit autotools pkgconfig
 
 PACKAGECONFIG ??= ""
 PACKAGECONFIG[test] = "--enable-tests,--disable-tests,,"
+BBCLASSEXTEND += "nativesdk"
