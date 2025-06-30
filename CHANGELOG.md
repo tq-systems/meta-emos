@@ -1,4 +1,4 @@
-## [ next ]
+## [ 7.0.3 ] - 2025-06-30
 ### Fixed
 - em-image.class: fix file name suffix
 
