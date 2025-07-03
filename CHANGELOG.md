@@ -1,6 +1,7 @@
 ## [ next ] - 2025-06-30
 ### Changed
 - linux-em: Update to v6.12.35
+- systemd: Use version from openembedded-core
 
 ## [ 7.1.1 ] - 2025-06-27
 ### Added
