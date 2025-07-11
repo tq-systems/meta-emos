@@ -3,3 +3,4 @@
 - linux-em: Update to v6.12.35
 - systemd: Use version from openembedded-core
 - gitlab-ci: move from deprecated base-ci to base
+- em-firewall: add rules for dhcp
