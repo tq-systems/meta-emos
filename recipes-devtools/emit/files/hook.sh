@@ -96,6 +96,17 @@ install-check)
 		exit 10
 	fi
 
+	variant="$(device_variant)"
+	if [ -z "$variant" ]; then
+		echo "Unable to determine device variant" >&2
+		exit 10
+	fi
+
+	if ! bootloader_digest "$variant" >/dev/null; then
+		echo "No matching bootloader found for your device variant '$variant'" >&2
+		exit 10
+	fi
+
 	if [ -e /run/ignore-compatible ]; then
 		exit 0
 	fi
@@ -131,18 +142,6 @@ install-check)
 		exit 10
 		;;
 	esac
-
-	variant="$(device_variant)"
-	if [ -z "$variant" ]; then
-		echo "Unable to determine device variant" >&2
-		exit 10
-	fi
-
-
-	if ! bootloader_digest "$variant" >/dev/null; then
-		echo "No matching bootloader found for your device variant '$variant'" >&2
-		exit 10
-	fi
 
 	;;
 
