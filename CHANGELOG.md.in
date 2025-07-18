@@ -5,3 +5,8 @@
 - gitlab-ci: move from deprecated base-ci to base
 - em-firewall: add rules for dhcp
 - emit: always check variant and ram size when upgrading bundle
+- glib-2.0: update to v2.84.0
+- meson: update to v1.7.0
+- libgpiod: add gpio-manager service
+- teridiand-hw.conf: use gpio-manager from libgpiod
+- empkg: stop apps before removal or replacement

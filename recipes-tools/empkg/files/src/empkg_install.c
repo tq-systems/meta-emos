@@ -53,6 +53,12 @@ static int empkg_install(const char *path) {
 		return ERRORCODE;
 	}
 
+	if (config.systemd && appdb_is(SYSTEMD, new.id) && appdb_is(ENABLED, new.id)) {
+		/* We need to shutdown the app before replacement */
+		log_message("empkg: Stopping app: %s \n", new.id);
+		empkg_process_sd_command("stop", new.id);
+	}
+
 	if (appdb_is(INSTALLED, new.id)) {
 		char *version_old = appdb_get_version((char *)new.id);
 		log_message("empkg: Updating app: %s from %s to %s...\n", new.id, version_old, new.version);
@@ -119,7 +125,7 @@ int app_install(const char *empkg) {
 	if (ret)
 		return ret;
 
-	ret = empkg_process_reload_request();
+	ret = empkg_process_reload_request(NULL);
 	if (ret)
 		return ret;
 
@@ -148,6 +154,12 @@ static int empkg_uninstall(const char *id) {
 	/* empkg_disable() prints that it will not disable essential apps. */
 	empkg_disable(id);
 
+	if (config.systemd && appdb_is(SYSTEMD, id)) {
+		/* We need to shutdown the app before replacement */
+		log_message("empkg: Stopping app: %s \n", id);
+		empkg_process_sd_command("stop", id);
+	}
+
 	/* Fill our vars with paths */
 	if (asprintf(&uninstalldir, "%s/tmp/uninstall", gAPPDIR) == -1)
 		return ERRORCODE;
@@ -161,6 +173,11 @@ static int empkg_uninstall(const char *id) {
 	if (appdb_is(BUILTIN, id)) {
 		log_message("empkg: Note: '%s' is builtin, only uninstalling updates.\n", id);
 		app_register(id);
+
+		if (appdb_is(ESSENTIAL, id) && !appdb_is(DISABLED, id)) {
+			log_message("empkg: Note: Reenabling builtin essential app: '%s'.\n", id);
+			empkg_enable(id);
+		}
 	}
 
 	empkg_users_sync_app_users_and_dirs(id);
@@ -184,6 +201,10 @@ int app_uninstall(const char *id) {
 		return ret;
 
 	ret = empkg_update_firewall_single(id);
+	if (ret)
+		return ret;
+
+	ret = empkg_process_reload_request(NULL);
 	if (ret)
 		return ret;
 
