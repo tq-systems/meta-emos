@@ -160,7 +160,7 @@ int app_sync(void) {
 
 	empkg_update_firewall_all_enabled();
 
-	empkg_process_reload_request();
+	empkg_process_reload_request(NULL);
 
 	empkg_update_www();
 

@@ -9,3 +9,4 @@
 - meson: update to v1.7.0
 - libgpiod: add gpio-manager service
 - teridiand-hw.conf: use gpio-manager from libgpiod
+- empkg: stop apps before removal or replacement

@@ -9,14 +9,28 @@
 #include "empkg.h"
 #include "empkg_appdb.h"
 #include "empkg_fops.h"
+#include "empkg_helper.h"
 #include "empkg_log.h"
 
-struct sd_reload_command {
-	char *cmd;
-	char *app;
-	struct sd_reload_command *next;
-};
 struct sd_reload_command sd_reload_list;
+
+/* converts id (app name) to systemd service name */
+void empkg_process_sd_command(const char *cmd, const char *id) {
+	char *service;
+	struct sd_reload_command sd_command;
+
+	if (asprintf(&service, "em-app-%s.service", id) == -1) {
+		log_message("empkg: Error asprintf\n");
+		return;
+	}
+
+	sd_command.cmd = strdup(cmd);
+	sd_command.service = strdup(service);
+
+	empkg_process_reload_request(&sd_command),
+
+	free(service);
+}
 
 void empkg_request_daemon_reload(char *cmd, char *service) {
 	struct sd_reload_command *new, *tail = &sd_reload_list;
@@ -40,11 +54,20 @@ void empkg_request_daemon_reload(char *cmd, char *service) {
 	}
 }
 
-int empkg_process_reload_request(void) {
+int empkg_process_reload_request(const struct sd_reload_command *custom_command) {
 	struct sd_reload_command *entry = &sd_reload_list;
 	struct sd_reload_command *next;
 	char *syscall;
 	int ret = 0;
+
+	/* caller may provide a custom_command struct containing
+	 * only a verb and an app, for example to skip a daemon-reload
+	 * and just stop an app.
+	 */
+	if (!custom_command)
+		entry = &sd_reload_list;
+	else
+		entry = custom_command;
 
 	while (entry && entry->cmd) {
 		if (asprintf(&syscall, "systemctl %s %s", entry->cmd, entry->service?entry->service:"") == -1)
@@ -59,7 +82,7 @@ int empkg_process_reload_request(void) {
 		free(syscall);
 
 		/* additional entries malloc'd? */
-		if (entry == &sd_reload_list) {
+		if (entry == &sd_reload_list || entry == custom_command) {
 			entry = entry->next;
 		} else {
 			/* store next one after */

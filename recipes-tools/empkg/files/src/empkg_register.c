@@ -29,5 +29,7 @@ void app_register(const char *id) {
 		/* appdb_scan_installed(); */
 		appdb_set(INSTALLED, id, 1);
 		appdb_check(SYSTEMD, id);
+		appdb_check(ESSENTIAL, id);
+		appdb_check(DISABLED, id);
 	}
 }
