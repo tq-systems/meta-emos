@@ -18,12 +18,12 @@ struct sd_reload_command {
 };
 struct sd_reload_command sd_reload_list;
 
-void empkg_request_daemon_reload(char *cmd, char *app) {
+void empkg_request_daemon_reload(char *cmd, char *service) {
 	struct sd_reload_command *new, *tail = &sd_reload_list;
 
 	sd_reload_list.cmd = "daemon-reload";
 
-	if (cmd && app) {
+	if (cmd && service) {
 		/* find last entry with next == NULL
 		 * malloc new sd_reload_command struct, assign cmd/app
 		 * assign to next pointer
@@ -31,7 +31,7 @@ void empkg_request_daemon_reload(char *cmd, char *app) {
 		new = calloc(1, sizeof(struct sd_reload_command));
 		if (new) {
 			new->cmd = strdup(cmd);
-			new->app = strdup(app);
+			new->service = strdup(service);
 
 			while (tail->next)
 				tail = tail->next;
@@ -47,7 +47,7 @@ int empkg_process_reload_request(void) {
 	int ret = 0;
 
 	while (entry && entry->cmd) {
-		if (asprintf(&syscall, "systemctl %s %s", entry->cmd, entry->app?entry->app:"") == -1)
+		if (asprintf(&syscall, "systemctl %s %s", entry->cmd, entry->service?entry->service:"") == -1)
 			return ERRORCODE;
 
 		if (!strcmp(entry->cmd, "daemon-reload"))

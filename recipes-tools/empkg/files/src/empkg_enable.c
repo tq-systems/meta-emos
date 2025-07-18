@@ -17,7 +17,7 @@
 
 int empkg_enable(const char *id) {
 	const char *link = appdb_get_path(P_ENABLED, id);
-	char *installedtarget, *app;
+	char *installedtarget, *service;
 	int ret;
 
 	if (!appdb_is(INSTALLED, id)) {
@@ -26,7 +26,7 @@ int empkg_enable(const char *id) {
 	}
 
 	if ((asprintf(&installedtarget, "../installed/%s", id) == -1) ||
-	    (asprintf(&app, "em-app-%s.service", id) == -1))
+	    (asprintf(&service, "em-app-%s.service", id) == -1))
 		return ERRORCODE;
 
 	ret = empkg_fops_mkdir(gENABLEDDIR);
@@ -45,11 +45,11 @@ int empkg_enable(const char *id) {
 
 	if (!ret && config.systemd && appdb_is(SYSTEMD, id)) {
 		if (appdb_is(AUTOSTART, id))
-			empkg_request_daemon_reload("restart", app);
+			empkg_request_daemon_reload("restart", service);
 		else
-			empkg_request_daemon_reload("try-restart", app);
+			empkg_request_daemon_reload("try-restart", service);
 	}
-	free(app);
+	free(service);
 
 	return ret;
 };
