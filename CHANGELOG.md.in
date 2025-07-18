@@ -7,3 +7,4 @@
 - emit: always check variant and ram size when upgrading bundle
 - glib-2.0: update to v2.84.0
 - meson: update to v1.7.0
+- libgpiod: add gpio-manager service
