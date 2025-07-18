@@ -4,3 +4,4 @@
 - systemd: Use version from openembedded-core
 - gitlab-ci: move from deprecated base-ci to base
 - em-firewall: add rules for dhcp
+- emit: always check variant and ram size when upgrading bundle
