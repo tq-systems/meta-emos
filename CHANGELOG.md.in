@@ -1,4 +1,7 @@
 ## [{{ version }}]
+### Added
+- nginx: define rate limit for access-token
+
 ### Changed
 - linux-em: Update to v6.12.35
 - systemd: Use version from openembedded-core
