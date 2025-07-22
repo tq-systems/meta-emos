@@ -10,6 +10,8 @@ SRC_URI = " \
 	file://70-teridian.rules \
 "
 
+RDEPENDS:${PN} = "libgpiod-cli"
+
 do_install () {
 	install -d ${D}${sysconfdir}
 	install -m 0644 ${WORKDIR}/teridiand_hw.conf ${D}${sysconfdir}/teridiand_hw.conf

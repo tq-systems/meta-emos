@@ -13,3 +13,6 @@
 - libgpiod: add gpio-manager service
 - teridiand-hw.conf: use gpio-manager from libgpiod
 - empkg: stop apps before removal or replacement
+
+### Fixed
+- add libgpiod-cli to teridiand-config
