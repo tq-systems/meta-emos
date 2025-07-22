@@ -1,1 +1,3 @@
 ## [{{ version }}]
+### Fixed
+- add libgpiod-cli to teridiand-config
