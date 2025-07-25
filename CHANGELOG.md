@@ -1,3 +1,7 @@
+## [7.2.1] - 2025-07-25
+### Fixed
+- add libgpiod-cli to teridiand-config
+
 ## [ 7.2.0 ] - 2025-07-21
 ### Added
 - nginx: define rate limit for access-token
