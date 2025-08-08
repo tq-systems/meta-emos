@@ -1,4 +1,10 @@
-## [ 7.0.1 ] - 2025-06-05
+## [ 7.1.0-csp1 ] - 2025-08-08
+### Added
+- nginx: allow inline styles
+- nginx: enhance Content-Security-Policy to include script-src directive
+- nginx: update security headers and improve documentation
+
+## [ 7.1.0 ] - 2025-06-05
 ### Added
 - em-firewall: added service to handle firewall rules
 - sshguard: ssh brute force protection
