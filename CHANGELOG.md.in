@@ -1,18 +1,9 @@
 ## [{{ version }}]
 ### Added
-- nginx: define rate limit for access-token
+- Add license information in LICENSE file
+- Add custom license TQSPSLA-1.0.3
 
 ### Changed
-- linux-em: Update to v6.12.35
-- systemd: Use version from openembedded-core
-- gitlab-ci: move from deprecated base-ci to base
-- em-firewall: add rules for dhcp
-- emit: always check variant and ram size when upgrading bundle
-- glib-2.0: update to v2.84.0
-- meson: update to v1.7.0
-- libgpiod: add gpio-manager service
-- teridiand-hw.conf: use gpio-manager from libgpiod
-- empkg: stop apps before removal or replacement
-
-### Fixed
-- add libgpiod-cli to teridiand-config
+- Use em-aarch64 as default machine in local.conf.sample
+- Remove custom license TQSSLA-1.0.2
+- TQ packages with source code in the layer switch from TQSSLA-1.0.2 to the more permissive TQSPSLA-1.0.3 license

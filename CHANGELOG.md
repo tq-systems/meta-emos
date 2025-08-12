@@ -1,3 +1,23 @@
+## [7.2.1] - 2025-07-25
+### Fixed
+- add libgpiod-cli to teridiand-config
+
+## [ 7.2.0 ] - 2025-07-21
+### Added
+- nginx: define rate limit for access-token
+
+### Changed
+- linux-em: Update to v6.12.35
+- systemd: Use version from openembedded-core
+- gitlab-ci: move from deprecated base-ci to base
+- em-firewall: add rules for dhcp
+- emit: always check variant and ram size when upgrading bundle
+- glib-2.0: update to v2.84.0
+- meson: update to v1.7.0
+- libgpiod: add gpio-manager service
+- teridiand-hw.conf: use gpio-manager from libgpiod
+- empkg: stop apps before removal or replacement
+
 ## [ 7.1.1 ] - 2025-06-27
 ### Added
 - em-image-core: added more libraries and packages to the native-sdk host-toolchain

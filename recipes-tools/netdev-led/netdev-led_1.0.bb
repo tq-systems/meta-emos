@@ -1,12 +1,11 @@
 DESCRIPTION="netdev-led is setting the mode of the network LED."
 SECTION="tools"
 
-LICENSE = "TQSSLA_V1.0.2"
-LIC_FILES_CHKSUM = "file://${WORKDIR}/LICENSE;md5=5a77156d011829e57ffe26e62f07ff2d"
-SRC_DISTRIBUTE_LICENSES += "TQSSLA_V1.0.2"
+LICENSE = "TQSPSLA-1.0.3"
+LIC_FILES_CHKSUM = "file://${@bb.utils.which(d.getVar('BBPATH'), 'files/custom-licenses/TQSPSLA-1.0.3')};md5=675d9988badfa6f03ad1d2678a0d50b3"
+SRC_DISTRIBUTE_LICENSES += "TQSPSLA-1.0.3"
 
 SRC_URI = " \
-	file://LICENSE \
 	file://${BPN} \
 	file://${BPN}.service \
 "
