@@ -1,3 +1,7 @@
+## [ 7.1.0-csp2 ] - 2025-08-27
+### Added
+- em-firewall: add rules for dhcp
+
 ## [ 7.1.0-csp1 ] - 2025-08-08
 ### Added
 - nginx: allow inline styles
