@@ -7,3 +7,6 @@
 - Use em-aarch64 as default machine in local.conf.sample
 - Remove custom license TQSSLA-1.0.2
 - TQ packages with source code in the layer switch from TQSSLA-1.0.2 to the more permissive TQSPSLA-1.0.3 license
+
+### Fixed
+- em-appctl: fix reset of disabled apps

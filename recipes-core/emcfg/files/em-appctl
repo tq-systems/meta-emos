@@ -162,27 +162,35 @@ filter_stopped_deps() {
 stop_apps() {
 	local app_list=
 
-	# Add em-app- prefix and build unit list.
+	# Add em-app- prefix and build unit list, but only for enabled apps.
 	for app_id in "$@"; do
-		app_list="$app_list $(get_service_name "$app_id")"
+		if empkg is-enabled "$app_id"; then
+			app_list="$app_list $(get_service_name "$app_id")"
+		fi
 	done
 
-	log_info "Stopping: $app_list"
-	{ systemctl stop --show-transaction $app_list 2>&1 | filter_stopped_deps; } ||  # outputs stopped deps
-		log_fatal "Failed to stop systemd units '$app_list'"
+	if [ -n "$app_list" ]; then
+		log_info "Stopping: $app_list"
+		{ systemctl stop --show-transaction $app_list 2>&1 | filter_stopped_deps; } ||  # outputs stopped deps
+			log_fatal "Failed to stop systemd units '$app_list'"
+	fi
 }
 
 # Start EM apps or other systemd units.
 start_apps() {
 	local app_list=
 
-	# Add em-app- prefix and build unit list.
+	# Add em-app- prefix and build unit list, but only for enabled apps.
 	for app_id in "$@"; do
-		app_list="$app_list $(get_service_name "$app_id")"
+		if empkg is-enabled "$app_id"; then
+			app_list="$app_list $(get_service_name "$app_id")"
+		fi
 	done
 
-	log_info "Starting: $app_list"
-	systemctl start $app_list
+	if [ -n "$app_list" ]; then
+		log_info "Starting: $app_list"
+		systemctl start $app_list
+	fi
 }
 
 # Get the systemd service of a given app id by adding the em-app- prefix.
