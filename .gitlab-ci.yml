@@ -1,15 +1,16 @@
 ---
 include:
 - project: tq-em/build/docker/base
-  file: ci/rules.yml
+  file: ci/include.yml
   ref: master
 
 # Attention: Do not define trigger variables in the global section,
 # this may lead to unexpected behavior in the triggered project.
-.internal-meta-emos-refs:
+.internal-build-variables:
   variables:
     INTERNAL_META_EMOS_BRANCH: $CI_COMMIT_REF_NAME
     INTERNAL_META_EMOS_REF: $CI_COMMIT_SHA
+    GITLAB_RUNNER_TAG: 'tq-em-yocto-fast'
 
 .internal-meta-emos-conf:
   variables:
@@ -19,10 +20,13 @@ include:
   variables:
     OVERRIDE_LOCAL_CONF: $PQT_LOCAL_CONF
 
+Gitleaks:
+  extends: .gitleaks
+
 Trigger Core Snapshots:
   extends:
     - .rule-include-default-branch
-    - .internal-meta-emos-refs
+    - .internal-build-variables
     - .internal-meta-emos-conf
   trigger:
     project: tq-em/build/docker/yocto-scripts
@@ -31,7 +35,7 @@ Trigger Core Snapshots:
 Trigger Core QA Snapshots:
   extends:
     - .rule-include-default-branch
-    - .internal-meta-emos-refs
+    - .internal-build-variables
     - .internal-meta-emos-conf
   trigger:
     project: tq-em/build/yocto/core-qa-bundle
@@ -40,7 +44,7 @@ Trigger Core QA Snapshots:
 Trigger Core QA Tests:
   extends:
     - .rule-include-merge-request-for-default-branch
-    - .internal-meta-emos-refs
+    - .internal-build-variables
     - .internal-meta-emos-conf
   trigger:
     project: tq-em/build/yocto/core-qa-bundle
@@ -53,7 +57,7 @@ Trigger Core QA Tests:
 Trigger Core PQT Tests:
   extends:
     - .rule-include-merge-request-for-default-branch
-    - .internal-meta-emos-refs
+    - .internal-build-variables
     - .product-qualification-conf
   trigger:
     project: tq-em/build/yocto/core-pqt-bundle
