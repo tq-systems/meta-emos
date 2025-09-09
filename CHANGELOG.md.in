@@ -8,6 +8,7 @@
 - Remove custom license TQSSLA-1.0.2
 - TQ packages with source code in the layer switch from TQSSLA-1.0.2 to the more permissive TQSPSLA-1.0.3 license
 - nginx: add http redirect for public api calls
+- sshguard: update to latest version
 
 ### Fixed
 - em-appctl: fix reset of disabled apps
