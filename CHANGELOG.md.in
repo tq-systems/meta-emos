@@ -12,3 +12,4 @@
 
 ### Fixed
 - em-appctl: fix reset of disabled apps
+- nativesdk-gcc: fix local includepath
