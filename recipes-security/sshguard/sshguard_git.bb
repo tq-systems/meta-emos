@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=47a33fc98cd20713882c4d822a57bf4d"
 LICENSE = "BSD-1-Clause"
 
 SRC_URI="git://bitbucket.org/sshguard/sshguard.git;protocol=https;branch=master"
-SRCREV = "efc45b818f8f7e0b61978948842f1b2fd9ae2c1e"
+SRCREV = "613264cd33b5cbe91338532353dfedd0722ada8f"
 
 DEPENDS = " flex-native bison-native python3-docutils-native"
 
@@ -13,9 +13,6 @@ inherit autotools-brokensep
 inherit systemd
 
 SRC_URI += " \
-	file://0001-Add-signature-for-dropbear-ssh-logs.patch \
-	file://0002-sshguard.in-Fix-race-condition-in-exit-trap.patch \
-	\
 	file://sshguard.service \
 	file://sshguard.conf \
 "
