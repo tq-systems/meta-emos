@@ -9,6 +9,6 @@ DEPENDS = "jansson"
 S = "${WORKDIR}/git"
 
 SRC_URI = "git://github.com/tq-systems/libdeviceinfo-em.git;protocol=https;branch=master"
-SRCREV = "0117d77d7a00ea3c386f9429a61d092cc1920507"
+SRCREV = "31d37feab8d632c519ac9a1159593dcd28aade37"
 
 BBCLASSEXTEND = "nativesdk"
