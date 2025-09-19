@@ -1,3 +1,7 @@
+## [ 7.1.0-csp3 ] - 2025-09-19
+### Changed
+- nginx: remove client_max_body_size limit
+
 ## [ 7.1.0-csp2 ] - 2025-08-27
 ### Added
 - em-firewall: add rules for dhcp
