@@ -2,9 +2,9 @@ SUMMARY = "The Energy Manager Image Tool"
 RDEPENDS:${PN} = "python3 python3-pyyaml rauc squashfs-tools"
 RPROVIDES:${PN} += "virtual-rauc-conf"
 
-LICENSE = "TQSSLA_V1.0.2"
-LIC_FILES_CHKSUM = "file://${WORKDIR}/emit;beginline=2;endline=5;md5=0628c1a390d66a2f452e92e03fef067f"
-SRC_DISTRIBUTE_LICENSES += "TQSSLA_V1.0.2"
+LICENSE = "TQSPSLA-1.0.3"
+LIC_FILES_CHKSUM = "file://${@bb.utils.which(d.getVar('BBPATH'), 'files/custom-licenses/TQSPSLA-1.0.3')};md5=675d9988badfa6f03ad1d2678a0d50b3"
+SRC_DISTRIBUTE_LICENSES += "TQSPSLA-1.0.3"
 
 SRC_URI = "\
 	file://emit \
