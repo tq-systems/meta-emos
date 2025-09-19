@@ -10,6 +10,7 @@
 - nginx: add http redirect for public api calls
 - sshguard: update to latest version
 - libdeviceinfo: update to v1.8.0
+- nginx: remove client_max_body_size limit
 
 ### Fixed
 - em-appctl: fix reset of disabled apps
