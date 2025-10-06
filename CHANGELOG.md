@@ -1,3 +1,9 @@
+## [8.0.0] - 2025-09-26
+### Changed
+- Hardened Nginx security headers (stricter CSP with script hash, X-Frame-Options, stricter Referrer-Policy, reduced Permissions-Policy)
+- linux-em: update to v6.12.48
+- libfaketime: fix installation PREFIX
+
 ## [7.2.2] - 2025-09-19
 ### Added
 - Add license information in LICENSE file
