@@ -1,5 +1,3 @@
 ## [{{ version }}]
 ### Changed
-- Hardened Nginx security headers (stricter CSP with script hash, X-Frame-Options, stricter Referrer-Policy, reduced Permissions-Policy)
-- linux-em: update to v6.12.48
-- libfaketime: fix installation PREFIX
+- nginx: removed weak DHE ciphers and restricted allowed DH groups to `ffdhe3072` and `ffdhe4096` per OWASP recommendation
