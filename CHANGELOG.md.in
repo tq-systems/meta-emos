@@ -1,1 +1,3 @@
 ## [{{ version }}]
+### Changed
+- nginx: removed weak DHE ciphers and restricted allowed DH groups to `ffdhe3072` and `ffdhe4096` per OWASP recommendation
