@@ -1,3 +1,7 @@
+## [8.0.1] - 2025-10-10
+### Changed
+- nginx: removed weak DHE ciphers and restricted allowed DH groups to `ffdhe3072` and `ffdhe4096` per OWASP recommendation
+
 ## [8.0.0] - 2025-09-26
 ### Changed
 - Hardened Nginx security headers (stricter CSP with script hash, X-Frame-Options, stricter Referrer-Policy, reduced Permissions-Policy)
