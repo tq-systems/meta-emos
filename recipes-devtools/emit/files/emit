@@ -232,9 +232,12 @@ class CommandDownload(CommandCommon):
 				except:
 					pass
 
-		print('Downloading app \'{}\' from: {}'.format(app, app_data.url), file=sys.stderr, flush=True)
-
-		subprocess.run(['wget', '-nv', '-O', path, app_data.url], check=True)
+		if 'file://' in app_data.url:
+			print('Copying app \'{}\' from: {}'.format(app, app_data.url), file=sys.stderr, flush=True)
+			subprocess.run(['cp', urlparse(app_data.url).path, path], check=True)
+		else:
+			print('Downloading app \'{}\' from: {}'.format(app, app_data.url), file=sys.stderr, flush=True)
+			subprocess.run(['wget', '-nv', '-O', path, app_data.url], check=True)
 
 		if app_data.version in skip_versions:
 			print('Skipping SHA256 check for app \'{}\' because version is \'{}\''.format(app, app_data.version))
