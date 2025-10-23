@@ -89,6 +89,10 @@ json_t *empkg_json_generate_status(const bool builtin, const bool enabled, const
 	return json;
 }
 
+void empkg_json_append_note(json_t *json, const char *note) {
+	json_object_set_new(json, "note", json_string(note));
+}
+
 json_t *empkg_json_get_manifest_permissions(const char *id) {
 	const char *manifest = appdb_get_path(P_MANIFEST, id);
 	json_t *json;

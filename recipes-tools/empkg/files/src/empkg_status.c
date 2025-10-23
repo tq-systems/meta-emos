@@ -47,6 +47,13 @@ static int status_one(const char *id, json_t **json) {
 
 	*json = empkg_json_generate_status(builtin, enabled, path);
 
+	/* Corner case: updater-servicecloudclient requires socket in /run/em/apps/updater!
+	 * Inform user via 'empkg status' about that change.
+	 */
+	if (!strcmp(id, "updater-servicecloudclient")) {
+		empkg_json_append_note(*json, "Uses non-standard rundir.");
+	}
+
 	return 0;
 }
 
