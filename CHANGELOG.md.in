@@ -2,3 +2,4 @@
 ### Changed
 - nginx: removed weak DHE ciphers and restricted allowed DH groups to `ffdhe3072` and `ffdhe4096` per OWASP recommendation
 - emit: allow local empkg packages
+- empkg: handle rundir requirement for one app
