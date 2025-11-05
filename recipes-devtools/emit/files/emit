@@ -259,7 +259,7 @@ class CommandDownload(CommandCommon):
 					raise e
 
 	def run(self):
-		os.makedirs(self.args.download_dir, exist_ok=True)
+		subprocess.run(['mkdir', '-p', self.args.download_dir], check=True)
 		self.download_apps()
 
 class CommandBuild(CommandCommon):
