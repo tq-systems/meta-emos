@@ -2,3 +2,15 @@
 ### Changed
 - nginx: removed weak DHE ciphers and restricted allowed DH groups to `ffdhe3072` and `ffdhe4096` per OWASP recommendation
 - emit: allow local empkg packages
+- Layer priority raised for meta-emos
+- Global inheritance of archiver and license-header
+- Images now include merged license information
+
+### Added
+- License header injection for TQSPSLA files after patching
+- Wrapper around oe-core archiver to include sources and external licenses
+- License-clearing mechanism to merge manifests from multiple builds
+- Python helper for license list merging
+
+### Removed
+- Redundant SRC_DISTRIBUTE_LICENSES entries for TQSPSLA
