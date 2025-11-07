@@ -10,6 +10,7 @@
 
 
 inherit core-image
+inherit em-license-clearing
 
 # Basic system components
 IMAGE_INSTALL += " \
