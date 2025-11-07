@@ -5,6 +5,9 @@
 - Layer priority raised for meta-emos
 - Global inheritance of archiver and license-header
 - Images now include merged license information
+- empkg: handle rundir requirement for one app
+- emit: use shell to create download_dir
+- emit: allow env variables in yaml processing
 
 ### Added
 - License header injection for TQSPSLA files after patching
@@ -14,3 +17,6 @@
 
 ### Removed
 - Redundant SRC_DISTRIBUTE_LICENSES entries for TQSPSLA
+=======
+
+>>>>>>> CHANGELOG.md.in
