@@ -10,6 +10,7 @@ SRC_URI = " \
 	file://em-app.target \
 	file://em-app-time.target \
 	file://em-app-no-time.target \
+	file://em-eebus-use-cases.target \
 	file://empkg.conf \
 	file://src;localdir=src \
 "
@@ -28,6 +29,7 @@ do_install() {
 		${WORKDIR}/em-app.target \
 		${WORKDIR}/em-app-time.target \
 		${WORKDIR}/em-app-no-time.target \
+		${WORKDIR}/em-eebus-use-cases.target \
 		${D}${systemd_system_unitdir}/
 
 	install -d ${D}${datadir}/dbus-1/system.d
@@ -42,6 +44,7 @@ FILES:${PN} += "\
 	${systemd_system_unitdir}/em-app.target \
 	${systemd_system_unitdir}/em-app-time.target \
 	${systemd_system_unitdir}/em-app-no-time.target \
+	${systemd_system_unitdir}/em-eebus-use-cases.target \
 	${systemd_unitdir}/system-generators/em-app-generator \
 	${datadir}/dbus-1/system.d/empkg.conf \
 "
