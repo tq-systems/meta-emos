@@ -16,6 +16,7 @@ import tarfile
 import textwrap
 from urllib.parse import urlparse
 import yaml
+from yaml.loader import SafeLoader
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -152,8 +153,25 @@ class AppData:
 		self.cache = app_info.get('cache')
 		self.uncompressed = app_info.get('uncompressed')
 
+class EnvLoader(SafeLoader):
+	pass
+
 class CommandCommon:
 	"""Common functions for all commands"""
+
+	# match environment variables either as ${VAR} or $VAR
+	env_matcher = re.compile(r'\$\{([^}]+)\}|\$([A-Za-z_][A-Za-z0-9_]*)')
+
+	# Expand environment variables
+	def env_replacer(loader, node):
+		''' Replace the variable with its value '''
+		def replace(m):
+			env_var = m.group(1) or m.group(2)
+			return os.environ.get(env_var, '')
+		return CommandCommon.env_matcher.sub(replace, node.value)
+
+	# Call env_replacer on every plain string identified by YAML standard tag
+	EnvLoader.add_constructor('tag:yaml.org,2002:str', env_replacer)
 
 	def __init__(self, args):
 		self.args = args
@@ -162,7 +180,7 @@ class CommandCommon:
 
 		for spec in self.args.bundle_spec:
 			with open(spec, 'r') as f:
-				bundle_spec = yaml.safe_load(f)
+				bundle_spec = yaml.load(f, Loader=EnvLoader)
 				self.bundle_spec = merge_dicts(self.bundle_spec, bundle_spec)
 
 		self.defaults = self.bundle_spec['defaults']
