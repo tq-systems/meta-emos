@@ -5,6 +5,7 @@
 - empkg: handle rundir requirement for one app
 - emit: use shell to create download_dir
 - emit: allow env variables in yaml processing
+- em-bundle-coreqa/sdk: update apps versions
 
 ### Added
 - em-eebus-use-cases.target: new systemd target
