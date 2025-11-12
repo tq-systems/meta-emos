@@ -1,12 +1,12 @@
 apps:
   data-transfer:
-    version: '4.1.0'
+    version: '4.1.2'
 
   json:
-    version: '2.8.0'
+    version: '3.0.1'
 
   upnp:
-    version: '2.0.0'
+    version: '2.1.1'
 
   data-aggregator:
     version: '1.1.0'
