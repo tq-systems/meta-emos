@@ -23,13 +23,22 @@ include:
 Gitleaks:
   extends: .gitleaks
 
-Trigger Core Snapshots:
+Trigger Internal Core Snapshots:
   extends:
     - .rule-include-default-branch
     - .internal-build-variables
     - .internal-meta-emos-conf
   trigger:
     project: tq-em/build/docker/yocto-scripts
+    strategy: depend
+
+Trigger Public Core Snapshots:
+  extends:
+    - .rule-include-default-branch
+    - .internal-build-variables
+    - .internal-meta-emos-conf
+  trigger:
+    project: tq-em/public/build/yocto
     strategy: depend
 
 Trigger Core QA Snapshots:
