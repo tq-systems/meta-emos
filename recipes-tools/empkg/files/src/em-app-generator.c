@@ -49,7 +49,7 @@ bool is_core_app(const char *app) {
 		return false;
 	}
 
-	log_message("em-app-generator: Property 'appclass' not found in manifest. Please update %s by 2025.\n", app);
+	log_message("em-app-generator: Property 'appclass' not found in manifest of %s.\n", app);
 
 	for (i = 0; CORE_APPS[i]; i++) {
 		if (strcmp(app, CORE_APPS[i]) == 0)
