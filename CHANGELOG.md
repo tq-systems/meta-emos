@@ -1,3 +1,19 @@
+## [8.1.0] - 2025-11-14
+### Changed
+- emit: allow local empkg packages
+- empkg: handle rundir requirement for one app
+- emit: use shell to create download_dir
+- emit: allow env variables in yaml processing
+- em-bundle-coreqa/sdk: update apps versions
+- nginx: set keepalive-timeout to 120
+
+### Added
+- em-eebus-use-cases.target: new systemd target
+
+## [8.0.1] - 2025-10-10
+### Changed
+- nginx: removed weak DHE ciphers and restricted allowed DH groups to `ffdhe3072` and `ffdhe4096` per OWASP recommendation
+
 ## [8.0.0] - 2025-09-26
 ### Changed
 - Hardened Nginx security headers (stricter CSP with script hash, X-Frame-Options, stricter Referrer-Policy, reduced Permissions-Policy)
