@@ -11,28 +11,17 @@
 #include "empkg_log.h"
 
 const char *const CORE_APPS[] = {
-	"backup",
 	"button-handler",
 	"devel",
 	"device-settings",
-	"health-check",
 	"upnp",
 	"web-login",
 	NULL,
 };
 
 const char *const TIME_APPS[] = {
-	"cloud-sync",
 	"datalogger",
-	"eventlogger",
-	"evse-etrel",
-	"evse-keba",
-	"kostal-solar-electric",
-	"livelogger",
-	"modbus-daemon",
-	"sensors",
 	"tariffs",
-	"teridiand",
 	NULL,
 };
 
