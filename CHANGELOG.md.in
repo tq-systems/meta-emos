@@ -2,6 +2,7 @@
 ### Added
 - trigger for public core snapshot
 - empkg: add support for minimal system memory
+- systemd: enable wait-online service
 
 ### Changed
 - empkg: lift deadline on missing appclass

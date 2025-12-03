@@ -10,6 +10,7 @@ SRC_URI:append:emos = "\
 	\
 	file://read-only-rootfs.conf \
 	file://set-timeout-stop.conf \
+	file://wait-online.conf \
 "
 
 pkg_postinst:${PN}:libc-glibc:append:emos () {
@@ -30,7 +31,8 @@ do_install:append:emos() {
 	# Add configurations for read-only root filesystem
 	install -m755 -d \
 		${D}${systemd_system_unitdir}/systemd-logind.service.d \
-		${D}${systemd_system_unitdir}/systemd-timesyncd.service.d
+		${D}${systemd_system_unitdir}/systemd-timesyncd.service.d \
+		${D}${systemd_system_unitdir}/systemd-networkd-wait-online@.service.d
 
 	install -m644 ${WORKDIR}/read-only-rootfs.conf \
 		${D}${systemd_system_unitdir}/systemd-logind.service.d
@@ -42,4 +44,7 @@ do_install:append:emos() {
 
 	sed -i 's|^d /var/log .*|L /var/log - - - - /cfglog/var/log|' \
 	    ${D}${nonarch_libdir}/tmpfiles.d/var.conf
+
+	install -m644 ${WORKDIR}/wait-online.conf \
+		${D}${systemd_system_unitdir}/systemd-networkd-wait-online@.service.d
 }
