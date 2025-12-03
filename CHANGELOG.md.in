@@ -6,3 +6,4 @@
 ### Changed
 - empkg: lift deadline on missing appclass
 - em-app-generator: remove inactive and appclassed apps
+- empkg: acl: do not follow symlinks
