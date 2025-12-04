@@ -56,9 +56,20 @@ int app_sync(void) {
 	n = scandir(gENABLEDDIR, &ent, scandir_filter_valid_id_link, alphasort);
 
 	while (i < n) {
-		/* Disable apps that are not installed anymore */
+		int do_disable = 0;
+
+		/* Disable apps that are not installed anymore OR whose minimum system memory requirement is not met */
 		if (!appdb_is(INSTALLED, ent[i]->d_name))
+			do_disable = 1;
+
+		if (!appdb_is(MINSYSMEM, ent[i]->d_name)) {
+			log_message("empkg: '%s' disabled - system memory below minimum.\n", ent[i]->d_name);
+			do_disable = 1;
+		}
+
+		if (do_disable)
 			empkg_disable(ent[i]->d_name);
+
 		free(ent[i]);
 		i++;
 	}
@@ -136,8 +147,6 @@ int app_sync(void) {
 	sync();
 	appdb_all(ENABLED, empkg_users_sync_app_users_and_dirs);
 	sync();
-	if (!defer_count)
-		log_message("empkg: Warning: Maximum deferral reached.");
 
 	appdb_all(ENABLED, empkg_dbus);
 
@@ -153,6 +162,8 @@ int app_sync(void) {
 	while (appdb_count_deferred() && --defer_count)
 		appdb_all(DEFERRED, empkg_users_sync_app_users_and_dirs);
 	sync();
+	if (!defer_count)
+		log_message("empkg: Warning: Maximum deferral reached.");
 
 	/* EOL: disable non-essential apps */
 	if (config.eol)

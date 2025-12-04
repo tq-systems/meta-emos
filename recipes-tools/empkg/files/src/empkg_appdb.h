@@ -15,6 +15,7 @@
 #include <openssl/evp.h>
 #include <stdbool.h>
 #include <sys/stat.h> /* struct stat */
+#include <sys/sysinfo.h> /* sysinfo for totalram */
 #include "empkg.h" /* gAPPDIR, gBUILTINDIR */
 
 /* The app database consists of 5 types of functions:
@@ -116,13 +117,14 @@ struct appdb_t {
 	int valid_name;
 	int autostart;
 	int builtin;
+	int deferred;
 	int disabled;
 	int enabled;
 	int essential;
 	int fwconf;
-	int systemd;
 	int installed;
-	int deferred;
+	int minsysmem;
+	int systemd;
 	char paths[NPATHS][APPDB_MAX_PATH];
 	md5sums_t md5sums[NSUMS];
 	struct appdb_t *next;
@@ -142,12 +144,13 @@ struct empkg_new_t {
 typedef enum appdb_prop {
 	AUTOSTART,
 	BUILTIN,
+	DEFERRED,
 	DISABLED,
 	ENABLED,
 	ESSENTIAL,
 	FWCONF,
 	INSTALLED,
-	DEFERRED,
+	MINSYSMEM,
 	SYSTEMD,
 	VERSION,
 	MD5SUMS,

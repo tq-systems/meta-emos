@@ -54,7 +54,7 @@ void empkg_request_daemon_reload(char *cmd, char *service) {
 	}
 }
 
-int empkg_process_reload_request(const struct sd_reload_command *custom_command) {
+int empkg_process_reload_request(struct sd_reload_command *custom_command) {
 	struct sd_reload_command *entry = &sd_reload_list;
 	struct sd_reload_command *next;
 	char *syscall;

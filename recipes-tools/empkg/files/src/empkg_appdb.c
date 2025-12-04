@@ -68,6 +68,7 @@ static void appdb_init(struct appdb_t *entry) {
 	entry->version = NULL;
 	entry->valid_name = APPDB_INIT_VAL;
 	entry->autostart = APPDB_INIT_VAL;
+	entry->minsysmem = APPDB_INIT_VAL;
 	entry->builtin = APPDB_INIT_VAL;
 	entry->disabled = APPDB_INIT_VAL;
 	entry->enabled = APPDB_INIT_VAL;
@@ -275,6 +276,37 @@ static void appdb_check_installed(const char *id) {
 	return;
 }
 
+/* check if minimal system memory requirement is met.
+ * The defaule value is inverted here.
+ * return 1 if totalram is more than required OR if no minimum defined!
+ * return 0 if not enough memory
+ */
+#define MANIFEST_MINSYSMEM_KEY "min_sys_mem"
+static void appdb_check_minsysmem(const char *id) {
+	int minsysmem = 1; /* default */
+	struct sysinfo info;
+	const char *manifest_minsysmem_val = empkg_json_get_char(id, MANIFEST_MINSYSMEM_KEY);
+	uint64_t minsysmem_bytes;
+
+	if (manifest_minsysmem_val && strlen(manifest_minsysmem_val) > 0) {
+		minsysmem_bytes = strtoull(manifest_minsysmem_val, NULL, 10);
+
+		/* conversion error or no minimum defined, return default 1 */
+		if (!errno) {
+			/* Query certain statistics on memory usage etc. */
+			sysinfo(&info);
+
+			/* if physical memory is less than required memory (10% margin), minimum is not met */
+			if (info.totalram < 0.90 * minsysmem_bytes)
+				minsysmem = 0;
+		}
+	}
+
+	appdb_set(MINSYSMEM, id, minsysmem);
+
+	return;
+}
+
 /* add new apps in installed-dir to appdb */
 int appdb_scan_installed(void) {
 	struct dirent **ent;
@@ -456,6 +488,9 @@ void appdb_check(const dbp prop, const char *id) {
 	case INSTALLED:
 		appdb_check_installed(id);
 		break;
+	case MINSYSMEM:
+		appdb_check_minsysmem(id);
+		break;
 	case SYSTEMD:
 		appdb_check_systemd(id);
 		break;
@@ -499,6 +534,9 @@ int appdb_get(const dbp prop, const char *id) {
 		break;
 	case INSTALLED:
 		ret = a->installed;
+		break;
+	case MINSYSMEM:
+		ret = a->minsysmem;
 		break;
 	case DEFERRED:
 		ret = a->deferred;
@@ -571,6 +609,9 @@ int appdb_set(const dbp prop, const char *id, const int value) {
 	case BUILTIN:
 		a->builtin = value;
 		break;
+	case DEFERRED:
+		a->deferred = value;
+		break;
 	case DISABLED:
 		a->disabled = value;
 		break;
@@ -586,8 +627,8 @@ int appdb_set(const dbp prop, const char *id, const int value) {
 	case INSTALLED:
 		a->installed = value;
 		break;
-	case DEFERRED:
-		a->deferred = value;
+	case MINSYSMEM:
+		a->minsysmem = value;
 		break;
 	case SYSTEMD:
 		a->systemd = value;

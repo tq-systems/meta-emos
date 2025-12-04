@@ -18,7 +18,7 @@ char *remove_suffix(char *filename);
 void empkg_init_dirs(void);
 void empkg_request_daemon_reload(char *cmd, char *service);
 void empkg_process_sd_command(const char *cmd, const char *id);
-int empkg_process_reload_request(const struct sd_reload_command *custom_command);
+int empkg_process_reload_request(struct sd_reload_command *custom_command);
 int empkg_update_www(void);
 void empkg_update_licenses(void);
 int empkg_update_firewall_single(const char *id);

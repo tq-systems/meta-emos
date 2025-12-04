@@ -86,8 +86,11 @@ int empkg_acl_setacl_r(const char *path, const int uid, const bool write) {
 		free(ent);
 	}
 
-	/* dir entries done, handle other types and dir itself */
-	empkg_acl_setacl(path, uid, write);
+	/* dir entries done, handle other types and dir itself
+	 * do not follow symlinks!
+	 */
+	if (!S_ISLNK(sb.st_mode))
+		empkg_acl_setacl(path, uid, write);
 
 	return 0;
 }

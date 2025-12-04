@@ -11,28 +11,17 @@
 #include "empkg_log.h"
 
 const char *const CORE_APPS[] = {
-	"backup",
 	"button-handler",
 	"devel",
 	"device-settings",
-	"health-check",
 	"upnp",
 	"web-login",
 	NULL,
 };
 
 const char *const TIME_APPS[] = {
-	"cloud-sync",
 	"datalogger",
-	"eventlogger",
-	"evse-etrel",
-	"evse-keba",
-	"kostal-solar-electric",
-	"livelogger",
-	"modbus-daemon",
-	"sensors",
 	"tariffs",
-	"teridiand",
 	NULL,
 };
 
@@ -49,7 +38,7 @@ bool is_core_app(const char *app) {
 		return false;
 	}
 
-	log_message("em-app-generator: Property 'appclass' not found in manifest. Please update %s by 2025.\n", app);
+	log_message("em-app-generator: Property 'appclass' not found in manifest of %s.\n", app);
 
 	for (i = 0; CORE_APPS[i]; i++) {
 		if (strcmp(app, CORE_APPS[i]) == 0)

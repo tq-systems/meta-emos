@@ -1,15 +1,10 @@
 ## [{{ version }}]
 ### Added
 - trigger for public core snapshot
+- empkg: add support for minimal system memory
+- systemd: enable wait-online service
 
 ### Changed
-- nginx: removed weak DHE ciphers and restricted allowed DH groups to `ffdhe3072` and `ffdhe4096` per OWASP recommendation
-- emit: allow local empkg packages
-- empkg: handle rundir requirement for one app
-- emit: use shell to create download_dir
-- emit: allow env variables in yaml processing
-- em-bundle-coreqa/sdk: update apps versions
-- nginx: set keepalive-timeout to 120
-
-### Added
-- em-eebus-use-cases.target: new systemd target
+- empkg: lift deadline on missing appclass
+- em-app-generator: remove inactive and appclassed apps
+- empkg: acl: do not follow symlinks
