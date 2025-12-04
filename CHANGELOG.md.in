@@ -1,6 +1,7 @@
 ## [{{ version }}]
 ### Added
 - trigger for public core snapshot
+- empkg: add support for minimal system memory
 
 ### Changed
 - empkg: lift deadline on missing appclass

@@ -25,6 +25,11 @@ int empkg_enable(const char *id) {
 		return ERRORCODE;
 	}
 
+	if (!appdb_is(MINSYSMEM, id)) {
+		log_message("empkg: Not enabling '%s' - system memory below minimum.\n", id);
+		return ERRORCODE;
+	}
+
 	if ((asprintf(&installedtarget, "../installed/%s", id) == -1) ||
 	    (asprintf(&service, "em-app-%s.service", id) == -1))
 		return ERRORCODE;
