@@ -1,1 +1,3 @@
 ## [{{ version }}]
+### Fixed
+- empkg: link WantedBy dependencies
