@@ -1,3 +1,15 @@
+## [8.2.0] - 2025-12-05
+### Added
+- trigger for public core snapshot
+- empkg: add support for minimal system memory
+- systemd: enable wait-online service
+- em-license-clearing: add classes and scripts
+
+### Changed
+- empkg: lift deadline on missing appclass
+- em-app-generator: remove inactive and appclassed apps
+- empkg: acl: do not follow symlinks
+
 ## [8.1.0] - 2025-11-14
 ### Changed
 - emit: allow local empkg packages
