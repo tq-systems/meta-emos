@@ -1,3 +1,7 @@
+## [8.2.1] - 2026-01-09
+### Fixed
+- empkg: link WantedBy dependencies
+
 ## [8.2.0] - 2025-12-05
 ### Added
 - trigger for public core snapshot
