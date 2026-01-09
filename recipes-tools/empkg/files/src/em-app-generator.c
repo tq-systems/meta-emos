@@ -95,6 +95,55 @@ bool is_autostart(const char *app) {
 	return ret;
 }
 
+bool is_wantedby_target(const char *app, char *target_dir, size_t target_dir_size) {
+	const char *svc_pattern = "/apps/installed/%s/em-app-%s.service";
+	char svc_path[strlen(svc_pattern) + strlen(app) + strlen(app) + 1];
+	FILE *fsvc;
+	char line[512];
+
+	snprintf(svc_path, sizeof(svc_path), svc_pattern, app, app);
+
+	fsvc = fopen(svc_path, "r");
+	if (!fsvc) {
+		perror("fopen");
+		return false;
+	}
+
+	while (fgets(line, sizeof(line), fsvc)) {
+		/* skip leading whitespace */
+		char *p = line;
+		while (*p == ' ' || *p == '\t') p++;
+
+		if (strncmp(p, "WantedBy", 8) == 0) {
+			/* skip to unit name */
+			char *unit = strchr(p, '=');
+			char *end;
+			if (!unit)
+				continue;
+			unit++;
+
+			/* skip spaces */
+			while (*unit == ' ' || *unit == '\t') unit++;
+
+			/* take only first unit name */
+			end = unit;
+			while (*end && *end != ' ' && *end != '\t' && *end != '\n')
+				end++;
+			*end = '\0';
+
+			/* build "unit.wants" */
+			if (strlen(unit)) {
+				snprintf(target_dir, target_dir_size, "%s.wants", unit);
+				fclose(fsvc);
+				return true;
+			}
+		}
+	}
+
+	fclose(fsvc);
+	return false;
+}
+
 void symlink_wants(const char *app, const char *target) {
 	const char *wants_pattern = "%s/em-app-%s.service";
 
@@ -144,6 +193,7 @@ void handle_app(const char *app) {
 
 	char service_path[strlen(service_pattern) + 2*strlen(app) + 1];
 	char *service_name;
+	char target_dir[512];
 
 	snprintf(service_path, sizeof(service_path), service_pattern, app, app);
 	service_name = basename(service_path);
@@ -169,6 +219,13 @@ void handle_app(const char *app) {
 		symlink_wants(app, APP_TIME_TARGET_WANTS);
 	} else {
 		symlink_wants(app, APP_NO_TIME_TARGET_WANTS);
+	}
+
+	if (is_wantedby_target(app, target_dir, sizeof(target_dir))) {
+		if (mkdir(target_dir, 0777) && errno != EEXIST) {
+			perror("mkdir");
+		}
+		symlink_wants(app, target_dir);
 	}
 
 	add_dependencies(app);
