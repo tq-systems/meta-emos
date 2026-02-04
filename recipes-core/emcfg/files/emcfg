@@ -74,7 +74,9 @@ cmd_init() {
 	if [ ! -e $CFGNETWORKCONF ]; then
 		set_default_network
 	fi
+}
 
+cmd_preset_configs() {
 	# transfer configs from app presets to /run, if any
 	[ -e $PRESETSRUN ] && cp -r $PRESETSRUN/* /run
 }
@@ -234,6 +236,7 @@ reset_password|\
 debug_access|\
 factory_reset|\
 restore_backup|\
+preset_configs|\
 help)
 	"cmd_$CMD"
 	;;
