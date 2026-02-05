@@ -1,3 +1,7 @@
+## [8.2.2] - 2026-02-05
+### Fixed
+- emcfg: fix config drop-in installation
+
 ## [8.2.1] - 2026-01-09
 ### Fixed
 - empkg: link WantedBy dependencies
