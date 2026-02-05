@@ -311,6 +311,9 @@ if command -v empkg >/dev/null; then
 	fi
 fi
 
+# transfer configs after empkg restored app symlinks following factory reset
+emcfg preset_configs
+
 # Mountpoint Ownerships/Permissions
 chown root:em-group-update /update
 chmod 775 /update

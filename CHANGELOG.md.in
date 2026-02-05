@@ -1,1 +1,3 @@
 ## [{{ version }}]
+### Fixed
+- emcfg: fix config drop-in installation
