@@ -1,3 +1,7 @@
+## [8.1.1] - 2026-02-05
+### Fixed
+- emcfg: fix config drop-in installation
+
 ## [8.1.0] - 2025-11-14
 ### Changed
 - emit: allow local empkg packages
