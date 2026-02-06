@@ -1,3 +1,4 @@
 ## [{{ version }}]
 ### Changed
 - u-boot-em: create bootloader archives
+- sshguard: use srcrev as version
