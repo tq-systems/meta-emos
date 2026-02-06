@@ -1,1 +1,3 @@
 ## [{{ version }}]
+### Changed
+- u-boot-em: create bootloader archives

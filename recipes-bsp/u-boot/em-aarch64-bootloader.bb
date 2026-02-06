@@ -42,6 +42,7 @@ do_compile:append:em-with-em-cb30 () {
     cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/fw_env.config-em-cb30" .
     cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/u-boot-initial-env-em-cb30" .
 }
+
 COMPILE_MCDEPENDS = ""
 COMPILE_MCDEPENDS:append:em-with-em4xx = " mc::em4xx:virtual/bootloader:do_deploy"
 COMPILE_MCDEPENDS:append:em-with-em-cb30 = " mc::em-cb30:k3-bootloader-image:do_deploy"
@@ -68,8 +69,14 @@ FILES:${PN} = ""
 ALLOW_EMPTY:${PN} = "1"
 FILES:${PN}-env = "${sysconfdir}/ ${base_sbindir}/"
 
+BOOTLOADERS:em-aarch64 = "bootloader-*.bin"
 do_deploy () {
     install -D -m 644 -t "${DEPLOYDIR}" "${B}"/*
+    cd "${DEPLOYDIR}" && \
+    tar --owner=0 --group=0 --numeric-owner --sort=name --mtime=@0 \
+        -chf "em-image-core-${MACHINE}-${DISTRO_VERSION}.bootloader.tar" \
+        ${BOOTLOADERS}
+    ln -sf "em-image-core-${MACHINE}-${DISTRO_VERSION}.bootloader.tar" "${DEPLOYDIR}/em-image-core-${MACHINE}.bootloader.tar"
 }
 addtask deploy before do_build after do_compile
 
