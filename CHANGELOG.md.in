@@ -5,3 +5,4 @@
 - em-aarch64.conf: default disable em-cb30 build
 - emit: add allow-mounted for u-boot.slot
 - em-annexfs: add new tool to provide additional storage
+- empkg: silence warning when dirs do not exist
