@@ -3,3 +3,4 @@
 - u-boot-em: create bootloader archives
 - sshguard: use srcrev as version
 - em-aarch64.conf: default disable em-cb30 build
+- emit: add allow-mounted for u-boot.slot
