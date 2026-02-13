@@ -296,6 +296,9 @@ stop_haveged
 emcfg init
 emcfg update_firewall
 
+# mount the additional filesystem
+em-annexfs
+
 # Writable (simple) configuration files
 add_config machine-id
 add_config hostname

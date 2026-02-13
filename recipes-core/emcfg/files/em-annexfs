@@ -1,0 +1,60 @@
+#!/bin/sh
+
+# 4 MiB gap in sectors (8192 512-byte sectors)
+ANNEXFS_GAP_SECTORS=8192
+# Reserve 8 MiB (2048 4096-byte filesystem blocks) for this additional filesystem
+ANNEXFS_FS_BLOCKS=2048
+ANNEXFS_MOUNTPOINT="/cfglog/annexfs"
+ANNEXFS_DEVICE=""
+
+# find last partition
+find_last_partition() {
+	LAST=""
+	LASTSTART="0"
+	for part in /sys/block/mmcblk0/mmcblk0p*; do
+		CURRENTSTART="$(cat "${part}"/start)"
+		if [ "${CURRENTSTART}" -gt "${LASTSTART}" ]; then
+			LASTSTART="${CURRENTSTART}"
+			LAST="$(basename "${part}")"
+		fi
+	done
+	echo "${LAST}"
+}
+
+calc_annexfs_offset() {
+	LAST="$(find_last_partition)"
+	START="$(cat /sys/block/mmcblk0/"${LAST}"/start)"
+	SIZE="$(cat /sys/block/mmcblk0/"${LAST}"/size)"
+	SECTORS=$(( START + SIZE + ANNEXFS_GAP_SECTORS ))
+	BYTES=$(( SECTORS * 512 ))
+	echo ${BYTES}
+}
+ANNEXFS_OFFSET="$(calc_annexfs_offset)"
+
+create_annexfs_dev() {
+	LOOPDEV=$(losetup -f)
+	losetup -o "${ANNEXFS_OFFSET}" "${LOOPDEV}" /dev/mmcblk0
+	echo "${LOOPDEV}"
+}
+
+get_annexfs_dev() {
+	losetup -a | grep mmcblk0 | grep "${ANNEXFS_OFFSET}" | awk -F: '{print $1}'
+}
+ANNEXFS_DEVICE="$(get_annexfs_dev)"
+
+mount_annexfs() {
+	mkdir -p "${ANNEXFS_MOUNTPOINT}"
+	mount "${ANNEXFS_DEVICE}" "${ANNEXFS_MOUNTPOINT}"
+}
+
+if ! [ -e "${ANNEXFS_DEVICE}" ]; then
+	ANNEXFS_DEVICE="$(create_annexfs_dev)"
+fi
+
+if ! mount_annexfs; then
+	# omit journal to reduce unusable overhead on ext4
+	mkfs.ext2 -F -O ^has_journal -m 0 -b 4096 -I 256 "${ANNEXFS_DEVICE}" "${ANNEXFS_FS_BLOCKS}"
+	if ! mount_annexfs; then
+		echo "Error mounting additional storage".
+	fi
+fi
