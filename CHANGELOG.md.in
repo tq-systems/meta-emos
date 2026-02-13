@@ -6,3 +6,4 @@
 - emit: add allow-mounted for u-boot.slot
 - em-annexfs: add new tool to provide additional storage
 - empkg: silence warning when dirs do not exist
+- em-core-qa: update app versions
