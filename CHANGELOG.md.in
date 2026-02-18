@@ -1,4 +1,9 @@
 ## [{{ version }}]
-### Fixed
-- empkg: link WantedBy dependencies
-- emcfg: fix config drop-in installation
+### Changed
+- u-boot-em: create bootloader archives
+- sshguard: use srcrev as version
+- em-aarch64.conf: default disable em-cb30 build
+- emit: add allow-mounted for u-boot.slot
+- em-annexfs: add new tool to provide additional storage
+- empkg: silence warning when dirs do not exist
+- em-core-qa: update app versions

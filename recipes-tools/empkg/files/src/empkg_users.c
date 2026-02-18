@@ -354,13 +354,27 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 	/* ReadWritePath entries */
 	json_array_foreach(json_object_get(json_perm, "rw"), notused, dir) {
 		const char *dirpath = json_string_value(dir);
+
+		/* find leading dash that marks dirs
+		 * for which not to warn when they not exist
+		 */
+		int silent = 0;
+		if (dirpath[0] == '-') {
+			silent = 1;
+			dirpath++; //eat leading dash
+		}
+
 		dircheck = opendir(dirpath);
 		if (dircheck) {
 			/* setfacl -Rm "u:$user:rwx" "$dir" */
 			empkg_acl_setacl_r(dirpath, usernam.pw_uid, true);
 		} else {
-			log_message("empkg: %s: Cannot assign rw access: '%s' does not exist.\n", id, dirpath);
-			ret = ERRORDEFER;
+			if (silent) {
+				ret = ERRORDEFERSILENT;
+			} else {
+				log_message("empkg: %s: Cannot assign rw access: '%s' does not exist.\n", id, dirpath);
+				ret = ERRORDEFER;
+			}
 		}
 		closedir(dircheck);
 	}
@@ -371,13 +385,27 @@ static int empkg_users_handle_permissions(const char *id, const char *user, cons
 	/* ReadOnlyPath entries */
 	json_array_foreach(json_object_get(json_perm, "ro"), notused, dir) {
 		const char *dirpath = json_string_value(dir);
+
+		/* find leading dash that marks dirs
+		 * for which not to warn when they not exist
+		 */
+		int silent = 0;
+		if (dirpath[0] == '-') {
+			silent = 1;
+			dirpath++; //eat leading dash
+		}
+
 		dircheck = opendir(dirpath);
 		if (dircheck) {
 			/* setfacl -Rm "u:$user:r-x" "$dir" */
 			ret = empkg_acl_setacl_r(dirpath, usernam.pw_uid, false);
 		} else {
-			log_message("empkg: %s: Cannot assign ro access: '%s' does not exist.\n", id, dirpath);
-			ret = ERRORDEFER;
+			if (silent) {
+				ret = ERRORDEFERSILENT;
+			} else {
+				log_message("empkg: %s: Cannot assign ro access: '%s' does not exist.\n", id, dirpath);
+				ret = ERRORDEFER;
+			}
 		}
 		closedir(dircheck);
 	}
@@ -408,9 +436,14 @@ int empkg_users_sync_app_users_and_dirs(const char *id) {
 
 	if (ret == ERRORDEFER) {
 		log_message("empkg: Deferring %s\n", id);
+	}
+
+	if ((ret == ERRORDEFER) || (ret == ERRORDEFERSILENT)) {
 		appdb_set(DEFERRED, id, 1);
 		return 0;
-	} else if (ret == 0) {
+	}
+
+	if (ret == 0) {
 		appdb_set(DEFERRED, id, 0);
 	}
 

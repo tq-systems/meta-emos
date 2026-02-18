@@ -533,6 +533,7 @@ class CommandBuild(CommandCommon):
 
 			[slot.u-boot.0]
 			device=/dev/mmcblk0
+			allow-mounted=true
 			type=raw
 
 			[slot.rootfs.0]

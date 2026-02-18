@@ -40,6 +40,7 @@ SRC_URI = " \
 	file://journald-debug.conf \
 	file://80-ttyAPP.rules \
 	file://90-gpio-teridian.rules \
+	file://em-annexfs \
 "
 
 SYSTEMD_SERVICE:${PN} = " \
@@ -57,6 +58,7 @@ do_install() {
 		em-config-reset \
 		em-init \
 		em-update-password \
+		em-annexfs \
 		${D}${base_sbindir}/
 
 	install -d ${D}${sysconfdir}/tmpfiles.d

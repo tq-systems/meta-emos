@@ -72,6 +72,15 @@ do_deploy:append () {
     fi
 }
 
+BOOTLOADERS:em310 = "u-boot.sb-em310"
+do_deploy:append:em310 () {
+    cd "${DEPLOYDIR}" &&  \
+    tar --owner=0 --group=0 --numeric-owner --sort=name --mtime=@0 \
+        -chf "em-image-core-${MACHINE}-${DISTRO_VERSION}.bootloader.tar" \
+        ${BOOTLOADERS}
+    ln -sf "em-image-core-${MACHINE}-${DISTRO_VERSION}.bootloader.tar" "${DEPLOYDIR}/em-image-core-${MACHINE}.bootloader.tar"
+}
+
 UBOOT_INITIAL_ENV = "u-boot-initial-env"
 
 COMPATIBLE_MACHINE = "^$"
