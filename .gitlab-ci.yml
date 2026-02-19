@@ -1,8 +1,8 @@
 ---
 include:
-- project: tq-em/build/docker/base
+- project: tq-em/public/build/base
   file: ci/include.yml
-  ref: master
+  ref: main
 
 # Attention: Do not define trigger variables in the global section,
 # this may lead to unexpected behavior in the triggered project.
@@ -23,16 +23,7 @@ include:
 Gitleaks:
   extends: .gitleaks
 
-Trigger Internal Core Snapshots:
-  extends:
-    - .rule-include-default-branch
-    - .internal-build-variables
-    - .internal-meta-emos-conf
-  trigger:
-    project: tq-em/build/docker/yocto-scripts
-    strategy: depend
-
-Trigger Public Core Snapshots:
+Trigger Core Snapshots:
   extends:
     - .rule-include-default-branch
     - .internal-build-variables
