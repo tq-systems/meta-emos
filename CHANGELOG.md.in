@@ -10,3 +10,4 @@
 
 ### Fixed
 - nginx: proxied connections to our backend apps do not timeout prematurely due to increased timeout from default 60s to 120s
+- archiver: fix empty source archives for pure file://-recipes
