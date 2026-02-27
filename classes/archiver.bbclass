@@ -38,7 +38,7 @@ def em_archiver_seed_srcdir_from_workdir(d):
     if em_archiver_srcdir_has_real_content(srcdir):
         return
 
-    workdir = archiver_workdir
+    workdir = d.getVar('WORKDIR')
 
     bb.debug(1, 'archiver: %s has no dedicated source tree, copying unpacked WORKDIR contents into ${S}' % d.getVar('PN'))
 
