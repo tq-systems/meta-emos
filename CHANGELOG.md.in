@@ -11,6 +11,7 @@
 - em-core-qa: update app versions
 - linux-em: update to v6.18.16
 - rauc: update to v1.15.1
+- dropbear: update to 2025.89
 
 ### Fixed
 - nginx: proxied connections to our backend apps do not timeout prematurely due to increased timeout from default 60s to 120s
