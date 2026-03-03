@@ -8,6 +8,7 @@
 - emit: add allow-mounted for u-boot.slot
 - em-annexfs: add new tool to provide additional storage
 - empkg: silence warning when dirs do not exist
+- empkg: support open-ui-container as webapp
 - em-core-qa: update app versions
 - linux-em: update to v6.18.16
 - rauc: update to v1.15.1

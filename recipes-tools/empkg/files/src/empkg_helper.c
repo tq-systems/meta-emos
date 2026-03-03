@@ -203,10 +203,12 @@ int empkg_update_www(void) {
 	 * /apps/www/index.html -> /apps/installed/<webapp>/www/index.html
 	 * /apps/www/static -> /apps/installed/<webapp>/www/static
 	 *
-	 * <webapp> can be either "ui-container" or "web-application".
+	 * <webapp> can be either "open-ui-container", "ui-container" or "web-application".
 	 */
 	if (appdb_is(INSTALLED, "ui-container")) {
 		webapp = "ui-container";
+	} else if (appdb_is(INSTALLED, "open-ui-container")) {
+		webapp = "open-ui-container";
 	} else if (appdb_is(INSTALLED, "web-application")) {
 		webapp = "web-application";
 	}
