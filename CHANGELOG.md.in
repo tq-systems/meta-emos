@@ -1,5 +1,6 @@
 ## [{{ version }}]
 ### Changed
+- gitlab-ci.yml: rename layer conf variables
 - u-boot-em: create bootloader archives
 - sshguard: use srcrev as version
 - em-aarch64.conf: default disable em-cb30 build
