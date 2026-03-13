@@ -14,6 +14,7 @@
 - rauc: update to v1.15.1
 - dropbear: update to 2025.89
 - nginx: update to 1.29.1
+- kern-tools-native: update to support transitional attribute
 
 ### Fixed
 - nginx: proxied connections to our backend apps do not timeout prematurely due to increased timeout from default 60s to 120s
