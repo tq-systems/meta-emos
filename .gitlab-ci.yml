@@ -14,11 +14,11 @@ include:
 
 .internal-meta-emos-conf:
   variables:
-    OVERRIDE_LOCAL_CONF: $INTERNAL_LOCAL_CONF
+    OVERRIDE_LAYER_CONF_VAR: $INTERNAL_LOCAL_CONF
 
 .product-qualification-conf:
   variables:
-    OVERRIDE_LOCAL_CONF: $PQT_LOCAL_CONF
+    OVERRIDE_LAYER_CONF_VAR: $PQT_LOCAL_CONF
 
 Gitleaks:
   extends: .gitleaks

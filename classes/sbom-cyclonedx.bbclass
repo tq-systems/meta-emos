@@ -31,7 +31,7 @@ python do_cyclonedx_component() {
     sbom = {
         "components": []
     }
-    for comp in generate_packages_list(d):
+    for comp in generate_packages_list_alternative(d):
         if bb.utils.to_boolean(d.getVar('CYCLONEDX_WITH_BUILDINFOS')):
             pn = d.getVar('PN')
 
@@ -186,7 +186,7 @@ def do_cyclonedx_buildinfos (d):
             return pkg
     return None
 
-def generate_packages_list(d):
+def generate_packages_list_alternative(d):
     """
     Get a list of products and generate CPE and PURL identifiers for each of them.
     """

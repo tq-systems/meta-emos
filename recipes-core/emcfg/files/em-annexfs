@@ -44,6 +44,7 @@ ANNEXFS_DEVICE="$(get_annexfs_dev)"
 
 mount_annexfs() {
 	mkdir -p "${ANNEXFS_MOUNTPOINT}"
+	fsck -a "${ANNEXFS_DEVICE}" && \
 	mount "${ANNEXFS_DEVICE}" "${ANNEXFS_MOUNTPOINT}"
 }
 
