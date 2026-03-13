@@ -2,6 +2,7 @@
 ### Changed
 - gitlab-ci.yml: rename layer conf variables
 - u-boot-em: create bootloader archives
+- u-boot-em: update to 2026.01
 - sshguard: use srcrev as version
 - em-aarch64.conf: default disable em-cb30 build
 - emit: add allow-mounted for u-boot.slot
