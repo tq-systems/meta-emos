@@ -1,3 +1,25 @@
+## [9.0.0] - 2026-03-13
+### Changed
+- gitlab-ci.yml: rename layer conf variables
+- u-boot-em: create bootloader archives
+- u-boot-em: update to 2026.01
+- sshguard: use srcrev as version
+- em-aarch64.conf: default disable em-cb30 build
+- emit: add allow-mounted for u-boot.slot
+- em-annexfs: add new tool to provide additional storage
+- empkg: silence warning when dirs do not exist
+- empkg: support open-ui-container as webapp
+- em-core-qa: update app versions
+- linux-em: update to v6.18.16
+- rauc: update to v1.15.1
+- dropbear: update to 2025.89
+- nginx: update to 1.29.1
+- kern-tools-native: update to support transitional attribute
+
+### Fixed
+- nginx: proxied connections to our backend apps do not timeout prematurely due to increased timeout from default 60s to 120s
+- archiver: fix empty source archives for pure file://-recipes
+
 ## [8.2.2] - 2026-02-05
 ### Fixed
 - emcfg: fix config drop-in installation
