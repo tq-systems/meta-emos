@@ -1,5 +1,6 @@
 ## [{{ version }}]
 ### Changed
+- em-license-header: replaced by em-license-compliance class; stops injecting SPDX headers into individual source files
 - gitlab-ci.yml: rename layer conf variables
 - u-boot-em: create bootloader archives
 - u-boot-em: update to 2026.01
@@ -15,6 +16,11 @@
 - dropbear: update to 2025.89
 - nginx: update to 1.29.1
 - kern-tools-native: update to support transitional attribute
+
+### Added
+- em-license-compliance: new class replacing em-license-header; creates LICENSE and AUTHORS files in source archive root for Fossology compliance
+- em-license-compliance: EM_LICENSE_AUTHOR_PERSON variable required per TQSPSLA recipe, build fails if unset
+- em-license-compliance: meta-emos git tag included in source archive filename
 
 ### Fixed
 - nginx: proxied connections to our backend apps do not timeout prematurely due to increased timeout from default 60s to 120s
