@@ -1,1 +1,3 @@
 ## [{{ version }}]
+### Fixed
+- linux-em: fixed NULL pointer dereference panic
