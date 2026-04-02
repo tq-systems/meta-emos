@@ -3,6 +3,7 @@ DESCRIPTION = "Energy Manager Firewall"
 LICENSE = "TQSPSLA-1.0.3"
 LIC_FILES_CHKSUM = "file://${@bb.utils.which(d.getVar('BBPATH'), 'files/custom-licenses/TQSPSLA-1.0.3')};md5=675d9988badfa6f03ad1d2678a0d50b3"
 SRC_DISTRIBUTE_LICENSES += "TQSPSLA-1.0.3"
+EM_LICENSE_AUTHOR_PERSON = "Michael Krummsdorf <michael.krummsdorf@tq-group.com>"
 
 SRC_URI = " \
           file://00-em-firewall-init.conf \
