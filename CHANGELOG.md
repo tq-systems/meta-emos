@@ -1,3 +1,7 @@
+## [9.0.1] - 2026-04-09
+### Fixed
+- linux-em: fixed NULL pointer dereference panic
+
 ## [9.0.0] - 2026-03-13
 ### Changed
 - gitlab-ci.yml: rename layer conf variables
