@@ -131,61 +131,22 @@ def em_license_create_compliance_files(d, srcdir):
     bb.debug(1, "em-license-compliance: wrote %s" % dest_copying)
 
 python do_ar_patched:prepend () {
-    import os
-    import shutil
-
     # Use a positive condition instead of early returns: in Python prepend functions
     # bitbake concatenates prepend + original + append into a single function, so a
     # bare "return" would skip the original do_ar_patched (and its create_tarball call)
     # for all non-TQSPSLA packages.
     if bb.utils.to_boolean(d.getVar('EM_LICENSE_COMPLIANCE_ENABLED') or "0", False) \
             and d.getVarFlag('ARCHIVER_MODE', 'src') == 'patched':
-        archiver_workdir = d.getVar('ARCHIVER_WORKDIR')
-        workdir = d.getVar('WORKDIR')
-        s = d.getVar('S')
-        if archiver_workdir and workdir and s:
+        srcdir = d.getVar('EM_ARCHIVER_PATCHED_SRCDIR') or em_archiver_patched_srcdir(d)
+        if em_archiver_is_pure_file_recipe(d):
+            srcdir = em_archiver_seed_patched_srcdir(d)
+            if srcdir:
+                d.setVar('S', srcdir)
+                d.setVar('EM_ARCHIVER_PATCHED_SRCDIR', srcdir)
+
+        if srcdir:
             # Save ARCHIVER_OUTDIR now, before do_ar_patched changes WORKDIR.
             d.setVar('EM_LC_SAVED_AR_OUTDIR', d.getVar('ARCHIVER_OUTDIR'))
-            # Derive the directory the archiver will pack: S relative to WORKDIR,
-            # transposed onto ARCHIVER_WORKDIR.  Handles S=${WORKDIR} (rel='.')
-            # as well as S=${WORKDIR}/subdir.
-            rel = os.path.relpath(s, workdir)
-            srcdir = os.path.normpath(os.path.join(archiver_workdir, rel))
-
-            # For pure file://-recipes seed srcdir from ARCHIVER_WORKDIR, which is
-            # populated by do_unpack_and_patch and contains only source files.
-            # Reading from the real WORKDIR would include build artifacts (package/,
-            # spdx/, pseudo/, sstate-install-*, etc.) created by later tasks.
-            src_uri = (d.getVar('SRC_URI') or '').split()
-            if src_uri and all(bb.fetch2.decodeurl(u)[0].lower() == 'file' for u in src_uri):
-                skip_names = {'.pc', 'patches', 'temp', 'archiver-sources', 'archiver-work'}
-                skip_names.add(os.path.relpath(s, workdir).split(os.sep, 1)[0])
-                build = d.getVar('B') or ''
-                b_head = os.path.relpath(build, workdir).split(os.sep, 1)[0] if build else None
-                if b_head and not b_head.startswith('..'):
-                    skip_names.add(b_head)
-                if os.path.isdir(archiver_workdir):
-                    # Seed additional flat file:// entries into srcdir.  Do NOT
-                    # delete srcdir first: when S=${WORKDIR}/subdir and a
-                    # file://subdir;localdir=subdir entry exists in SRC_URI,
-                    # do_unpack_and_patch already populated srcdir with the real
-                    # source tree.  Removing it would destroy those sources because
-                    # the subdir name is in skip_names (to prevent a circular copy).
-                    # ARCHIVER_WORKDIR is always fresh (do_unpack_and_patch cleans
-                    # it beforehand), so no stale build-artifact risk exists here.
-                    bb.utils.mkdirhier(srcdir)
-                    for entry in sorted(os.listdir(archiver_workdir)):
-                        if entry in skip_names or entry.startswith('.'):
-                            continue
-                        src_path = os.path.join(archiver_workdir, entry)
-                        dst_path = os.path.join(srcdir, entry)
-                        if not os.path.exists(dst_path):
-                            if os.path.isdir(src_path):
-                                oe.path.copytree(src_path, dst_path)
-                            else:
-                                shutil.copy2(src_path, dst_path)
-                    bb.debug(1, "em-license-compliance: seeded %s from ARCHIVER_WORKDIR" % srcdir)
-
             em_license_create_compliance_files(d, srcdir)
 }
 
