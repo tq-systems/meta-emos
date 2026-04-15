@@ -25,6 +25,7 @@
 #                                    ARCHIVER_MODE[src] = "patched"; the build
 #                                    will fail if this variable is not set.
 
+require ${@bb.utils.which(d.getVar('BBPATH'), 'classes/em-archiver-common.bbclass')}
 inherit archiver
 
 def em_license_compliance_default_enabled(d):
