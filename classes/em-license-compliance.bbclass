@@ -73,58 +73,59 @@ python do_ar_patched:prepend () {
     import os
     import shutil
 
-    if not bb.utils.to_boolean(d.getVar('EM_LICENSE_COMPLIANCE_ENABLED') or "0", False):
-        return
-    if d.getVarFlag('ARCHIVER_MODE', 'src') != 'patched':
-        return
-    archiver_workdir = d.getVar('ARCHIVER_WORKDIR')
-    workdir = d.getVar('WORKDIR')
-    s = d.getVar('S')
-    if not archiver_workdir or not workdir or not s:
-        return
-    # Save ARCHIVER_OUTDIR now, before do_ar_patched changes WORKDIR.
-    d.setVar('EM_LC_SAVED_AR_OUTDIR', d.getVar('ARCHIVER_OUTDIR'))
-    # Derive the directory the archiver will pack: S relative to WORKDIR,
-    # transposed onto ARCHIVER_WORKDIR.  Handles S=${WORKDIR} (rel='.')
-    # as well as S=${WORKDIR}/subdir.
-    rel = os.path.relpath(s, workdir)
-    srcdir = os.path.normpath(os.path.join(archiver_workdir, rel))
+    # Use a positive condition instead of early returns: in Python prepend functions
+    # bitbake concatenates prepend + original + append into a single function, so a
+    # bare "return" would skip the original do_ar_patched (and its create_tarball call)
+    # for all non-TQSPSLA packages.
+    if bb.utils.to_boolean(d.getVar('EM_LICENSE_COMPLIANCE_ENABLED') or "0", False) \
+            and d.getVarFlag('ARCHIVER_MODE', 'src') == 'patched':
+        archiver_workdir = d.getVar('ARCHIVER_WORKDIR')
+        workdir = d.getVar('WORKDIR')
+        s = d.getVar('S')
+        if archiver_workdir and workdir and s:
+            # Save ARCHIVER_OUTDIR now, before do_ar_patched changes WORKDIR.
+            d.setVar('EM_LC_SAVED_AR_OUTDIR', d.getVar('ARCHIVER_OUTDIR'))
+            # Derive the directory the archiver will pack: S relative to WORKDIR,
+            # transposed onto ARCHIVER_WORKDIR.  Handles S=${WORKDIR} (rel='.')
+            # as well as S=${WORKDIR}/subdir.
+            rel = os.path.relpath(s, workdir)
+            srcdir = os.path.normpath(os.path.join(archiver_workdir, rel))
 
-    # For pure file://-recipes, S is typically an empty subdir of WORKDIR because
-    # file:// sources are unpacked directly into WORKDIR, not into S.  Seed srcdir
-    # with the actual source files from WORKDIR so the archive is not empty.
-    src_uri = (d.getVar('SRC_URI') or '').split()
-    if src_uri and all(bb.fetch2.decodeurl(u)[0].lower() == 'file' for u in src_uri):
-        compliance_names = {'LICENSE', 'AUTHORS'}
-        skip_names = {'.pc', 'patches', 'temp', 'archiver-sources', 'archiver-work'}
-        skip_names.add(os.path.relpath(s, workdir).split(os.sep, 1)[0])
-        build = d.getVar('B') or ''
-        b_head = os.path.relpath(build, workdir).split(os.sep, 1)[0] if build else None
-        if b_head and not b_head.startswith('..'):
-            skip_names.add(b_head)
-        has_real_content = any(
-            e not in compliance_names and e not in skip_names and not e.startswith('.')
-            for e in os.listdir(srcdir)
-        ) if os.path.isdir(srcdir) else False
-        if not has_real_content and os.path.isdir(archiver_workdir):
-            bb.utils.mkdirhier(srcdir)
-            for entry in sorted(os.listdir(workdir)):
-                if entry in skip_names:
-                    continue
-                if entry.startswith('recipe-sysroot') or entry.startswith('deploy-'):
-                    continue
-                if entry in ('source-date-epoch', 'configure.sstate'):
-                    continue
-                src_path = os.path.join(workdir, entry)
-                dst_path = os.path.join(srcdir, entry)
-                if not os.path.exists(dst_path):
-                    if os.path.isdir(src_path):
-                        oe.path.copytree(src_path, dst_path)
-                    else:
-                        shutil.copy2(src_path, dst_path)
-            bb.debug(1, "em-license-compliance: seeded %s with WORKDIR contents" % srcdir)
+            # For pure file://-recipes seed srcdir from ARCHIVER_WORKDIR, which is
+            # populated by do_unpack_and_patch and contains only source files.
+            # Reading from the real WORKDIR would include build artifacts (package/,
+            # spdx/, pseudo/, sstate-install-*, etc.) created by later tasks.
+            src_uri = (d.getVar('SRC_URI') or '').split()
+            if src_uri and all(bb.fetch2.decodeurl(u)[0].lower() == 'file' for u in src_uri):
+                skip_names = {'.pc', 'patches', 'temp', 'archiver-sources', 'archiver-work'}
+                skip_names.add(os.path.relpath(s, workdir).split(os.sep, 1)[0])
+                build = d.getVar('B') or ''
+                b_head = os.path.relpath(build, workdir).split(os.sep, 1)[0] if build else None
+                if b_head and not b_head.startswith('..'):
+                    skip_names.add(b_head)
+                if os.path.isdir(archiver_workdir):
+                    # Seed additional flat file:// entries into srcdir.  Do NOT
+                    # delete srcdir first: when S=${WORKDIR}/subdir and a
+                    # file://subdir;localdir=subdir entry exists in SRC_URI,
+                    # do_unpack_and_patch already populated srcdir with the real
+                    # source tree.  Removing it would destroy those sources because
+                    # the subdir name is in skip_names (to prevent a circular copy).
+                    # ARCHIVER_WORKDIR is always fresh (do_unpack_and_patch cleans
+                    # it beforehand), so no stale build-artifact risk exists here.
+                    bb.utils.mkdirhier(srcdir)
+                    for entry in sorted(os.listdir(archiver_workdir)):
+                        if entry in skip_names or entry.startswith('.'):
+                            continue
+                        src_path = os.path.join(archiver_workdir, entry)
+                        dst_path = os.path.join(srcdir, entry)
+                        if not os.path.exists(dst_path):
+                            if os.path.isdir(src_path):
+                                oe.path.copytree(src_path, dst_path)
+                            else:
+                                shutil.copy2(src_path, dst_path)
+                    bb.debug(1, "em-license-compliance: seeded %s from ARCHIVER_WORKDIR" % srcdir)
 
-    em_license_create_compliance_files(d, srcdir)
+            em_license_create_compliance_files(d, srcdir)
 }
 
 python do_ar_patched:append () {
@@ -132,43 +133,41 @@ python do_ar_patched:append () {
     import subprocess
     import glob as glob_mod
 
-    if not bb.utils.to_boolean(d.getVar('EM_LICENSE_COMPLIANCE_ENABLED') or "0", False):
-        return
+    if bb.utils.to_boolean(d.getVar('EM_LICENSE_COMPLIANCE_ENABLED') or "0", False):
+        # Locate the meta-emos layer directory via BBPATH.
+        layer_dir = None
+        for p in (d.getVar('BBPATH') or '').split(':'):
+            if os.path.exists(os.path.join(p, 'classes', 'em-license-compliance.bbclass')):
+                layer_dir = p
+                break
+        if not layer_dir:
+            bb.warn("em-license-compliance: could not locate meta-emos layer dir, archive not renamed")
+            return
 
-    # Locate the meta-emos layer directory via BBPATH.
-    layer_dir = None
-    for p in (d.getVar('BBPATH') or '').split(':'):
-        if os.path.exists(os.path.join(p, 'classes', 'em-license-compliance.bbclass')):
-            layer_dir = p
-            break
-    if not layer_dir:
-        bb.warn("em-license-compliance: could not locate meta-emos layer dir, archive not renamed")
-        return
+        try:
+            result = subprocess.run(
+                ['git', 'describe', '--tags', '--match', 'v*', '--always'],
+                cwd=layer_dir, capture_output=True, text=True, timeout=10
+            )
+            version_tag = result.stdout.strip()
+        except Exception as e:
+            bb.warn("em-license-compliance: could not determine meta-emos version: %s" % e)
+            return
 
-    try:
-        result = subprocess.run(
-            ['git', 'describe', '--tags', '--match', 'v*', '--always'],
-            cwd=layer_dir, capture_output=True, text=True, timeout=10
-        )
-        version_tag = result.stdout.strip()
-    except Exception as e:
-        bb.warn("em-license-compliance: could not determine meta-emos version: %s" % e)
-        return
+        if not version_tag:
+            bb.warn("em-license-compliance: git describe returned empty string, archive not renamed")
+            return
 
-    if not version_tag:
-        bb.warn("em-license-compliance: git describe returned empty string, archive not renamed")
-        return
+        ar_outdir = d.getVar('EM_LC_SAVED_AR_OUTDIR')
+        pf = d.getVar('PF')
+        if not ar_outdir or not pf:
+            return
 
-    ar_outdir = d.getVar('EM_LC_SAVED_AR_OUTDIR')
-    pf = d.getVar('PF')
-    if not ar_outdir or not pf:
-        return
-
-    for old_path in glob_mod.glob(os.path.join(ar_outdir, pf + '-patched.tar.*')):
-        suffix = old_path[len(os.path.join(ar_outdir, pf)):]
-        new_path = os.path.join(ar_outdir, '%s-%s%s' % (pf, version_tag, suffix))
-        os.rename(old_path, new_path)
-        bb.note("em-license-compliance: renamed archive to %s" % os.path.basename(new_path))
+        for old_path in glob_mod.glob(os.path.join(ar_outdir, pf + '-patched.tar.*')):
+            suffix = old_path[len(os.path.join(ar_outdir, pf)):]
+            new_path = os.path.join(ar_outdir, '%s-%s%s' % (pf, version_tag, suffix))
+            os.rename(old_path, new_path)
+            bb.note("em-license-compliance: renamed archive to %s" % os.path.basename(new_path))
 }
 
 python () {

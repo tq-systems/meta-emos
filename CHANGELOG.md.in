@@ -1,4 +1,7 @@
 ## [{{ version }}]
+### Fixed
+- em-license-compliance: fix skipping for non-TQSPSLA recipes, fix patched source seeding for S redefinitions
+
 ### Changed
 - em-license-header: replaced by em-license-compliance class; stops injecting SPDX headers into individual source files
 - gitlab-ci.yml: rename layer conf variables

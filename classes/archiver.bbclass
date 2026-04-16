@@ -38,7 +38,9 @@ def em_archiver_seed_srcdir_from_workdir(d):
     if em_archiver_srcdir_has_real_content(srcdir):
         return
 
-    workdir = d.getVar('WORKDIR')
+    # Seed from ARCHIVER_WORKDIR (populated by do_unpack_and_patch with source files only),
+    # not from the real WORKDIR which also contains build artifacts created by later tasks.
+    workdir = archiver_workdir
 
     bb.debug(1, 'archiver: %s has no dedicated source tree, copying unpacked WORKDIR contents into ${S}' % d.getVar('PN'))
 
