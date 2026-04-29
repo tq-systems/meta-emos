@@ -5,29 +5,10 @@
 
 ### Changed
 - em-license-header: replaced by em-license-compliance class; stops injecting SPDX headers into individual source files
-- gitlab-ci.yml: rename layer conf variables
-- u-boot-em: create bootloader archives
-- u-boot-em: update to 2026.01
-- sshguard: use srcrev as version
-- em-aarch64.conf: default disable em-cb30 build
-- emit: add allow-mounted for u-boot.slot
-- em-annexfs: add new tool to provide additional storage
-- empkg: silence warning when dirs do not exist
-- empkg: support open-ui-container as webapp
-- em-core-qa: update app versions
-- linux-em: update to v6.18.16
-- rauc: update to v1.15.1
-- dropbear: update to 2025.89
-- nginx: update to 1.29.1
-- kern-tools-native: update to support transitional attribute
+- libdeviceinfo: update to v1.9.0
 
 ### Added
 - em-license-compliance: new class replacing em-license-header; creates LICENSE and AUTHORS files in source archive root for Fossology compliance
 - em-license-compliance: EM_LICENSE_AUTHOR_PERSON variable required per TQSPSLA recipe, build fails if unset
 - em-license-compliance: meta-emos git tag included in source archive filename
 - em-license-compliance: AUTHORS file now contains SPDX-License-Identifier (derived from the recipe LICENSE variable), copyright year range (derived from git log), and TQ-Systems GmbH copyright notice
-
-### Fixed
-- nginx: proxied connections to our backend apps do not timeout prematurely due to increased timeout from default 60s to 120s
-- archiver: fix empty source archives for pure file://-recipes
-- linux-em: fixed NULL pointer dereference panic
