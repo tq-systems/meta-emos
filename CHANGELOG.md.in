@@ -6,6 +6,8 @@
 ### Changed
 - em-license-header: replaced by em-license-compliance class; stops injecting SPDX headers into individual source files
 - libdeviceinfo: update to v1.9.0
+- linux-em: update to v6.18.26
+- core-qa: update app versions
 
 ### Added
 - em-license-compliance: new class replacing em-license-header; creates LICENSE and AUTHORS files in source archive root for Fossology compliance

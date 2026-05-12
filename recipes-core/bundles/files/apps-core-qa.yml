@@ -3,20 +3,20 @@ apps:
     version: '3.0.9'
 
   device-settings:
-    version: '6.4.1'
+    version: '6.5.4'
 
   health-check:
     version: '3.0.3'
 
   smart-meter:
-    version: '3.0.4'
-
-  updater:
-    version: '2.1.2'
+    version: '3.0.6'
 
   ui-container:
     arch: 'all'
-    version: '1.5.4'
+    version: '2.4.0'
+
+  updater:
+    version: '2.3.1'
 
   web-application: null
 
