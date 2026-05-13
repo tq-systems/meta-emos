@@ -3,7 +3,7 @@ apps:
     version: '2.2.10'
 
   teridiand:
-    version: '1.11.4'
+    version: '1.11.5'
 
   teridiand-fw:
     arch: 'all'

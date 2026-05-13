@@ -15,4 +15,32 @@ if [ -s "$KEYFILE" -a -s "$CERTFILE" ]; then
 fi
 
 mkdir -p "$CERTDIR"
-faketime @0 openssl req -x509 -config "$CONFFILE" -batch -subj "$SUBJ" -newkey rsa:2048 -keyout "$KEYFILE" -out "$CERTFILE" -days 36525 -nodes
+TMPDIR="$(mktemp -d "$CERTDIR/.em-keygen.XXXXXX")" || exit 1
+TMPCSR="$TMPDIR/req.csr"
+TMPCONF="$TMPDIR/openssl.cnf"
+
+trap 'rm -rf "$TMPDIR"; sync' EXIT INT TERM
+
+cat "$CONFFILE" > "$TMPCONF"
+cat >> "$TMPCONF" <<EOF
+[ em_keygen_ca ]
+dir = $TMPDIR
+database = \$dir/index.txt
+serial = \$dir/serial
+new_certs_dir = \$dir
+
+default_md = sha256
+policy = em_keygen_policy
+
+x509_extensions = usr_cert
+
+[ em_keygen_policy ]
+commonName = supplied
+EOF
+
+# Initialize the empty CA database and serial number
+:> "$TMPDIR/index.txt"
+openssl rand -hex 16 > "$TMPDIR/serial"
+
+openssl req -new -config "$CONFFILE" -batch -subj "$SUBJ" -newkey rsa:2048 -keyout "$KEYFILE" -out "$TMPCSR" -nodes && \
+openssl ca -selfsign -config "$TMPCONF" -name em_keygen_ca -batch -keyfile "$KEYFILE" -in "$TMPCSR" -startdate 700101000000Z -days 36525 -out "$CERTFILE"
