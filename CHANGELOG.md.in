@@ -1,16 +1,1 @@
 ## [{{ version }}]
-### Fixed
-- em-license-compliance: fix skipping for non-TQSPSLA recipes, fix patched source seeding for S redefinitions
-- em-license-compliance: source archives are always staged under ${BP}, so tarballs for license-clearing contain name-version directory
-
-### Changed
-- em-license-header: replaced by em-license-compliance class; stops injecting SPDX headers into individual source files
-- libdeviceinfo: update to v1.9.0
-- linux-em: update to v6.18.26
-- core-qa: update app versions
-
-### Added
-- em-license-compliance: new class replacing em-license-header; creates LICENSE and AUTHORS files in source archive root for Fossology compliance
-- em-license-compliance: EM_LICENSE_AUTHOR_PERSON variable required per TQSPSLA recipe, build fails if unset
-- em-license-compliance: meta-emos git tag included in source archive filename
-- em-license-compliance: AUTHORS file now contains SPDX-License-Identifier (derived from the recipe LICENSE variable), copyright year range (derived from git log), and TQ-Systems GmbH copyright notice
