@@ -1,3 +1,4 @@
 ## [{{ version }}]
 ### Fixed
 - core-qa/sdk: update teridiand app
+- libgpiod: gpio-manager depends on dbus.socket

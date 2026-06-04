@@ -11,7 +11,10 @@ LIC_FILES_CHKSUM = " \
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}-2.x:"
 
-SRC_URI += "file://gpio-manager.init"
+SRC_URI += " \
+    file://gpio-manager.init \
+    file://gpio-manager-dbus.conf \
+"
 
 SRC_URI[sha256sum] = "7e3bff0209d75fbca2e9fcff1fd5f07cc58b543e129e08b6d4bb1e4a56cfec0d"
 
@@ -37,6 +40,7 @@ FILES:${PN}-glib += "${libdir}/libgpiod-glib.so.*"
 FILES:${PN}-manager += " \
     ${bindir}/gpio-manager \
     ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', '${systemd_system_unitdir}/gpio-manager.service', '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', '${systemd_system_unitdir}/gpio-manager.service.d/dbus.conf', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', '${sysconfdir}/init.d/gpio-manager', '', d)} \
 "
 
@@ -94,6 +98,11 @@ do_install:append() {
 
     # replace generic 'gpio' group in dbus policy to specific 'em-group-gpio'
     sed -i 's/^\(\s*<policy group="\)gpio\(">\)/\1em-group-gpio\2/' ${D}${sysconfdir}/dbus-1/system.d/io.gpiod1.conf
+
+    if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
+        install -d ${D}${systemd_system_unitdir}/gpio-manager.service.d
+        install -m 0644 ${WORKDIR}/gpio-manager-dbus.conf ${D}${systemd_system_unitdir}/gpio-manager.service.d/dbus.conf
+    fi
 
     if ${@bb.utils.contains('DISTRO_FEATURES', 'sysvinit', 'true', 'false', d)}; then
         install -d ${D}${sysconfdir}/init.d
