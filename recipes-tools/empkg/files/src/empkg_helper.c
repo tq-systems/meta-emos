@@ -26,6 +26,7 @@ void empkg_process_sd_command(const char *cmd, const char *id) {
 
 	sd_command.cmd = strdup(cmd);
 	sd_command.service = strdup(service);
+	sd_command.next = 0;
 
 	empkg_process_reload_request(&sd_command),
 
