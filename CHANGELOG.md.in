@@ -3,3 +3,4 @@
 - core-qa/sdk: update teridiand app
 - libgpiod: gpio-manager depends on dbus.socket
 - empkg: process_sd_command: nullify next pointer on a single command
+- empkg: increment package version
