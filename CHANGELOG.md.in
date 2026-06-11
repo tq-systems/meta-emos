@@ -1,1 +1,3 @@
 ## [{{ version }}]
+### Fixed
+- emit: updatehash: use cp for file-urls
