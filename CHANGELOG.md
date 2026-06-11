@@ -1,3 +1,10 @@
+## [9.0.3] - 2026-06-11
+### Fixed
+- core-qa/sdk: update teridiand app
+- libgpiod: gpio-manager depends on dbus.socket
+- empkg: process_sd_command: nullify next pointer on a single command
+- empkg: increment package version
+
 ## [9.0.2] - 2026-05-13
 ### Fixed
 - em-license-compliance: fix skipping for non-TQSPSLA recipes, fix patched source seeding for S redefinitions
