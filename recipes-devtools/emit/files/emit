@@ -108,7 +108,10 @@ def updatehash(app_data, path, cache):
 	# download hash file if this is not already in the cache and should be used
 	if cache != True or not os.access(checksum_path, os.R_OK):
 		try:
-			subprocess.run(['wget', '-nv', '-O', checksum_path, checksum_url], check=True)
+			if 'file://' in checksum_url:
+				subprocess.run(['cp', urlparse(checksum_url).path, checksum_path], check=True)
+			else:
+				subprocess.run(['wget', '-nv', '-O', checksum_path, checksum_url], check=True)
 		except Exception as e:
 			print('Error downloading checksum file \'{}\''.format(checksum_url), file=sys.stderr, flush=True)
 			raise e
