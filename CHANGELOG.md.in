@@ -1,1 +1,3 @@
 ## [{{ version }}]
+### Fixed
+- u-boot-em: update for environment fix
