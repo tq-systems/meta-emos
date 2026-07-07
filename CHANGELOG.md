@@ -1,3 +1,7 @@
+## [9.0.4] - 2026-06-15
+### Fixed
+- emit: updatehash: use cp for file-urls
+
 ## [9.0.3] - 2026-06-11
 ### Fixed
 - core-qa/sdk: update teridiand app
