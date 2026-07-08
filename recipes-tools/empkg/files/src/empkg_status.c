@@ -33,6 +33,8 @@
 static int status_one(const char *id, json_t **json) {
 	bool builtin = false, enabled = false;
 	const char *path = appdb_get_path(P_MANIFEST, id);
+	const char *rundir = appdb_get_path(P_RUNDIR, id);
+	char standard_rundir[APPDB_MAX_PATH];
 
 	if (!appdb_is(INSTALLED, id)) {
 		log_message("empkg: app '%s' not found.\n", id);
@@ -47,12 +49,12 @@ static int status_one(const char *id, json_t **json) {
 
 	*json = empkg_json_generate_status(builtin, enabled, path);
 
-	/* Corner case: updater-servicecloudclient requires socket in /run/em/apps/updater!
-	 * Inform user via 'empkg status' about that change.
+	/* Corner case: some apps use a non-standard rundir (see appdb_add).
+	 * Inform user via 'empkg status' about that.
 	 */
-	if (!strcmp(id, "updater-servicecloudclient")) {
+	snprintf(standard_rundir, sizeof(standard_rundir), pattern[P_RUNDIR], id);
+	if (rundir && strcmp(rundir, standard_rundir))
 		empkg_json_append_note(*json, "Uses non-standard rundir.");
-	}
 
 	return 0;
 }
