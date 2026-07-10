@@ -34,7 +34,7 @@ SRC_URI:remove:k3r5 = " \
 "
 
 SRCBRANCH = "em-v2026.01"
-SRCREV = "5084830d32b0285d5f19c7735066fb1966885f35"
+SRCREV = "77c2b276b1ccefad94c34c5a421e8588c5783e41"
 
 do_compile:prepend:mx8m() {
 	if [ -n "${UBOOT_CONFIG}" ]; then

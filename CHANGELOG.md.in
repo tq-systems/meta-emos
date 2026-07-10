@@ -1,1 +1,4 @@
 ## [{{ version }}]
+### Fixed
+- u-boot-em: update for environment fix
+- empkg: keep non-standard rundir for renamed app updater-tq-cloud

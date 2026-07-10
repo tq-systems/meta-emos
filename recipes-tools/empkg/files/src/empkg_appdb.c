@@ -101,10 +101,12 @@ static int appdb_add(const char *id) {
 			snprintf(new->paths[i], strlen(pattern[i]) + strlen(id) + 1, pattern[i], id);
 	}
 
-	/* Corner case: updater-servicecloudclient requires socket in /run/em/apps/updater!
-	 * Apply custom P_RUNDIR for that app-id
+	/* Corner case: The app "updater-servicecloudclient" (renamed to: "updater-tq-cloud")
+	 *              requires socket in /run/em/apps/updater!
+	 * Apply custom P_RUNDIR for either app-id
 	 */
-	if (!strcmp("updater-servicecloudclient", id)) {
+	if (!strcmp("updater-servicecloudclient", id) ||
+	    !strcmp("updater-tq-cloud", id)) {
 		memset(new->paths[P_RUNDIR], 0, APPDB_MAX_PATH);
 		snprintf(new->paths[P_RUNDIR], strlen("/run/em/apps/updater") + 1, "/run/em/apps/updater");
 	}
