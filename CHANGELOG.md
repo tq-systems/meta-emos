@@ -1,3 +1,8 @@
+## [9.0.5] - 2026-07-10
+### Fixed
+- u-boot-em: update for environment fix
+- empkg: keep non-standard rundir for renamed app updater-tq-cloud
+
 ## [9.0.4] - 2026-06-15
 ### Fixed
 - emit: updatehash: use cp for file-urls
