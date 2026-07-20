@@ -1,4 +1,7 @@
 ## [{{ version }}]
+### Changed
+- linux-em: Update to 6.18.38
+
 ### Fixed
 - u-boot-em: update for environment fix
 - empkg: keep non-standard rundir for renamed app updater-tq-cloud
