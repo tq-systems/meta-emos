@@ -1,11 +1,37 @@
 #!/bin/sh
 
 # 4 MiB gap in sectors (8192 512-byte sectors)
+#
+# !!! NEVER CHANGE ANNEXFS_GAP_SECTORS !!!
+#
+# The annexfs offset is derived from START+SIZE of the last partition
+# plus this gap. The partition start+size should hardly change, but
+# the gap is merely a freely chosen value, and changing it silently
+# relocates the annexfs on EVERY device.
 ANNEXFS_GAP_SECTORS=8192
-# Reserve 8 MiB (2048 4096-byte filesystem blocks) for this additional filesystem
-ANNEXFS_FS_BLOCKS=2048
+
+# Reserve 8 MiB for this additional filesystem
+ANNEXFS_FS_BLOCKSIZE=1024
+ANNEXFS_FS_BYTES=$(( 8 * 1024 * 1024 ))
+ANNEXFS_FS_BLOCKS=$(( ANNEXFS_FS_BYTES / ANNEXFS_FS_BLOCKSIZE ))
 ANNEXFS_MOUNTPOINT="/cfglog/annexfs"
 ANNEXFS_DEVICE=""
+# -F       force creation (safety is determined earlier)
+# -O none  plain ext2 without optional features
+# -m 0     no blocks reserved for root
+# -I 256   inode size 256 bytes
+# -N 2048  create 2048 inodes
+# -b       blocksize
+ANNEXFS_MKFS_OPTIONS="-F -O none -m 0 -I 256 -N 2048 -b ${ANNEXFS_FS_BLOCKSIZE}"
+
+log_kmsg() {
+	echo >/dev/kmsg "em-annexfs: $*"
+}
+
+fatal() {
+	log_kmsg "$*"
+	exit 1
+}
 
 # find last partition
 find_last_partition() {
@@ -29,6 +55,8 @@ calc_annexfs_offset() {
 	BYTES=$(( SECTORS * 512 ))
 	echo ${BYTES}
 }
+# Should ANNEXFS_OFFSET change, an existing filesystem cannot be mounted
+# and will be treated as a non-existing filesystem, i.e. create new fs
 ANNEXFS_OFFSET="$(calc_annexfs_offset)"
 
 create_annexfs_dev() {
@@ -42,9 +70,37 @@ get_annexfs_dev() {
 }
 ANNEXFS_DEVICE="$(get_annexfs_dev)"
 
+# Returns 0 if an ext filesystem exists on the device, i.e. a valid ext superblock is present.
+annexfs_exists() {
+	dumpe2fs -h "${ANNEXFS_DEVICE}" >/dev/null 2>&1
+}
+
+frontend_warning_and_exit() {
+	# Depending on the fsck return code the health-check app can report either
+	# a filesystem error (code 4) or a warning (code >= 8).
+	#
+	# We want to send a warning to the user about a faulty condition on the annexfs.
+	# So we deliberately forward the fsck error code 8 to the app.
+	echo "8" >> /run/em/fsck_status
+	fatal "$*"
+}
+
 mount_annexfs() {
 	mkdir -p "${ANNEXFS_MOUNTPOINT}"
-	fsck -a "${ANNEXFS_DEVICE}" && \
+
+	# fsck returns a bit-coded status:
+	#   0 = clean, 1 = errors corrected -> both are OK (e.g. after power loss)
+	#   >1 = uncorrected errors / operational problems -> do NOT treat the
+	#        filesystem as missing, otherwise it would be recreated below
+	fsck -a "${ANNEXFS_DEVICE}"
+	local fsck_return="$?"
+
+	if [ "$fsck_return" -gt "1" ]; then
+		echo "Fsck found an error checking em-annexfs: $fsck_return" >> /run/em/fsck.log
+		echo "$fsck_return" >> /run/em/fsck_status
+		return 1
+	fi
+
 	mount "${ANNEXFS_DEVICE}" "${ANNEXFS_MOUNTPOINT}"
 }
 
@@ -52,10 +108,30 @@ if ! [ -e "${ANNEXFS_DEVICE}" ]; then
 	ANNEXFS_DEVICE="$(create_annexfs_dev)"
 fi
 
+create_new_annexfs() {
+	ANNEXFS_TOTAL_BLOCKS="$(cat /sys/block/mmcblk0/size)"
+	ANNEXFS_TOTAL_BYTES=$(( ANNEXFS_TOTAL_BLOCKS * ANNEXFS_FS_BLOCKSIZE ))
+	ANNEXFS_FREE_BYTES=$(( ANNEXFS_TOTAL_BYTES - ANNEXFS_OFFSET ))
+
+	if [ "${ANNEXFS_FREE_BYTES}" -lt "${ANNEXFS_FS_BYTES}" ]; then
+		frontend_warning_and_exit "error: Not enough free space for the filesystem. Running without factory-reset-protected storage."
+	fi
+
+	mkfs.ext2 ${ANNEXFS_MKFS_OPTIONS} "${ANNEXFS_DEVICE}" "${ANNEXFS_FS_BLOCKS}" && \
+	tune2fs -i 6m -c 30 "${ANNEXFS_DEVICE}" && \
+	log_kmsg "Created em-annexfs successfully."
+}
+
 if ! mount_annexfs; then
-	# omit journal to reduce unusable overhead on ext4
-	mkfs.ext2 -F -O ^has_journal -m 0 -b 4096 -I 256 "${ANNEXFS_DEVICE}" "${ANNEXFS_FS_BLOCKS}"
+	# Only create a new filesystem when there is really none present.
+	# If a filesystem signature exists but it cannot be mounted, never recreate it.
+	if annexfs_exists; then
+		frontend_warning_and_exit "error: filesystem exists but could not be mounted - refusing to recreate to preserve data. Running without factory-reset-protected storage."
+	fi
+
+	create_new_annexfs
+
 	if ! mount_annexfs; then
-		echo "Error mounting additional storage".
+		log_kmsg "error: mounting filesystem failed."
 	fi
 fi
