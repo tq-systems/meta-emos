@@ -1,1 +1,4 @@
 ## [{{ version }}]
+### Changed
+- linux-em: Update to 6.18.38
+- apps-mandatory: teridian-fw merged into teridiand
