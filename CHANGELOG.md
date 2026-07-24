@@ -1,3 +1,8 @@
+## [9.0.6] - 2026-07-24
+### Changed
+- linux-em: Update to 6.18.38
+- apps-mandatory: teridian-fw merged into teridiand
+
 ## [9.0.5] - 2026-07-10
 ### Fixed
 - u-boot-em: update for environment fix
