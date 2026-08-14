@@ -3,6 +3,7 @@
 - core-qa: update app versions
 - linux-em: update for eg4xx support
 - u-boot-em: update for eg4xx support
+- eg4xx: add new machine support
 
 ### Fixed
 - linux-em: possible hang on serial probe with unstable supply
