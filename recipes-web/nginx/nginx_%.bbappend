@@ -4,6 +4,7 @@ SRC_URI:append:emos = " \
 	file://nginx-emos.conf \
 	file://nginx-prepare.service \
 	file://no_cache.conf \
+	file://revalidate_cache.conf \
 	file://static_cache.conf \
 	file://ssl.conf \
 	file://nginx-log-setup \
@@ -21,6 +22,7 @@ do_install:append:emos() {
 	install -m 0644 ${WORKDIR}/nginx-emos.conf ${D}${systemd_unitdir}/system/nginx.service.d/
 
 	install -m 0644 ${WORKDIR}/no_cache.conf ${D}${sysconfdir}/nginx/
+	install -m 0644 ${WORKDIR}/revalidate_cache.conf ${D}${sysconfdir}/nginx/
 	install -m 0644 ${WORKDIR}/static_cache.conf ${D}${sysconfdir}/nginx/
 	install -m 0644 ${WORKDIR}/ssl.conf ${D}${sysconfdir}/nginx/
 	install -m 0644 ${WORKDIR}/headers.conf ${D}${sysconfdir}/nginx/
