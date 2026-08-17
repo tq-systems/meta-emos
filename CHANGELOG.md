@@ -1,3 +1,10 @@
+## [9.0.7] - 2026-08-17
+### Changed
+- em-annexfs: install checks around mount/create fs
+- nginx: revalidate static assets instead of caching them for a week, so updated icons show up
+  without clearing the browser cache. Content-hashed js and fonts stay cached.
+- em-init: unlocked feature states are no longer restored from a backup
+
 ## [9.0.6] - 2026-07-24
 ### Changed
 - linux-em: Update to 6.18.38
