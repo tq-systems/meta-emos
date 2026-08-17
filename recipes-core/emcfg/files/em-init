@@ -103,8 +103,13 @@ backup_restore() {
 
 # Delete files that may not be restored from backups
 # (because they constitute a security risk)
+#
+# This also prevents unlocked feature states from being restored from
+# another device's backup.
 backup_sanitize() {
 	rm -f /cfglog/system/password
+	rm -f /cfglog/apps/*/unlocked_features.json
+	rm -f /cfglog/apps/device-settings/unlockable_features_successful_keys.json
 }
 
 check_filesystem() {
