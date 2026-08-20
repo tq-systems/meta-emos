@@ -4,6 +4,7 @@
 - linux-em: update for eg4xx support
 - u-boot-em: update for eg4xx support
 - eg4xx: add new machine support
+- em-cb30, imx8mn-egw: drop support for deprecated machines
 
 ### Fixed
 - linux-em: possible hang on serial probe with unstable supply

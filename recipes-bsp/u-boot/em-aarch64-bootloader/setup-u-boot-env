@@ -20,9 +20,6 @@ case "$(device_variant)" in
 'tq,imx8mn-eg4xx')
 	variant=eg4xx
 	;;
-'tq,am625-em-cb30')
-	variant=em-cb30
-	;;
 *)
 	exit 1
 esac

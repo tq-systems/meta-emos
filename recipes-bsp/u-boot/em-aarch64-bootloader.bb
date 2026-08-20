@@ -3,9 +3,9 @@
 # Copyright (C) 2024 TQ-Systems GmbH <oss@ew.tq-group.com>, D-82229 Seefeld, Germany.
 # Author: Matthias Schiffer
 
-# U-Boot, firmware-imx-8m, ti-sci-fw, OP-TEE and TF-A licenses
-LICENSE = "GPL-2.0-or-later & Proprietary & TI-TFL & BSD-2-Clause & BSD-3-Clause & MIT"
-LIC_FILES_CHKSUM = "file://${WORKDIR}/README;md5=2b18c23e5a347668fe60a6b3a3105c7b"
+# U-Boot, firmware-imx-8m and TF-A licenses
+LICENSE = "GPL-2.0-or-later & Proprietary & BSD-3-Clause & MIT"
+LIC_FILES_CHKSUM = "file://${WORKDIR}/README;md5=37d06a0951d8d51f9e892f547957ae10"
 
 DESCRIPTION = "Bootloader images for all hardware supported by the em-aarch64 machine"
 
@@ -16,7 +16,6 @@ inherit deploy extra-license-depends
 EXTRA_LICENSE_MCDEPENDS = ""
 EXTRA_LICENSE_MCDEPENDS:append:em-with-em4xx = " mc::em4xx:virtual/bootloader"
 EXTRA_LICENSE_MCDEPENDS:append:em-with-eg4xx = " mc::eg4xx:virtual/bootloader"
-EXTRA_LICENSE_MCDEPENDS:append:em-with-em-cb30 = " mc::em-cb30:k3-bootloader-image"
 
 SRC_URI = "\
     file://README \
@@ -42,25 +41,14 @@ do_compile:append:em-with-eg4xx () {
     cp "${DEPLOY_DIR_IMAGE_MC_eg4xx}/u-boot-initial-env-eg4xx-512m" u-boot-initial-env-eg4xx
 }
 
-do_compile:append:em-with-em-cb30 () {
-    cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/bootloader-512m.bin" bootloader-em-cb30-512m.bin
-    cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/bootloader-1g.bin" bootloader-em-cb30-1g.bin
-    cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/bootloader-2g.bin" bootloader-em-cb30-2g.bin
-
-    cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/fw_env.config-em-cb30" .
-    cp "${DEPLOY_DIR_IMAGE_MC_em-cb30}/u-boot-initial-env-em-cb30" .
-}
-
 COMPILE_MCDEPENDS = ""
 COMPILE_MCDEPENDS:append:em-with-em4xx = " mc::em4xx:virtual/bootloader:do_deploy"
 COMPILE_MCDEPENDS:append:em-with-eg4xx = " mc::eg4xx:virtual/bootloader:do_deploy"
-COMPILE_MCDEPENDS:append:em-with-em-cb30 = " mc::em-cb30:k3-bootloader-image:do_deploy"
 do_compile[mcdepends] += "${COMPILE_MCDEPENDS}"
 
 INSTALL_CONFIGS = ""
 INSTALL_CONFIGS:append:em-with-em4xx = " em4xx"
 INSTALL_CONFIGS:append:em-with-eg4xx = " eg4xx"
-INSTALL_CONFIGS:append:em-with-em-cb30 = " em-cb30"
 
 do_install () {
     install -D -m 755 -t "${D}${base_sbindir}" "${WORKDIR}/setup-u-boot-env"
