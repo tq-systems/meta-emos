@@ -1,1 +1,6 @@
 ## [{{ version }}]
+### Changed
+- linux-em: update for eg4xx support
+
+### Fixed
+- linux-em: possible hang on serial probe with unstable supply
