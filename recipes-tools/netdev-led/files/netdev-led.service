@@ -2,6 +2,7 @@
 Description=netdev-led is setting the mode of the network LED.
 After=network.target
 ConditionPathExists=!/update/end_of_life
+ConditionFirmware=!device-tree-compatible(tq,imx8mn-eg4xx)
 
 [Service]
 Type=simple
