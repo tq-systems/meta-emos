@@ -6,6 +6,7 @@
 - eg4xx: add new machine support
 - em-cb30, imx8mn-egw: drop support for deprecated machines
 - netdev-led: do not run on eg4xx
+- eol-led: do not blink network/status LEDs on eg4xx
 
 ### Fixed
 - linux-em: possible hang on serial probe with unstable supply
