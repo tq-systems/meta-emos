@@ -21,9 +21,12 @@ do_unpack[cleandirs] += "${S}/src"
 
 DEPENDS = "systemd"
 
-inherit autotools pkgconfig systemd
+inherit autotools pkgconfig systemd useradd
 
 SYSTEMD_SERVICE:${PN} = "em-timeguard.service"
+USERADD_PACKAGES = "${PN}"
+GROUPADD_PARAM:${PN} = "--system em-timeguard"
+USERADD_PARAM:${PN} = "--system -M -s /bin/nologin -g em-timeguard em-timeguard"
 
 do_install:append() {
     install -d ${D}${systemd_system_unitdir}

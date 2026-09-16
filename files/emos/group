@@ -24,3 +24,4 @@ em-group-sudo-systemctl_stop::522
 em-group-sudo-cat_device_key::523
 em-group-gpio::524
 em-group-spi::525
+em-timeguard::526
