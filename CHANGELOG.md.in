@@ -1,9 +1,12 @@
 ## [{{ version }}]
 ### Changed
-- linux-em: Update to 6.18.38
-- apps-mandatory: teridian-fw merged into teridiand
-- em-annexfs: install checks around mount/create fs
-- nginx: revalidate static assets instead of caching them for a week, so updated icons show up
-  without clearing the browser cache. Content-hashed js and fonts stay cached.
-- em-init: unlocked feature states are no longer restored from a backup
 - core-qa: update app versions
+- linux-em: update for eg4xx support
+- u-boot-em: update for eg4xx support
+- eg4xx: add new machine support
+- em-cb30, imx8mn-egw: drop support for deprecated machines
+- netdev-led: do not run on eg4xx
+- eol-led: do not blink network/status LEDs on eg4xx
+
+### Fixed
+- linux-em: possible hang on serial probe with unstable supply

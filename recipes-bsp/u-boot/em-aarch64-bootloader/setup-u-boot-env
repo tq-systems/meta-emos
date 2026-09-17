@@ -17,8 +17,8 @@ case "$(device_variant)" in
 'tq,em4xx')
 	variant=em4xx
 	;;
-'tq,am625-em-cb30')
-	variant=em-cb30
+'tq,imx8mn-eg4xx')
+	variant=eg4xx
 	;;
 *)
 	exit 1

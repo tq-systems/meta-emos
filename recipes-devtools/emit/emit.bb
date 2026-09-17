@@ -13,7 +13,6 @@ SRC_URI = "\
 	file://ramsize.sh \
 	file://bootloader-em310.sh \
 	file://bootloader-em-aarch64.sh \
-	file://bootloader-imx8mn-egw.sh \
 "
 
 do_install() {
@@ -22,7 +21,7 @@ do_install() {
 	install -m755 ${WORKDIR}/emit ${D}${bindir}/
 	install -m755 ${WORKDIR}/ramsize.sh ${D}${datadir}/emit/
 	install -m644 ${WORKDIR}/hook.sh ${D}${datadir}/emit/
-	for machine in em310 em-aarch64 imx8mn-egw; do
+	for machine in em310 em-aarch64; do
 		install -m644 ${WORKDIR}/bootloader-$machine.sh ${D}${datadir}/emit/
 	done
 }

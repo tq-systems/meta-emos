@@ -13,6 +13,12 @@ echo none > $LED_GREEN_STATUS/trigger
 LED_RED_NETWORK=/sys/class/leds/energymanager:red:network
 LED_RED_SENSOR=/sys/class/leds/energymanager:red:sensor
 LED_RED_STATUS=/sys/class/leds/energymanager:red:status
-echo timer > $LED_RED_NETWORK/trigger
-echo timer > $LED_RED_SENSOR/trigger
+
+if [ "$(em-devinfo --hwtype)" != "eg4xx" ]; then
+	# Network/Sensor LED not present on EG4xx
+	echo timer > $LED_RED_NETWORK/trigger
+	echo timer > $LED_RED_SENSOR/trigger
+fi
+
+# Status LED present on both EG4xx/EM4xx
 echo timer > $LED_RED_STATUS/trigger

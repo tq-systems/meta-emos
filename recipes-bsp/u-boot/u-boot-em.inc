@@ -29,22 +29,12 @@ DEPENDS += "dtc-native bc-native gnutls-native lzop-native flex-native bison-nat
 # u-boot needs these for binman
 DEPENDS += "python3-pyelftools-native python3-pyyaml-native python3-jsonschema-native python3-yamllint-native"
 
-# SYSFW/TIFS Firmware
-DEPENDS:append:k3 = " ti-sci-fw"
-DEPENDS:append:k3r5 = " ti-sci-fw"
-
 DM_FIRMWARE = "ipc_echo_testb_mcu1_0_release_strip.xer5f"
 
 PLAT_SFX = ""
-PLAT_SFX:am62xx = "am62xx"
 
 PACKAGECONFIG[atf] = "BL31=${STAGING_DIR_HOST}/firmware/bl31.bin,,trusted-firmware-a"
-PACKAGECONFIG[optee] = "TEE=${STAGING_DIR_HOST}${nonarch_base_libdir}/firmware/bl32.bin,,optee-os"
-PACKAGECONFIG[dm] = "DM=${STAGING_DIR_HOST}${nonarch_base_libdir}/firmware/ti-dm/${PLAT_SFX}/${DM_FIRMWARE},,ti-dm-fw"
-
 PACKAGECONFIG:append:aarch64 = " atf"
-PACKAGECONFIG:append:am62xx = " dm"
-PACKAGECONFIG:append:k3 = " optee"
 
 BINMAN_INDIRS="${STAGING_DIR_HOST}${nonarch_base_libdir}/firmware"
 
