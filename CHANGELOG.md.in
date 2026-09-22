@@ -10,3 +10,4 @@
 
 ### Fixed
 - linux-em: possible hang on serial probe with unstable supply
+- systemd: include server in dhcp release message

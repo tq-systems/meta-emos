@@ -1,0 +1,35 @@
+From 63fbf58617b518d1a9ad682f01c297947468bfb1 Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Tue, 22 Sep 2026 13:35:18 +0200
+Subject: [PATCH] sd-dhcp-client: set server identifier
+
+Partly backport of commit
+6eaa5ba322 ("sd-dhcp-client: several fixlets for sending RELEASE or DECLINE")
+
+We need to include Server in DHCPRELEASE messages.
+
+Upstream-Status: Inappropriate [marginal backport]
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ src/libsystemd-network/sd-dhcp-client.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/src/libsystemd-network/sd-dhcp-client.c b/src/libsystemd-network/sd-dhcp-client.c
+index 24bcd74..5a27478 100644
+--- a/src/libsystemd-network/sd-dhcp-client.c
++++ b/src/libsystemd-network/sd-dhcp-client.c
+@@ -2342,6 +2342,13 @@ int sd_dhcp_client_send_release(sd_dhcp_client *client) {
+         release->dhcp.ciaddr = client->lease->address;
+         memcpy(&release->dhcp.chaddr, client->hw_addr.bytes, client->hw_addr.length);
+ 
++        r = dhcp_option_append(&release->dhcp, optlen, &optoffset, 0,
++                               SD_DHCP_OPTION_SERVER_IDENTIFIER,
++                               sizeof(client->lease->server_address),
++                               &client->lease->server_address);
++        if (r < 0)
++                return r;
++
+         r = dhcp_option_append(&release->dhcp, optlen, &optoffset, 0,
+                                SD_DHCP_OPTION_END, 0, NULL);
+         if (r < 0)
