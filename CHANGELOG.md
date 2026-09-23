@@ -1,3 +1,10 @@
+## [9.0.8] - 2026-09-23
+### Changed
+- linux-em: update for eg4xx support
+
+### Fixed
+- linux-em: possible hang on serial probe with unstable supply
+
 ## [9.0.7] - 2026-08-17
 ### Changed
 - em-annexfs: install checks around mount/create fs
