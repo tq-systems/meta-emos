@@ -8,6 +8,8 @@ SRC_URI = " \
     file://Makefile.am \
     file://src/em-timeguard.c \
     file://src/em-timeguard.h \
+    file://com.tq_group.tq_em.timeguard1.xml \
+    file://com.tq_group.tq_em.timeguard1.conf \
 "
 
 S = "${WORKDIR}"
@@ -19,3 +21,8 @@ do_unpack[cleandirs] += "${S}/src"
 DEPENDS = "systemd"
 
 inherit autotools pkgconfig
+
+FILES:${PN} += " \
+     ${sysconfdir}/dbus-1/system.d/com.tq_group.tq_em.timeguard1.conf \
+     ${datadir}/dbus-1/interfaces/com.tq_group.tq_em.timeguard1.xml \
+"

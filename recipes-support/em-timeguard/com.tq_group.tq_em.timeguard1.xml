@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<node name="/com/tq_group/tq_em/timeguard1">
+  <interface name="com.tq_group.tq_em.timeguard1.TimeGuard">
+    <signal name="ClockEvent">
+      <arg name="reason" type="s"/>
+      <arg name="realtime_ns" type="x"/>
+      <arg name="monotonic_ns" type="x"/>
+      <arg name="tai_ns" type="x"/>
+      <arg name="delta_offset_ns" type="x"/>
+      <arg name="previous_offset_ns" type="x"/>
+      <arg name="current_offset_ns" type="x"/>
+      <arg name="adjtimex_state" type="i"/>
+      <arg name="timex_status" type="i"/>
+    </signal>
+  </interface>
+</node>
