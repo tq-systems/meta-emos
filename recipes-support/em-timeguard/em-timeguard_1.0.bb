@@ -10,6 +10,7 @@ SRC_URI = " \
     file://src/em-timeguard.h \
     file://com.tq_group.tq_em.timeguard1.xml \
     file://com.tq_group.tq_em.timeguard1.conf \
+    file://em-timeguard.service \
 "
 
 S = "${WORKDIR}"
@@ -20,7 +21,21 @@ do_unpack[cleandirs] += "${S}/src"
 
 DEPENDS = "systemd"
 
-inherit autotools pkgconfig
+inherit autotools pkgconfig systemd
+
+SYSTEMD_SERVICE:${PN} = "em-timeguard.service"
+
+do_install:append() {
+    install -d ${D}${systemd_system_unitdir}
+    install -m 0644 ${WORKDIR}/em-timeguard.service \
+        ${D}${systemd_system_unitdir}/
+    install -d ${D}${sysconfdir}/dbus-1/system.d
+    install -m 0644 ${WORKDIR}/com.tq_group.tq_em.timeguard1.conf \
+        ${D}${sysconfdir}/dbus-1/system.d/
+    install -d ${D}${datadir}/dbus-1/interfaces
+    install -m 0644 ${WORKDIR}/com.tq_group.tq_em.timeguard1.xml \
+        ${D}${datadir}/dbus-1/interfaces/
+}
 
 FILES:${PN} += " \
      ${sysconfdir}/dbus-1/system.d/com.tq_group.tq_em.timeguard1.conf \
