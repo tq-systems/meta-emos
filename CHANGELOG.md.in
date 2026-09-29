@@ -8,6 +8,7 @@
 - netdev-led: do not run on eg4xx
 - eol-led: do not blink network/status LEDs on eg4xx
 - nginx: update to 1.30.5
+- dropbear: update to 2026.94
 
 ### Fixed
 - systemd: include server in dhcp release message
