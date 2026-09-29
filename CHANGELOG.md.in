@@ -7,6 +7,7 @@
 - em-cb30, imx8mn-egw: drop support for deprecated machines
 - netdev-led: do not run on eg4xx
 - eol-led: do not blink network/status LEDs on eg4xx
+- nginx: update to 1.30.5
 
 ### Fixed
 - systemd: include server in dhcp release message

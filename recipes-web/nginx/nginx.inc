@@ -9,10 +9,10 @@ LICENSE = "BSD-2-Clause"
 
 SECTION = "net"
 
-DEPENDS = "libpcre zlib"
+DEPENDS = "libpcre2 zlib"
 
 SRC_URI = " \
-    http://nginx.org/download/nginx-${PV}.tar.gz \
+    https://nginx.org/download/nginx-${PV}.tar.gz \
     file://nginx-cross.patch \
     file://0001-Allow-the-overriding-of-the-endianness-via-the-confi.patch \
     file://nginx.conf \
@@ -170,7 +170,7 @@ do_install () {
 
 pkg_postinst:${PN} () {
     if [ -z "$D" ]; then
-        if type systemd-tmpfiles >/dev/null; then
+        if type systemd-tmpfiles >/dev/null 2>&1; then
             systemd-tmpfiles --create
         elif [ -e ${sysconfdir}/init.d/populate-volatile.sh ]; then
             ${sysconfdir}/init.d/populate-volatile.sh update
