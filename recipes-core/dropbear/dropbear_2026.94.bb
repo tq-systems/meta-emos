@@ -5,8 +5,13 @@ SECTION = "console/network"
 
 # some files are from other projects and have others license terms:
 #   public domain, OpenSSH 3.5p1, OpenSSH3.6.1p2, PuTTY
-LICENSE = "MIT & BSD-3-Clause & BSD-2-Clause & PD"
-LIC_FILES_CHKSUM = "file://LICENSE;md5=25cf44512b7bc8966a48b6b1a9b7605f"
+# The 'public-domain' file is headered as MIT
+LICENSE = "BSD-2-Clause & BSD-3-Clause & MIT & Unlicense & WTFPL"
+LIC_FILES_CHKSUM = " \
+    file://LICENSE;md5=25cf44512b7bc8966a48b6b1a9b7605f \
+    file://libtomcrypt/LICENSE;md5=71baacc459522324ef3e2b9e052e8180 \
+    file://libtommath/LICENSE;md5=23e7e0a32e53a2b1d35f5fd9ef053402 \
+"
 
 DEPENDS = "zlib virtual/crypt"
 RPROVIDES:${PN} = "ssh sshd"
@@ -25,7 +30,7 @@ SRC_URI = "https://matt.ucc.asn.au/dropbear/releases/dropbear-${PV}.tar.bz2 \
            ${@bb.utils.contains('DISTRO_FEATURES', 'pam', '${PAM_SRC_URI}', '', d)} \
            "
 
-SRC_URI[sha256sum] = "0d1f7ca711cfc336dc8a85e672cab9cfd8223a02fe2da0a4a7aeb58c9e113634"
+SRC_URI[sha256sum] = "e098034a843699200c8c977a991fff73159735bf795d5f72ef672c41a6b1ae81"
 MIRRORS += "https://matt.ucc.asn.au/dropbear/releases/ https://dropbear.nl/mirror/releases/"
 
 PAM_SRC_URI = "file://0005-dropbear-enable-pam.patch \
