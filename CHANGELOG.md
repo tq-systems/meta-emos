@@ -1,3 +1,6 @@
+## [9.1.1] - 2026-10-05
+### No functional change
+
 ## [9.1.0] - 2026-10-02
 ### Changed
 - core-qa: update app versions
