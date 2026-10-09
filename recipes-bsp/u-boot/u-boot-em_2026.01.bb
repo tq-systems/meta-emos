@@ -25,7 +25,7 @@ SRC_URI = " \
 "
 
 SRCBRANCH = "em-v2026.01"
-SRCREV = "6bcf095215369653bde34e3d0d8c9bdd7241830e"
+SRCREV = "ecb5c52315edb6c0ba3161adc148c8430c7d18ae"
 
 do_compile:prepend:mx8m() {
 	if [ -n "${UBOOT_CONFIG}" ]; then

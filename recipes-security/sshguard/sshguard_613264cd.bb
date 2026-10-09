@@ -15,6 +15,7 @@ inherit systemd
 SRC_URI += " \
 	file://sshguard.service \
 	file://sshguard.conf \
+	file://0001-attack_parser.y-recognize-brackets-around-IPv6-from-.patch \
 "
 
 S = "${WORKDIR}/git"

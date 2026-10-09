@@ -1,3 +1,22 @@
+## [9.1.1] - 2026-10-05
+### No functional change
+
+## [9.1.0] - 2026-10-02
+### Changed
+- core-qa: update app versions
+- linux-em: update to 6.18.54
+- u-boot-em: update for eg4xx support
+- eg4xx: add new machine support
+- em-cb30, imx8mn-egw: drop support for deprecated machines
+- netdev-led: do not run on eg4xx
+- eol-led: do not blink network/status LEDs on eg4xx
+- nginx: update to 1.30.5
+- dropbear: update to 2026.94
+- glib-2.0: update to 2.90.0
+
+### Fixed
+- systemd: include server in dhcp release message
+
 ## [9.0.8] - 2026-09-23
 ### Changed
 - linux-em: update for eg4xx support
