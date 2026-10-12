@@ -1,0 +1,79 @@
+From 21cc33e3ffb90aba9dc75022722cf19599d6f25d Mon Sep 17 00:00:00 2001
+From: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+Date: Thu, 8 Oct 2026 10:42:18 +0200
+Subject: [PATCH] attack_parser.y: recognize brackets around IPv6 from dropbear
+
+Dropbear puts square brackets around IPv6 addresses in its
+log output. Update the parser string for dropbear logs accordingly.
+
+Signed-off-by: Michael Krummsdorf <michael.krummsdorf@tq-group.com>
+---
+ src/parser/attack_parser.y | 12 +++++++++---
+ src/parser/tests.txt       | 15 +++++++++++++++
+ 2 files changed, 24 insertions(+), 3 deletions(-)
+
+diff --git a/src/parser/attack_parser.y b/src/parser/attack_parser.y
+index e47b778..3ea86d5 100644
+--- a/src/parser/attack_parser.y
++++ b/src/parser/attack_parser.y
+@@ -262,10 +262,16 @@ ssh_badkex:
+     SSH_BADKEX_PREF addr SSH_BADKEX_SUFF
+   ;
+ 
++/* Dropbear 2026.94 puts IPv6 addresses in brackets */
++dropbearaddr:
++    addr
++  | '[' addr ']'
++  ;
++
+ dropbearmsg:
+-    DROPBEAR_BAD_PASSWORD addr ':' INTEGER
+-  | DROPBEAR_BAD_USER addr ':' INTEGER
+-  | DROPBEAR_EXIT_BEFORE_AUTH_PREF addr ':' INTEGER DROPBEAR_EXIT_BEFORE_AUTH_SUFF { attack->dangerousness = 2; }
++    DROPBEAR_BAD_PASSWORD dropbearaddr ':' INTEGER
++  | DROPBEAR_BAD_USER dropbearaddr ':' INTEGER
++  | DROPBEAR_EXIT_BEFORE_AUTH_PREF dropbearaddr ':' INTEGER DROPBEAR_EXIT_BEFORE_AUTH_SUFF { attack->dangerousness = 2; }
+  ;
+ 
+ /* attacks and blocks from SSHGuard */
+diff --git a/src/parser/tests.txt b/src/parser/tests.txt
+index b96d7bf..abebb1d 100644
+--- a/src/parser/tests.txt
++++ b/src/parser/tests.txt
+@@ -181,21 +181,36 @@ M
+ Bad password attempt for 'root' from ::ffff:1.2.3.4:55990
+ 101 1.2.3.4 4 10
+ M
++Bad password attempt for 'root' from [::ffff:1.2.3.49]:55990
++101 1.2.3.4 4 10
++M
+ Bad PAM password attempt for 'user23' from ::ffff:1.2.3.4:55992
+ 101 1.2.3.4 4 10
+ M
++Bad PAM password attempt for 'user23' from [::ffff:1.2.3.4]:55992
++101 1.2.3.4 4 10
++M
+ Login attempt for nonexistent user from 1.2.3.4:60794
+ 101 1.2.3.4 4 10
+ M
+ May 08 09:49:25 hostname dropbear[1773]: Exit before auth from <::ffff:10.42.42.135:46154>: (user 'root', 0 fails): Exited normally
+ 101 10.42.42.135 4 2
+ M
++May 08 09:49:25 hostname dropbear[1773]: Exit before auth from <[::ffff:10.42.42.135]:46154>: (user 'root', 0 fails): Exited normally
++101 10.42.42.135 4 2
++M
+ May 08 10:02:05 server dropbear[1977]: Exit before auth from <::ffff:10.42.63.135:50288>: Exited normally
+ 101 10.42.63.135 4 2
+ M
++May 08 10:02:05 server dropbear[1977]: Exit before auth from <[::ffff:10.42.63.135]:50288>: Exited normally
++101 10.42.63.135 4 2
++M
+ Exit before auth from <::ffff:1.2.3.4:47810>: (user 'root', 0 fails): Error reading: Connection reset by peer
+ 101 1.2.3.4 4 2
+ M
++Exit before auth from <[::ffff:1.2.3.4]:47810>: (user 'root', 0 fails): Error reading: Connection reset by peer
++101 1.2.3.4 4 2
++M
+ # }}}
+ 
+ #### Remote SSHGuard {{{
