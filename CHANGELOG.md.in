@@ -1,4 +1,1 @@
 ## [{{ version }}]
-### Fixed
-- u-boot-em: fix refclk pin
-- sshguard: allow brackets around IPv6
