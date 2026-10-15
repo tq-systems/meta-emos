@@ -1,1 +1,0 @@
-bootloader-em-aarch64.sh
