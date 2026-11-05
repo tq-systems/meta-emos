@@ -1,4 +1,5 @@
 ## [{{ version }}]
 ### Fixed
+- sbom-cyclonedx: write the supplier URL as a list as required by CycloneDX 1.6
 - u-boot-em: fix refclk pin
 - sshguard: allow brackets around IPv6
