@@ -241,6 +241,10 @@ def generate_packages_list_alternative(d):
         for property in d.getVar("CYCLONEDX_EXPORT_PROPERTIES").split(" "):
             if property == "SRC_URI":
                 value = list((d.getVar(property) or "").split())
+                # Parameters like patchdir=${S} expand to the build directory, keep them independent of the build host
+                workdir = d.getVar("WORKDIR")
+                if workdir:
+                    value = [uri.replace(workdir, "${WORKDIR}") for uri in value]
             else:
                 value = d.getVar(property)
             if value is not None and len(value) > 0:

@@ -1,5 +1,6 @@
 ## [{{ version }}]
 ### Fixed
 - sbom-cyclonedx: write the supplier URL as a list as required by CycloneDX 1.6
+- sbom-cyclonedx: write build paths in SRC_URI relative to WORKDIR
 - u-boot-em: fix refclk pin
 - sshguard: allow brackets around IPv6
