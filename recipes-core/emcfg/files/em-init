@@ -173,8 +173,8 @@ fi
 # As /update is formatted last, there are two possiblities for unfinished
 # factory resets:
 # 1) /update is not formatted yet. In this case, /update can still be mounted
-#    and /update/factory-reset exists. The factory reset will be repeated on the
-#    next boot.
+#    and /update/factory-reset exists. The factory reset will be repeated later in
+#    this boot.
 # 2) /update is in the process of being formatted when the factory reset occurs.
 #    In this case, the following mount may fail. In result, /update will be
 #    formatted again, completing the factory reset.
@@ -185,14 +185,39 @@ fi
 
 FACTORY_RESET=$(check_flag factory-reset)
 
+preserve_filelist() {
+	local src=$1
+	local dst=$2
+	shift 2
+
+	for file in "$@"; do
+		if [ -f "$src/$file" ]; then
+			cp -p "$src/$file" "$dst/$file"
+		fi
+	done
+
+	sync
+}
+
+# When a factory-reset is requested during a bundle installation (only devel)
+# a race condition must be prevented between reset of /update partition and
+# post-update finalisation following the reboot. Update-relevant files are
+# saved during filesystem reset and restored afterwards for that reason.
+# Indication for an ongoing update is /update/status.
 if $FACTORY_RESET && ! $END_OF_LIFE; then
 	echo >&2 'Performing factory reset.'
 
 	factory_reset true
 
+	[ -f /update/status ] &&
+	preserve_filelist /update /tmp rauc.status status slot
+
 	umount /update
 	update_reset
 	mount -o $MOUNT_OPTS_RW $DEV_UPDATE /update || fatal '/update mount failed.'
+
+	[ -f /tmp/status ] &&
+	preserve_filelist /tmp /update rauc.status status slot
 fi
 
 SAFE_MODE=$(check_flag safe-mode)
