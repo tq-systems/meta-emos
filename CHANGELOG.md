@@ -1,3 +1,8 @@
+## [9.1.2] - 2026-10-12
+### Fixed
+- u-boot-em: fix refclk pin
+- sshguard: allow brackets around IPv6
+
 ## [9.1.1] - 2026-10-05
 ### No functional change
 
