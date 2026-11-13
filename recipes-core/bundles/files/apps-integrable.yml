@@ -9,7 +9,7 @@ apps:
     version: '4.1.4'
 
   json:
-    version: '3.0.6'
+    version: '3.0.7'
 
   upnp:
     version: '2.1.7'

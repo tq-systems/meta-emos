@@ -30,6 +30,7 @@ IMAGE_INSTALL += " \
 		emos-upgrade \
 		emcfg \
 		empkg \
+		em-timeguard \
 		em-flash-read \
 		em-firewall \
 		em-verify \

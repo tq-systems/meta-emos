@@ -215,8 +215,7 @@ def generate_packages_list_alternative(d):
             "description" : '{}'.format(d.getVar("SUMMARY",True)),
             "licenses" : [],
             "supplier" : {
-                "name" : '{}'.format(d.getVar('SPDX_SUPPLIER')),
-                "url" : '{}'.format(d.getVar('HOMEPAGE', True ))
+                "name" : '{}'.format(d.getVar('SPDX_SUPPLIER'))
             },
             "cpe": 'cpe:2.3:*:{}:{}:{}:*:*:*:*:*:*:*'.format(vendor or "*", product, cve_version),
             "purl": 'pkg:generic/{}{}@{}'.format(f"{vendor}/" if vendor else '', product, cve_version),
@@ -231,12 +230,21 @@ def generate_packages_list_alternative(d):
         }
         pkg["licenses"].append(lic)
 
+        # CycloneDX expects a list of URLs, recipes without HOMEPAGE get none
+        homepage = d.getVar("HOMEPAGE")
+        if homepage:
+            pkg["supplier"]["url"] = [homepage]
+
         if bb.data.inherits_class("native", d) or bb.data.inherits_class("cross", d):
             pkg["tags"].append("isNative")
 
         for property in d.getVar("CYCLONEDX_EXPORT_PROPERTIES").split(" "):
             if property == "SRC_URI":
                 value = list((d.getVar(property) or "").split())
+                # Parameters like patchdir=${S} expand to the build directory, keep them independent of the build host
+                workdir = d.getVar("WORKDIR")
+                if workdir:
+                    value = [uri.replace(workdir, "${WORKDIR}") for uri in value]
             else:
                 value = d.getVar(property)
             if value is not None and len(value) > 0:

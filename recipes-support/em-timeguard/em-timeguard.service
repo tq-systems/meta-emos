@@ -1,0 +1,22 @@
+[Unit]
+Description=EMOS clock change event monitor
+Requires=dbus.service
+After=dbus.target
+Before=shutdown.target
+
+[Service]
+Type=dbus
+BusName=com.tq_group.tq_em.timeguard1
+ExecStart=/usr/sbin/em-timeguard
+User=em-timeguard
+Group=em-timeguard
+Restart=always
+NoNewPrivileges=true
+CapabilityBoundingSet=
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+RestrictAddressFamilies=AF_UNIX
+
+[Install]
+WantedBy=emos.target
