@@ -1,3 +1,16 @@
+## [9.1.3] - 2026-11-13
+### Added
+- em-timeguard: add new daemon to monitor system clock changes
+
+### Changed
+- em-init: preserve update status during factory reset
+- linux-em: update to 6.18.63
+- core-qa: update app versions
+
+### Fixed
+- sbom-cyclonedx: write the supplier URL as a list as required by CycloneDX 1.6
+- sbom-cyclonedx: write build paths in SRC_URI relative to WORKDIR
+
 ## [9.1.2] - 2026-10-12
 ### Fixed
 - u-boot-em: fix refclk pin
