@@ -1,3 +1,6 @@
 ## [{{ version }}]
+### Added
+- em-timeguard: add new daemon to monitor system clock changes
+
 ### Changed
 - linux-em: update to 6.18.63

@@ -1,0 +1,8 @@
+AC_INIT([em-timeguard], [1.0], [support@tq-group.com])
+AM_INIT_AUTOMAKE([foreign])
+AC_PROG_CC
+PKG_PROG_PKG_CONFIG
+PKG_CHECK_MODULES([SYSTEMD], [libsystemd])
+AC_USE_SYSTEM_EXTENSIONS
+AC_CONFIG_FILES([Makefile])
+AC_OUTPUT
